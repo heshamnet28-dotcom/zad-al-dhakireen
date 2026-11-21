@@ -27,7 +27,7 @@
 <meta name="twitter:title" content="زاد الذاكرين — صدقة جارية" />
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://images.weserv.nl/?url=heshamnet28-dotcom.github.io/zad-al-dhakireen/icon.svg&amp;output=png&amp;w=512&amp;h=512&amp;fit=cover" />
-<meta name="app-version" content="20" />
+<meta name="app-version" content="22" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -108,10 +108,20 @@ button{font-family:inherit;cursor:pointer}
   :root:not([data-theme="light"]) .share-view{color:#8fe3ab}
   :root:not([data-theme="light"]) .update-note button{background:var(--green-2);border-color:var(--green-2)}
 }
-#updateBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:999;background:var(--green);color:#fff;border-radius:13px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.3);align-items:center;gap:10px;max-width:92vw;font-size:14px}
+/* تنبيه التحديث: كارت واضح في منتصف الشاشة على خلفية معتمة — نص كبير مقروء وزرّان واضحان (تحديث الآن / إخفاء) */
+#updateBanner{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,420px);z-index:999;background:#ffffff;color:#123524;border:2px solid var(--gold);border-radius:20px;padding:24px 20px 18px;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 9999px rgba(8,26,15,.62);flex-direction:column;align-items:center;text-align:center;gap:10px}
 #updateBanner.on{display:flex}
-#updateBanner button{background:var(--gold);color:#231d02;border:none;border-radius:9px;padding:7px 14px;font-weight:900;font-size:13.5px}
-#updateBanner .ub-x{background:rgba(255,255,255,.18);color:#fff;border-radius:50%;width:28px;height:28px;min-height:28px;padding:0;font-size:13px;font-weight:700;flex:0 0 auto}
+#updateBanner .ub-ic{width:58px;height:58px;border-radius:50%;background:var(--gold-soft);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:27px}
+#updateBanner .ub-txt{line-height:1.5}
+#updateBanner .ub-txt b{display:block;font-size:20px;font-weight:900;color:var(--green);line-height:1.5}
+#updateBanner .ub-txt small{display:block;font-size:14.5px;font-weight:700;color:#4c5d51;line-height:1.75;margin-top:3px}
+#updateBanner .ub-btns{display:flex;flex-direction:column;gap:8px;width:100%;margin-top:8px}
+#updateBanner #updateNowBtn{width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px 16px;font-weight:900;font-size:17px;white-space:nowrap;box-shadow:0 4px 14px rgba(6,68,32,.35)}
+#updateBanner #updateNowBtn:disabled{opacity:.65}
+#updateBanner .ub-hide{width:100%;background:#eef3ee;color:#33413a;border:1.5px solid #cfdccf;border-radius:12px;padding:12px 16px;font-weight:800;font-size:15.5px}
+@media (max-width:380px){#updateBanner{padding:20px 15px 15px}#updateBanner .ub-txt b{font-size:18px}#updateBanner .ub-txt small{font-size:13.5px}}
+@media (prefers-reduced-motion: no-preference){#updateBanner.on{animation:ubPop .25s ease}}
+@keyframes ubPop{from{opacity:0;transform:translate(-50%,-46%) scale(.97)}to{opacity:1;transform:translate(-50%,-50%)}}
 .ptime.on span{opacity:.75}
 /* ===== cards & sections ===== */
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-top:14px}
@@ -359,7 +369,7 @@ html.big .dhikr .txt{line-height:2.2}
 </head>
 <body>
 
-<div id="updateBanner" role="alert"><span>✨ وصل تحديث جديد للتطبيق بمحتوى إضافي</span><button id="updateNowBtn">تحديث الآن</button><button class="ub-x" id="updateDismissBtn" aria-label="إخفاء تنبيه التحديث">✕</button></div>
+<div id="updateBanner" role="alertdialog" aria-label="تنبيه تحديث التطبيق"><span class="ub-ic" aria-hidden="true">🔄</span><span class="ub-txt"><b>وصل تحديث جديد للتطبيق</b><small>فيه محتوى إضافي جديد. اضغط «تحديث الآن» لتثبيت أحدث نسخة، أو «إخفاء» للمتابعة بالنسخة الحالية.</small></span><span class="ub-btns"><button id="updateNowBtn">تحديث الآن</button><button class="ub-hide" id="updateDismissBtn">إخفاء</button></span></div>
 
 <!-- ===== HOME ===== -->
 <section class="view on" id="v-home">
@@ -439,7 +449,7 @@ html.big .dhikr .txt{line-height:2.2}
       </div>
       <button class="share-view" id="viewPromoBtn">عرض نص النشر الكامل</button>
       <div class="share-full" id="promoFull"></div>
-      <div class="update-note">🔄 <b>التحديثات التلقائية:</b> أي محتوى جديد يصل إلى الزائر تلقائيًا عند فتح التطبيق بالإنترنت، ويظهر تنبيه «تحديث الآن» في الأعلى.<br><button id="checkUpdateBtn">البحث عن تحديث الآن</button></div>
+      <div class="update-note">🔄 <b>التحديثات التلقائية:</b> أي محتوى جديد يصل إلى الزائر تلقائيًا عند فتح التطبيق بالإنترنت، ويظهر تنبيه «تحديث الآن» في منتصف الشاشة.<br><button id="checkUpdateBtn">البحث عن تحديث الآن</button></div>
     </div>
 
     <button class="smart" id="smartBtn">
@@ -2601,7 +2611,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=20;
+const APP_VERSION=22;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
@@ -2654,7 +2664,7 @@ async function checkForUpdate(manual){
         return false;
       }
       $("#updateBanner").classList.add("on");
-      if(manual)showToast("يوجد تحديث جديد — اضغط «تحديث الآن» في الأعلى");
+      if(manual)showToast("يوجد تحديث جديد — اضغط «تحديث الآن» في منتصف الشاشة");
       return true;
     }
     if(manual)showToast("تطبيقك محدّث — أنت على أحدث نسخة ✓");
