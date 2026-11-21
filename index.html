@@ -127,6 +127,7 @@ button{font-family:inherit;cursor:pointer}
 .row-item b{font-size:16.5px;display:block;line-height:1.5}
 .row-item small{color:var(--ink-2);font-size:13px}
 .row-item .arr{color:var(--ink-2);font-size:18px}
+.row-item .fi{font-size:21px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .badge{background:var(--gold-soft);color:#6b5510;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:700}
 [data-theme="dark"] .badge{color:#ecd97e}
 /* dhikr cards */
@@ -936,17 +937,28 @@ function buildLibraryIndex(body){
   const list=document.createElement("div");list.className="list";
   [...new Set(DB.library.map(g=>g.sec))].forEach(secName=>{
     const groups=DB.library.filter(g=>g.sec===secName);const total=groups.reduce((a,g)=>a+g.items.length,0);
-    list.appendChild(rowItem(secName,total+" مادة في "+groups.length+" قسم",()=>openLibrarySection(secName,groups)))});
+    list.appendChild(rowItem(secName,total+" مادة"+(groups.length>1?" في "+groups.length+" مجلدات":""),()=>openLibrarySection(secName,groups)))});
   body.appendChild(list);
 }
+function folderItem(title,sub,fn){
+  const b=document.createElement("button");b.className="row-item";
+  b.innerHTML=`<span class="fi">📁</span><span class="tt"><b>${esc(title)}</b>${sub?`<small>${esc(sub)}</small>`:""}</span><span class="arr">‹</span>`;
+  b.addEventListener("click",fn);return b;
+}
 function openLibrarySection(secName,groups){
+  if(groups.length===1){openLibraryGroup(groups[0]);return}
   openDetail(secName,body=>{
-    groups.forEach(g=>{
-      const h=document.createElement("div");h.className="sec-title";h.textContent=g.group;body.appendChild(h);
-      const list=document.createElement("div");list.className="list";
-      g.items.forEach((it,ii)=>{list.appendChild(rowItem(it.title,it.text.replace(/\s+/g," ").slice(0,80)+"…",()=>openLibraryItem(g,it,ii)))});
-      body.appendChild(list);
-    });
+    const list=document.createElement("div");list.className="list";
+    groups.forEach(g=>{list.appendChild(folderItem(g.group,g.items.length+" مادة",()=>openLibraryGroup(g)))});
+    body.appendChild(list);
+  });
+}
+function openLibraryGroup(g){
+  openDetail(g.group,body=>{
+    const list=document.createElement("div");list.className="list";
+    if(!g.items.length)list.innerHTML='<div class="empty">هذا المجلد فارغ حاليًا</div>';
+    g.items.forEach((it,ii)=>{list.appendChild(rowItem(it.title,it.text.replace(/\s+/g," ").slice(0,80)+"…",()=>openLibraryItem(g,it,ii)))});
+    body.appendChild(list);
   });
 }
 function openLibraryItem(g,it,ii){
@@ -1683,11 +1695,11 @@ function admLibraryTab(box,body){
   box.innerHTML="";
   const secs=[...new Set(DB.library.map(g=>g.sec))];
   const add=document.createElement("div");add.className="card";
-  add.innerHTML=`<b>➕ إضافة مجموعة جديدة</b>
+  add.innerHTML=`<b>➕ إضافة مجلد جديد</b>
   <div class="field"><label>القسم الرئيسي</label><select id="lgSec">${secs.map(s=>`<option>${esc(s)}</option>`).join("")}<option value="__new">➕ قسم رئيسي جديد…</option></select></div>
   <div class="field" id="lgSecNewWrap" style="display:none"><label>اسم القسم الرئيسي الجديد</label><input id="lgSecNew" placeholder="مثال: الرقائق والمواعظ"></div>
-  <div class="field"><label>اسم المجموعة</label><input id="lgGroup" placeholder="مثال: أحاديث الصبر"></div>
-  <button class="primary" id="lgAdd">إضافة المجموعة</button>`;
+  <div class="field"><label>اسم المجلد</label><input id="lgGroup" placeholder="مثال: أحاديث الصبر"></div>
+  <button class="primary" id="lgAdd">إضافة المجلد</button>`;
   box.appendChild(add);
   const secSel=add.querySelector("#lgSec");
   secSel.addEventListener("change",()=>{add.querySelector("#lgSecNewWrap").style.display=secSel.value==="__new"?"":"none"});
@@ -1695,7 +1707,7 @@ function admLibraryTab(box,body){
     const secName=secSel.value==="__new"?add.querySelector("#lgSecNew").value.trim():secSel.value;
     const gname=add.querySelector("#lgGroup").value.trim();
     if(!secName||!gname)return;
-    DB.library.push({sec:secName,group:gname,items:[]});saveContent();admFlash(body,"تمت إضافة مجموعة «"+gname+"» — افتحها من زر «المواد» لإضافة المواد.");
+    DB.library.push({sec:secName,group:gname,items:[]});saveContent();admFlash(body,"تمت إضافة مجلد «"+gname+"» — افتحه من زر «المواد» لإضافة المواد.");
   });
   secs.forEach(secName=>{
     const h=document.createElement("div");h.className="sec-title";h.textContent=secName;box.appendChild(h);
@@ -1709,13 +1721,13 @@ function admLibraryTab(box,body){
       row.appendChild(admBtn("↑","",()=>{if(admMoveGroup(g,-1)){saveContent();admLibraryTab(box,body)}}));
       row.appendChild(admBtn("↓","",()=>{if(admMoveGroup(g,1)){saveContent();admLibraryTab(box,body)}}));
       row.appendChild(admBtn("✎","",()=>admRenameGroup(box,body,g)));
-      const del=admBtn("🗑","danger",()=>{});makeConfirm(del,()=>{DB.library.splice(DB.library.indexOf(g),1);saveContent();admFlash(body,"تم حذف مجموعة «"+g.group+"» بكل موادها.")});row.appendChild(del);
+      const del=admBtn("🗑","danger",()=>{});makeConfirm(del,()=>{DB.library.splice(DB.library.indexOf(g),1);saveContent();admFlash(body,"تم حذف مجلد «"+g.group+"» بكل مواده.")});row.appendChild(del);
       list.appendChild(row);
     });
     box.appendChild(list);
     if(groups.length>1)dragReorder(list,groups,()=>{let k=0;DB.library=DB.library.map(g=>g.sec===secName?groups[k++]:g);saveContent();admLibraryTab(box,body)});
   });
-  const hint=document.createElement("p");hint.className="note";hint.textContent="إعادة ترتيب المجموعات داخل قسمها: اسحب من علامة ⠿، أو استخدم الأسهم ↑ ↓.";box.appendChild(hint);
+  const hint=document.createElement("p");hint.className="note";hint.textContent="إعادة ترتيب المجلدات داخل قسمها: اسحب من علامة ⠿، أو استخدم الأسهم ↑ ↓.";box.appendChild(hint);
 }
 function admRenameLibSec(box,body,oldName){
   box.innerHTML="";
@@ -1730,16 +1742,16 @@ function admRenameLibSec(box,body,oldName){
 function admRenameGroup(box,body,g){
   box.innerHTML="";
   const card=document.createElement("div");card.className="card";
-  card.innerHTML=`<b>إعادة تسمية المجموعة</b><div class="field"><label>الاسم الجديد</label><input id="rgName" value="${esc(g.group)}"></div>
+  card.innerHTML=`<b>إعادة تسمية المجلد</b><div class="field"><label>الاسم الجديد</label><input id="rgName" value="${esc(g.group)}"></div>
   <button class="primary" id="rgSave">حفظ الاسم</button><button class="reset-btn" id="rgCancel" style="margin-top:10px">إلغاء</button>`;
   box.appendChild(card);
-  card.querySelector("#rgSave").addEventListener("click",()=>{const v=card.querySelector("#rgName").value.trim();if(v){g.group=v;saveContent()}admFlash(body,"تم حفظ اسم المجموعة.")});
+  card.querySelector("#rgSave").addEventListener("click",()=>{const v=card.querySelector("#rgName").value.trim();if(v){g.group=v;saveContent()}admFlash(body,"تم حفظ اسم المجلد.")});
   card.querySelector("#rgCancel").addEventListener("click",()=>admLibraryTab(box,body));
 }
 function admLibraryItems(box,body,g){
   box.innerHTML="";
   const top=document.createElement("div");top.style.cssText="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap";
-  top.innerHTML=`<button class="adm-btn" id="liBack">→ كل المجموعات</button><b style="font-size:16.5px">${esc(g.group)}</b><span class="badge">${esc(g.sec)} • ${g.items.length} مادة</span>`;
+  top.innerHTML=`<button class="adm-btn" id="liBack">→ كل المجلدات</button><b style="font-size:16.5px">${esc(g.group)}</b><span class="badge">${esc(g.sec)} • ${g.items.length} مادة</span>`;
   box.appendChild(top);
   top.querySelector("#liBack").addEventListener("click",()=>admLibraryTab(box,body));
   const addB=admBtn("➕ إضافة مادة جديدة","main",()=>admLibraryForm(box,body,g,null));addB.style.marginTop="10px";box.appendChild(addB);
@@ -1753,15 +1765,15 @@ function admLibraryItems(box,body,g){
     row.appendChild(admBtn("⧉ تكرار","",()=>{g.items.splice(i+1,0,cloneObj(it));saveContent();admLibraryItems(box,body,g)}));
     const others=DB.library.filter(x=>x!==g);
     if(others.length){
-      const sel=document.createElement("select");sel.className="adm-sel";sel.setAttribute("aria-label","نقل إلى مجموعة أخرى");
-      sel.innerHTML=`<option value="">نقل إلى مجموعة…</option>`+others.map(x=>`<option value="${DB.library.indexOf(x)}">${esc(x.sec)} — ${esc(x.group)}</option>`).join("");
+      const sel=document.createElement("select");sel.className="adm-sel";sel.setAttribute("aria-label","نقل إلى مجلد آخر");
+      sel.innerHTML=`<option value="">نقل إلى مجلد…</option>`+others.map(x=>`<option value="${DB.library.indexOf(x)}">${esc(x.sec)} — ${esc(x.group)}</option>`).join("");
       sel.addEventListener("change",()=>{if(sel.value==="")return;const target=DB.library[+sel.value];if(!target)return;const moved=g.items.splice(i,1)[0];target.items.push(moved);saveContent();admLibraryItems(box,body,g)});
       row.appendChild(sel);
     }
     const del=admBtn("🗑","danger",()=>{});makeConfirm(del,()=>{g.items.splice(i,1);saveContent();admLibraryItems(box,body,g)});row.appendChild(del);
     list.appendChild(row);
   });
-  if(!g.items.length)list.innerHTML='<div class="empty">لا توجد مواد في هذه المجموعة بعد — أضف أول مادة من الزر بالأعلى.</div>';
+  if(!g.items.length)list.innerHTML='<div class="empty">لا توجد مواد في هذا المجلد بعد — أضف أول مادة من الزر بالأعلى.</div>';
   box.appendChild(list);
   if(g.items.length)dragReorder(list,g.items,()=>{saveContent();admLibraryItems(box,body,g)});
 }
