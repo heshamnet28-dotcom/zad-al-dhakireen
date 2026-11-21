@@ -1187,20 +1187,39 @@ const NAWADER=[
  {name:"محمد أيوب - تراويح قديمة",url:"https://server8.mp3quran.net/ayub/001.mp3"}
 ];
 const RADIOS=[
- {name:"إذاعة القرآن من القاهرة",url:"https://stream.radiojar.com/8s5u5tpdtwzuv"},
- {name:"إذاعة القرآن من السعودية",url:"https://stream.radiojar.com/4wqre23fytzuv"},
- {name:"تلاوات خاشعة مباشر",url:"https://backup.qurango.net/radio/tarteel"},
- {name:"إذاعة الشيخ محمد رفعت",url:"https://backup.qurango.net/radio/mohammad_refaat"},
- {name:"إذاعة الرقية الشرعية",url:"https://backup.qurango.net/radio/roqiah"},
- {name:"إذاعة التكبيرات (عيد)",url:"https://backup.qurango.net/radio/eid"}
+ {name:"إذاعة القرآن من القاهرة",urls:["https://stream.radiojar.com/8s5u5tpdtwzuv"]},
+ {name:"إذاعة القرآن من السعودية",urls:["https://stream.radiojar.com/0tpy1h0kxtzuv","https://stream.radiojar.com/4wqre23fytzuv"]},
+ {name:"تلاوات خاشعة مباشر",urls:["https://backup.qurango.net/radio/salma","https://backup.qurango.net/radio/tarateel"]},
+ {name:"إذاعة الشيخ محمود خليل الحصري",urls:["https://backup.qurango.net/radio/mahmoud_khalil_alhussary"]},
+ {name:"إذاعة الرقية الشرعية",urls:["https://backup.qurango.net/radio/roqiah"]},
+ {name:"إذاعة التكبيرات (عيد)",urls:["https://backup.qurango.net/radio/eid"]}
 ];
 const audioEl=$("#audioEl"), playerEl=$("#player");
 let curTrack=null, curObjUrl=null, toastTimer=null;
 function showToast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),3400)}
 function fmtDur(x){if(!isFinite(x)||x<0)return"";const m=Math.floor(x/60),ss=Math.floor(x%60);return m+":"+String(ss).padStart(2,"0")}
+let liveFails=0, liveWatchdog=null;
+function armLiveWatchdog(){
+  clearTimeout(liveWatchdog);
+  if(!curTrack||!curTrack.live)return;
+  liveWatchdog=setTimeout(()=>{if(curTrack&&curTrack.live&&audioEl.readyState<3)liveFallback()},12000);
+}
+function liveFallback(){
+  if(!curTrack||!curTrack.live)return;
+  const urls=(curTrack.urls&&curTrack.urls.length)?curTrack.urls:[curTrack.url];
+  liveFails++;
+  clearTimeout(liveWatchdog);
+  if(liveFails>urls.length*2){$("#plToggle").textContent="▶";showToast("تعذّر الاتصال بهذه المحطة الآن — تحقق من الإنترنت وجرّب بعد قليل");return}
+  const next=urls[liveFails%urls.length];
+  showToast("جارٍ إعادة الاتصال بالمحطة…");
+  audioEl.src=next;
+  $("#plToggle").textContent="⏳";
+  audioEl.play().then(()=>{$("#plToggle").textContent="⏸"}).catch(()=>{});
+  armLiveWatchdog();
+}
 async function playTrack(o){
-  if(curTrack&&curTrack.key===o.key&&audioEl.src){if(audioEl.paused)audioEl.play().catch(()=>{});else audioEl.pause();return}
-  curTrack=o;
+  if(curTrack&&curTrack.key===o.key&&audioEl.src){if(audioEl.paused){audioEl.play().catch(()=>{});armLiveWatchdog()}else audioEl.pause();return}
+  curTrack=o;liveFails=0;clearTimeout(liveWatchdog);
   if(curObjUrl){URL.revokeObjectURL(curObjUrl);curObjUrl=null}
   let src=o.url, offline=false;
   if(!o.live&&"caches" in window){try{const c=await caches.open("zad-audio-v1");const r=await c.match(o.url);if(r){curObjUrl=URL.createObjectURL(await r.blob());src=curObjUrl;offline=true}}catch(e){}}
@@ -1210,12 +1229,14 @@ async function playTrack(o){
   $("#plTime").textContent=o.live?"بث مباشر":"…";
   $("#plFill").style.width="0";
   $("#plToggle").textContent="⏳";
-  audioEl.play().then(()=>{$("#plToggle").textContent="⏸"}).catch(()=>{$("#plToggle").textContent="▶";showToast("تعذّر بدء التشغيل — تحقق من اتصال الإنترنت")});
+  audioEl.play().then(()=>{$("#plToggle").textContent="⏸"}).catch(()=>{if(o.live){liveFallback()}else{$("#plToggle").textContent="▶";showToast("تعذّر بدء التشغيل — تحقق من اتصال الإنترنت")}});
+  armLiveWatchdog();
   document.querySelectorAll(".aud-row").forEach(r=>r.classList.toggle("playing",r.dataset.akey===o.key));
   if("mediaSession" in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:o.title,artist:"زاد الذاكرين"})}catch(e){}}
 }
 function stopPlayer(){
   stopAyahSeq();
+  clearTimeout(liveWatchdog);
   audioEl.pause();audioEl.removeAttribute("src");audioEl.load();curTrack=null;
   if(curObjUrl){URL.revokeObjectURL(curObjUrl);curObjUrl=null}
   playerEl.classList.remove("on");document.body.classList.remove("has-player");
@@ -1239,7 +1260,8 @@ audioEl.addEventListener("ended",()=>{
   }
   $("#plToggle").textContent="▶";$("#plFill").style.width="0";
 });
-audioEl.addEventListener("error",()=>{if(curTrack)showToast("تعذّر تشغيل الصوت — تحقق من اتصال الإنترنت ثم حاول مجددًا")});
+audioEl.addEventListener("playing",()=>{liveFails=0;clearTimeout(liveWatchdog)});
+audioEl.addEventListener("error",()=>{if(!curTrack)return;if(curTrack.live){liveFallback()}else showToast("تعذّر تشغيل الصوت — تحقق من اتصال الإنترنت ثم حاول مجددًا")});
 $("#plBar").addEventListener("click",e=>{
   if(!curTrack||curTrack.live)return;const d=audioEl.duration;if(!isFinite(d)||!d)return;
   const r=e.currentTarget.getBoundingClientRect();const ratio=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));
@@ -1281,7 +1303,7 @@ function audRow(key,title,sub,url,live){
   const row=document.createElement("div");row.className="aud-row";row.dataset.akey=key;
   if(curTrack&&curTrack.key===key)row.classList.add("playing");
   row.innerHTML=`<button class="play-btn" aria-label="تشغيل">▶</button><span class="tt"><b>${esc(title)}</b>${sub?`<small>${esc(sub)}</small>`:""}</span>`;
-  row.querySelector(".play-btn").addEventListener("click",()=>playTrack({key,title,url,live:!!live}));
+  row.querySelector(".play-btn").addEventListener("click",()=>playTrack({key,title,url:Array.isArray(url)?url[0]:url,urls:Array.isArray(url)?url:null,live:!!live}));
   if(!live){
     const dlB=document.createElement("button");dlB.className="dl-btn";dlB.textContent="⬇ تحميل";
     dlB.addEventListener("click",()=>toggleDownload(key,title,url,dlB));
@@ -1299,9 +1321,9 @@ function buildRadio(body){
   const warn=document.createElement("p");warn.style.marginTop="6px";
   warn.innerHTML='<span class="warn-tag">يحتاج اتصال بالإنترنت — بث مباشر</span>';
   body.appendChild(warn);
-  RADIOS.forEach((t,i)=>body.appendChild(audRow("rad:"+i,t.name,"بث مباشر",t.url,true)));
+  RADIOS.forEach((t,i)=>body.appendChild(audRow("rad:"+i,t.name,"بث مباشر",t.urls,true)));
   const note=document.createElement("p");note.className="note";
-  note.textContent="عند انقطاع الاتصال يتوقف البث وتظهر رسالة تنبيه بدل أن يتعطل التطبيق — أعد المحاولة عند عودة الشبكة.";
+  note.textContent="إذا تعذّر الاتصال بمحطة، يعيد المشغّل المحاولة تلقائيًا من مصدر احتياطي للبث. وعند انقطاع الإنترنت يتوقف البث وتظهر رسالة تنبيه — أعد المحاولة عند عودة الشبكة.";
   body.appendChild(note);
 }
 function buildMosques(body){
