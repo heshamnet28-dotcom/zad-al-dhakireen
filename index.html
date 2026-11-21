@@ -27,7 +27,7 @@
 <meta name="twitter:title" content="زاد الذاكرين — صدقة جارية" />
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://images.weserv.nl/?url=heshamnet28-dotcom.github.io/zad-al-dhakireen/icon.svg&amp;output=png&amp;w=512&amp;h=512&amp;fit=cover" />
-<meta name="app-version" content="18" />
+<meta name="app-version" content="20" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -111,6 +111,7 @@ button{font-family:inherit;cursor:pointer}
 #updateBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:999;background:var(--green);color:#fff;border-radius:13px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.3);align-items:center;gap:10px;max-width:92vw;font-size:14px}
 #updateBanner.on{display:flex}
 #updateBanner button{background:var(--gold);color:#231d02;border:none;border-radius:9px;padding:7px 14px;font-weight:900;font-size:13.5px}
+#updateBanner .ub-x{background:rgba(255,255,255,.18);color:#fff;border-radius:50%;width:28px;height:28px;min-height:28px;padding:0;font-size:13px;font-weight:700;flex:0 0 auto}
 .ptime.on span{opacity:.75}
 /* ===== cards & sections ===== */
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-top:14px}
@@ -358,7 +359,7 @@ html.big .dhikr .txt{line-height:2.2}
 </head>
 <body>
 
-<div id="updateBanner" role="alert"><span>✨ وصل تحديث جديد للتطبيق بمحتوى إضافي</span><button id="updateNowBtn">تحديث الآن</button></div>
+<div id="updateBanner" role="alert"><span>✨ وصل تحديث جديد للتطبيق بمحتوى إضافي</span><button id="updateNowBtn">تحديث الآن</button><button class="ub-x" id="updateDismissBtn" aria-label="إخفاء تنبيه التحديث">✕</button></div>
 
 <!-- ===== HOME ===== -->
 <section class="view on" id="v-home">
@@ -1277,7 +1278,8 @@ const TOOLS=[
  {ic:"📗",col:"#00695c",name:"الختمة",sub:"متابعة وخطط ختم القرآن والتحديات",build:buildKhatma},
  {ic:"🌙",col:"#37474f",name:"رمضان",sub:"العد التنازلي",build:buildRamadan},
  {ic:"📅",col:"#795548",name:"التقويم والتحويل",sub:"هجري ⇄ ميلادي",build:buildCalendar},
- {ic:"💰",col:"#b8860b",name:"حاسبة الزكاة",sub:"٢٫٥٪ عند النصاب",build:buildZakat},
+ {ic:"🌙",col:"#5e35b1",name:"المناسبات الإسلامية",sub:"عدّاد للمواسم والأعياد والأيام البيض",build:buildOccasions},
+ {ic:"💰",col:"#b8860b",name:"حاسبة الزكاة",sub:"نقد وذهب وفضة وتجارة",build:buildZakat},
  {ic:"⭐",col:"#c9a227",name:"المفضلة",sub:"أذكارك وموادك",build:buildFavorites},
  {ic:"🔍",col:"#455a64",name:"بحث",sub:"في كل المحتوى",build:buildSearch},
  {ic:"🎧",col:"#00695c",name:"نوادر القراءات",sub:"٨ تلاوات نادرة",build:buildNawader},
@@ -1453,7 +1455,7 @@ function buildNames(body){
 }
 
 /* ============ tasbeeh ============ */
-const TASBEEH_PRESETS=["سُبْحَانَ اللَّهِ","الْحَمْدُ لِلَّهِ","اللَّهُ أَكْبَرُ","لَا إِلَهَ إِلَّا اللَّهُ","أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ","سُبْحَانَ اللَّهِ وَبِحَمْدِهِ","اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"];
+const TASBEEH_PRESETS=["سُبْحَانَ اللَّهِ","الْحَمْدُ لِلَّهِ","اللَّهُ أَكْبَرُ","لَا إِلَهَ إِلَّا اللَّهُ","أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ","سُبْحَانَ اللَّهِ وَبِحَمْدِهِ","سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ","لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ","لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ","حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ","سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ","اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ"];
 function buildTasbeeh(body){
   const w=document.createElement("div");w.className="tasbeeh-wrap";
   w.innerHTML=`<div class="chips"></div>
@@ -1642,26 +1644,139 @@ function buildCalendar(body){
   });
   body.appendChild(card);
 }
+/* ============ islamic occasions / المناسبات الإسلامية ============ */
+const OCCASIONS=[
+ [1,1,"رأس السنة الهجرية","بداية عام هجري جديد"],
+ [1,9,"يوم تاسوعاء","يُستحب صيامه مع عاشوراء"],
+ [1,10,"يوم عاشوراء","صيامه يكفّر ذنوب السنة الماضية"],
+ [3,12,"ذكرى المولد النبوي","التاريخ المشهور لولادة النبي ﷺ عند جمهور أهل السِّيَر"],
+ [7,27,"ذكرى الإسراء والمعراج","التاريخ المشهور عند كثير من المؤرخين"],
+ [8,15,"ليلة النصف من شعبان","ليلة مباركة عند كثير من أهل العلم"],
+ [9,1,"أول أيام رمضان","بداية شهر الصيام — يثبت دخوله برؤية الهلال"],
+ [9,21,"بداية العشر الأواخر من رمضان","تحرّوا ليلة القدر في الوتر منها: ٢١ و٢٣ و٢٥ و٢٧ و٢٩"],
+ [10,1,"عيد الفطر المبارك","أول شوال — زكاة الفطر تُخرج قبل صلاة العيد"],
+ [12,9,"يوم عرفة","صيامه لغير الحاج يكفّر السنة الماضية والباقية"],
+ [12,10,"عيد الأضحى المبارك","يوم النحر — أعظم الأيام عند الله"],
+ [12,11,"بداية أيام التشريق","١١ و١٢ و١٣ ذي الحجة — أيام أكل وشرب وذكر لله"]
+];
+function hijriDateOrNull(hy,hm,hd){const g=hijriToGregorian(hy,hm,hd);const chk=toHijri(g);if(chk.d!==hd||chk.m!==hm||chk.y!==hy)return null;g.setHours(0,0,0,0);return g}
+function buildOccasions(body){
+  const now=new Date();const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const hNow=toHijri(now);
+  const head=document.createElement("div");head.className="card";head.style.marginTop="4px";
+  head.innerHTML=`<b style="font-size:16.5px">المناسبات والمواسم الإسلامية</b>
+  <div class="result-box">اليوم: ${hijriString(now)} — الموافق ${now.toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</div>
+  <p class="note" style="margin-bottom:0">الأشهر الحُرُم أربعة: ذو القعدة وذو الحجة والمحرم ورجب. التواريخ محسوبة محليًا بتقويم أم القرى، وقد تختلف بداية الشهور الشرعية يومًا بحسب رؤية الهلال واعتماد بلدك.</p>`;
+  body.appendChild(head);
+  const upcoming=[];
+  OCCASIONS.forEach(([m,d,n,note])=>{
+    for(const y of [hNow.y,hNow.y+1]){
+      const g=hijriDateOrNull(y,m,d);
+      if(g&&g>=todayStart){upcoming.push({g,n,note,hd:d,hm:m,hy:y});break}
+    }
+  });
+  upcoming.sort((a,b)=>a.g-b.g);
+  const list=document.createElement("div");list.className="list";
+  upcoming.forEach(o=>{
+    const days=Math.round((o.g-todayStart)/86400000);
+    const when=days===0?"اليوم":days===1?"غدًا":"بعد "+days+" يومًا";
+    const row=document.createElement("div");row.className="row-item";row.style.cursor="default";
+    row.innerHTML=`<span class="tt"><b>${esc(o.n)}</b><small>${o.hd} ${HIJRI_MONTHS[o.hm-1]} ${o.hy} هـ — ${o.g.toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}<br>${esc(o.note)}</small></span><span class="badge">${when}</span>`;
+    list.appendChild(row);
+  });
+  body.appendChild(list);
+  const wd=document.createElement("div");wd.className="card";
+  const wdDates=[13,14,15].map(d=>({d,g:hijriDateOrNull(hNow.y,hNow.m,d)})).filter(x=>x.g);
+  wd.innerHTML=`<b style="font-size:16.5px">الأيام البيض لهذا الشهر — ${HIJRI_MONTHS[hNow.m-1]} ${hNow.y} هـ</b>
+  <p class="note" style="margin:4px 0 8px">أوصى النبي ﷺ بصيام ثلاثة أيام من كل شهر، وهي الأيام البيض: الثالث عشر والرابع عشر والخامس عشر.</p>`+
+  wdDates.map(x=>{const days=Math.round((x.g-todayStart)/86400000);const lbl=days===0?"اليوم":days===1?"غدًا":days<0?"انقضى":"بعد "+days+" يومًا";
+    return `<div class="pray-row"><b>${x.d} ${HIJRI_MONTHS[hNow.m-1]}</b><span class="tm">${x.g.toLocaleDateString("ar-EG",{day:"numeric",month:"long"})}</span><span class="badge">${lbl}</span></div>`}).join("");
+  body.appendChild(wd);
+  const fast=document.createElement("div");fast.className="card";
+  fast.innerHTML=`<b style="font-size:16.5px">أيام ومواسم يُستحب صيامها</b>
+  <div class="reader-text" style="font-size:16.5px;line-height:2;margin-top:6px">• الاثنين والخميس من كل أسبوع: تُعرض فيهما الأعمال على الله.
+• الأيام البيض: ١٣ و١٤ و١٥ من كل شهر هجري.
+• ستة أيام من شوال بعد رمضان: «من صام رمضان ثم أتبعه ستًّا من شوال كان كصيام الدهر».
+• يوم عرفة لغير الحاج: يكفّر السنة الماضية والباقية.
+• تاسوعاء وعاشوراء: ٩ و١٠ محرم.
+• العشر الأوائل من ذي الحجة: العمل الصالح فيها أحب إلى الله، ويُستحب صيامها.
+• أكثر شهر شعبان: كان النبي ﷺ يصوم شعبان كثيرًا.
+• صيام يوم وإفطار يوم: وهو صيام داود عليه السلام، أفضل الصيام عند الله.</div>`;
+  body.appendChild(fast);
+}
 function buildZakat(body){
   const card=document.createElement("div");card.className="card";card.style.marginTop="4px";
-  card.innerHTML=`<div class="result-box" style="margin-top:0">تجب الزكاة إذا بلغ المال النصاب وحال عليه الحول. المقدار هو 2.5%.</div>
-  <p class="note">زكاة الفطر واجبة على كل مسلم يملك قوت يومه وليلته: صاع (نحو ٣ كجم) من غالب قوت البلد عن كل فرد ممن يعول، وتُخرج قبل صلاة العيد، ويجوز إخراج قيمتها عند من أجاز ذلك من أهل العلم.</p>
-  <div class="field"><label>سعر جرام الذهب اليوم (بعملتك المحلية)</label><input type="number" id="zGold" placeholder="مثال: 300" min="0" step="any"></div>
-  <div class="field"><label>إجمالي المال والمدخرات</label><input type="number" id="zMoney" placeholder="مثال: 100000" min="0" step="any"></div>
-  <button class="primary" id="zCalc">احسب الزكاة</button>
-  <button class="reset-btn" id="zReset" style="margin-top:10px">تصفير الحقول</button>
-  <div class="result-box" id="zOut" style="display:none"></div>`;
   const fmtN=n=>n.toLocaleString("ar-EG",{maximumFractionDigits:2});
-  card.querySelector("#zCalc").addEventListener("click",()=>{
-    const gold=parseFloat(card.querySelector("#zGold").value),money=parseFloat(card.querySelector("#zMoney").value),o=card.querySelector("#zOut");
-    o.style.display="";
-    if(!(gold>0)||!(money>=0)){o.textContent="أدخل سعر جرام الذهب وإجمالي المال أولًا";return}
-    const nisab=85*gold;
-    if(money>=nisab)o.innerHTML=`النصاب (٨٥ جرام ذهب): <b>${fmtN(nisab)}</b><br>مالك بلغ النصاب — زكاتك المستحقة: <b style="font-size:20px">${fmtN(money*0.025)}</b>`;
-    else o.innerHTML=`النصاب (٨٥ جرام ذهب): <b>${fmtN(nisab)}</b><br>مالك لم يبلغ النصاب بعد — المتبقي للوصول إليه: <b>${fmtN(nisab-money)}</b>`;
-  });
-  card.querySelector("#zReset").addEventListener("click",()=>{card.querySelector("#zGold").value="";card.querySelector("#zMoney").value="";card.querySelector("#zOut").style.display="none"});
+  card.innerHTML=`<div class="result-box" style="margin-top:0">تجب الزكاة إذا بلغ المال النصاب وحال عليه الحول (سنة هجرية كاملة). المقدار هو ربع العشر: 2.5%. نصاب الذهب ٨٥ جرامًا، ونصاب الفضة ٥٩٥ جرامًا.</div>
+  <p class="note">زكاة الفطر واجبة على كل مسلم يملك قوت يومه وليلته: صاع (نحو ٣ كجم) من غالب قوت البلد عن كل فرد ممن يعول، وتُخرج قبل صلاة العيد، ويجوز إخراج قيمتها عند من أجاز ذلك من أهل العلم.</p>
+  <div class="field"><label>نوع الزكاة</label><select id="zType">
+    <option value="money">المال والمدخرات (النقود)</option>
+    <option value="gold">الذهب المملوك (بالوزن)</option>
+    <option value="silver">الفضة المملوكة (بالوزن)</option>
+    <option value="trade">عروض التجارة (بضاعة المحل والنشاط)</option>
+  </select></div>
+  <div id="zFields"></div>
+  <button class="primary" id="zCalc">احسب الزكاة</button>
+  <div class="result-box" id="zOut" style="display:none"></div>
+  <p class="note">الحاسبة استرشادية بالضوابط المشهورة عند جمهور الفقهاء؛ للحالات الخاصة (الديون، الذهب المستعمل للزينة، الشركات والأسهم) راجِع أهل العلم أو دار الإفتاء في بلدك.</p>`;
   body.appendChild(card);
+  const fields=card.querySelector("#zFields"),out=card.querySelector("#zOut");
+  const F={
+    money:`<div class="field"><label>أساس حساب النصاب</label><select id="zBasis"><option value="gold">الذهب — ٨٥ جرامًا</option><option value="silver">الفضة — ٥٩٥ جرامًا (أنفع للفقير عند كثير من أهل العلم)</option></select></div>
+    <div class="field"><label id="zPriceLbl">سعر جرام الذهب اليوم (بعملتك المحلية)</label><input type="number" id="zPrice" placeholder="مثال: 300" min="0" step="any"></div>
+    <div class="field"><label>إجمالي المال والمدخرات وحسابات البنوك</label><input type="number" id="zAmt" placeholder="مثال: 100000" min="0" step="any"></div>
+    <div class="field"><label>ديون حالّة عليك تُخصم من المال (اختياري)</label><input type="number" id="zDebt" placeholder="0" min="0" step="any"></div>`,
+    gold:`<div class="field"><label>وزن الذهب الذي تملكه (بالجرام)</label><input type="number" id="zW" placeholder="مثال: 120" min="0" step="any"></div>
+    <div class="field"><label>عيار الذهب</label><select id="zKarat"><option value="1">عيار ٢٤ (خالص)</option><option value="0.875">عيار ٢١</option><option value="0.75">عيار ١٨</option></select></div>
+    <div class="field"><label>سعر جرام الذهب الخالص (عيار ٢٤) اليوم بعملتك</label><input type="number" id="zPrice" placeholder="مثال: 300" min="0" step="any"></div>
+    <p class="note" style="margin-bottom:0">تُحسب الزكاة على الذهب الخالص: الوزن × نسبة العيار. فإن بلغ الخالص ٨٥ جرامًا وحال عليه الحول وجبت زكاته قيمةً أو من جنسه.</p>`,
+    silver:`<div class="field"><label>وزن الفضة التي تملكها (بالجرام)</label><input type="number" id="zW" placeholder="مثال: 700" min="0" step="any"></div>
+    <div class="field"><label>سعر جرام الفضة اليوم بعملتك</label><input type="number" id="zPrice" placeholder="مثال: 4" min="0" step="any"></div>
+    <p class="note" style="margin-bottom:0">نصاب الفضة ٥٩٥ جرامًا؛ فإن بلغتها وحال عليها الحول وجبت زكاتها 2.5% من قيمتها.</p>`,
+    trade:`<div class="field"><label>قيمة البضاعة بسعر بيعها اليوم</label><input type="number" id="zGoods" placeholder="مثال: 200000" min="0" step="any"></div>
+    <div class="field"><label>نقد متاح + أرصدة بنكية للنشاط</label><input type="number" id="zCash" placeholder="مثال: 50000" min="0" step="any"></div>
+    <div class="field"><label>ديون لك على الغير يُرجى سدادها (اختياري)</label><input type="number" id="zRecv" placeholder="0" min="0" step="any"></div>
+    <div class="field"><label>ديون حالّة عليك للغير (اختياري — تُخصم)</label><input type="number" id="zDebt" placeholder="0" min="0" step="any"></div>
+    <div class="field"><label>سعر جرام الذهب اليوم بعملتك (لحساب النصاب)</label><input type="number" id="zPrice" placeholder="مثال: 300" min="0" step="any"></div>
+    <p class="note" style="margin-bottom:0">تُقوَّم عروض التجارة بسعر البيع في نهاية الحول، وتُضم إلى النقد، وتُخصم الديون الحالّة، ثم تُزكّى 2.5% إن بلغ الصافي نصاب الذهب (٨٥ جرامًا).</p>`
+  };
+  const paintFields=()=>{fields.innerHTML=F[card.querySelector("#zType").value];out.style.display="none";
+    const basis=card.querySelector("#zBasis");
+    if(basis)basis.addEventListener("change",()=>{const lbl=card.querySelector("#zPriceLbl");if(lbl)lbl.textContent=basis.value==="gold"?"سعر جرام الذهب اليوم (بعملتك المحلية)":"سعر جرام الفضة اليوم (بعملتك المحلية)"});
+  };
+  card.querySelector("#zType").addEventListener("change",paintFields);
+  paintFields();
+  const num=id=>{const el=card.querySelector(id);return el?parseFloat(el.value):NaN};
+  card.querySelector("#zCalc").addEventListener("click",()=>{
+    const type=card.querySelector("#zType").value;out.style.display="";
+    const show=(nisabTxt,net,nisab)=>{
+      if(!(net>=0)){out.textContent="أدخل القيم المطلوبة أولًا بالأرقام";return}
+      if(net>=nisab)out.innerHTML=`النصاب: <b>${nisabTxt}</b><br>صافي مالك الزكوي: <b>${fmtN(net)}</b> — بلغ النصاب<br>زكاتك المستحقة: <b style="font-size:20px">${fmtN(net*0.025)}</b>`;
+      else out.innerHTML=`النصاب: <b>${nisabTxt}</b><br>صافي مالك الزكوي: <b>${fmtN(net)}</b> — لم يبلغ النصاب بعد، المتبقي للوصول إليه: <b>${fmtN(nisab-net)}</b>`;
+    };
+    if(type==="money"){
+      const basis=card.querySelector("#zBasis").value,price=num("#zPrice"),amt=num("#zAmt"),debt=num("#zDebt")||0;
+      if(!(price>0)||isNaN(amt)){out.textContent="أدخل سعر الجرام وإجمالي المال أولًا";return}
+      const grams=basis==="gold"?85:595,nisab=grams*price;
+      show(fmtN(nisab)+" ("+grams+" جرام "+(basis==="gold"?"ذهب":"فضة")+")",amt-debt,nisab);
+    }else if(type==="gold"){
+      const w=num("#zW"),k=parseFloat(card.querySelector("#zKarat").value),price=num("#zPrice");
+      if(!(w>0)||!(price>0)){out.textContent="أدخل وزن الذهب وسعر الجرام أولًا";return}
+      const pure=w*k;
+      if(pure>=85)out.innerHTML=`الذهب الخالص: <b>${fmtN(pure)} جرامًا</b> — بلغ نصاب ٨٥ جرامًا<br>قيمته: <b>${fmtN(pure*price)}</b><br>زكاتك المستحقة: <b style="font-size:20px">${fmtN(pure*price*0.025)}</b> (أي ${fmtN(pure*0.025)} جرام ذهب خالص أو قيمتها)`;
+      else out.innerHTML=`الذهب الخالص: <b>${fmtN(pure)} جرامًا</b> — لم يبلغ نصاب ٨٥ جرامًا بعد، المتبقي: <b>${fmtN(85-pure)} جرامًا</b>`;
+    }else if(type==="silver"){
+      const w=num("#zW"),price=num("#zPrice");
+      if(!(w>0)||!(price>0)){out.textContent="أدخل وزن الفضة وسعر الجرام أولًا";return}
+      if(w>=595)out.innerHTML=`الفضة: <b>${fmtN(w)} جرامًا</b> — بلغت نصاب ٥٩٥ جرامًا<br>قيمتها: <b>${fmtN(w*price)}</b><br>زكاتك المستحقة: <b style="font-size:20px">${fmtN(w*price*0.025)}</b>`;
+      else out.innerHTML=`الفضة: <b>${fmtN(w)} جرامًا</b> — لم تبلغ نصاب ٥٩٥ جرامًا بعد، المتبقي: <b>${fmtN(595-w)} جرامًا</b>`;
+    }else{
+      const goods=num("#zGoods")||0,cash=num("#zCash")||0,recv=num("#zRecv")||0,debt=num("#zDebt")||0,price=num("#zPrice");
+      if(!(price>0)){out.textContent="أدخل سعر جرام الذهب لحساب النصاب أولًا";return}
+      const nisab=85*price,net=goods+cash+recv-debt;
+      show(fmtN(nisab)+" (٨٥ جرام ذهب)",net,nisab);
+    }
+  });
 }
 
 
@@ -1839,6 +1954,21 @@ function buildMosques(body){
       ()=>{msg.textContent="تعذّر تحديد الموقع — فعّل إذن الموقع أو استخدم زر البحث بالأعلى"},{timeout:8000});
   });
   body.appendChild(geo);body.appendChild(msg);
+  const mSec=DB.adhkar.find(s=>s.name==="المسجد");
+  if(mSec){
+    const az=document.createElement("button");az.className="primary";az.style.background="var(--gold)";az.style.color="#231d02";
+    az.textContent="📿 أذكار دخول المسجد والخروج منه ودعاء الذهاب إليه";
+    az.addEventListener("click",()=>openAdhkarSection(mSec));
+    body.appendChild(az);
+    const adab=document.createElement("div");adab.className="card";
+    adab.innerHTML=`<b style="font-size:16px">من آداب المسجد</b><div class="reader-text" style="font-size:16px;line-height:2;margin-top:6px">• الدخول بالرجل اليمنى والخروج باليسرى مع الدعاء المأثور (في قسم أذكار المسجد بالأعلى).
+• صلاة ركعتي تحية المسجد قبل الجلوس.
+• التطيّب ولبس أحسن الثياب، وتجنّب أكل الثوم والبصل قبل الحضور.
+• إغلاق الهاتف أو جعله صامتًا حتى لا يشوّش على المصلين.
+• عدم رفع الصوت بالحديث الدنيوي، وعدم تخطّي رقاب الجالسين.
+• الدعاء بين الأذان والإقامة؛ فإنه لا يُردّ بإذن الله.</div>`;
+    body.appendChild(adab);
+  }
 }
 function buildDownloads(body){
   const keys=Object.keys(dlMeta);
@@ -1890,12 +2020,13 @@ function buildFavorites(body){
   body.appendChild(list);
 }
 function buildSearch(body){
-  const inp=document.createElement("input");inp.className="searchbox";inp.placeholder="ابحث في الأذكار والأحاديث والقصص وأسماء الله…";body.appendChild(inp);
+  const inp=document.createElement("input");inp.className="searchbox";inp.placeholder="ابحث في السور والأذكار والأحاديث والقصص وأسماء الله…";body.appendChild(inp);
   const list=document.createElement("div");list.className="list";body.appendChild(list);
   inp.addEventListener("input",()=>{
     const q=inp.value.trim();const nq=normAr(q);list.innerHTML="";
     if(q.length<2){list.innerHTML='<div class="empty">اكتب حرفين على الأقل للبحث في كل محتوى التطبيق</div>';return}
     let count=0;
+    DB.surahs.forEach(s=>{if(count<40&&(normAr(s.name).includes(nq)||normAr("سورة "+s.name).includes(nq)||String(s.n)===q)){count++;list.appendChild(rowItem("سورة "+s.name,s.ayahs+" آية — "+s.type+" — اضغط للقراءة والاستماع",()=>openSurah(s.n-1),"📖"))}});
     DB.adhkar.forEach(sec=>sec.items.forEach((it,i)=>{if(count<40&&normAr(it.text).includes(nq)){count++;list.appendChild(rowItem("أذكار "+sec.name,it.text.slice(0,80)+"…",()=>openAdhkarSection(sec)))}}));
     DB.library.forEach(g=>g.items.forEach((it,ii)=>{if(count<40&&(normAr(it.title).includes(nq)||normAr(it.text).includes(nq))){count++;list.appendChild(rowItem(it.title,g.sec+" — "+g.group,()=>openLibraryItem(g,it,ii)))}}));
     NAMES.forEach(n=>{if(count<40&&normAr(n[0]).includes(nq)){count++;list.appendChild(rowItem("اسم الله: "+n[0],n[1],()=>openDetail("أسماء الله الحسنى",buildNames)))}});
@@ -2470,7 +2601,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=17;
+const APP_VERSION=20;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
@@ -2483,7 +2614,7 @@ window.ZAD_PROMO=
 "📚 الموسوعة الإسلامية: مئات المواد في السيرة النبوية والفقه وقصص القرآن وفضائل الأعمال والفتاوى.\n"+
 "✨ أسماء الله الحسنى الـ99 كاملة.\n"+
 "🕌 مواقيت الصلاة الدقيقة حسب مدينتك مع عدّاد تنازلي للصلاة القادمة، والتقويم الهجري، وتنبيه اختياري بالأذان.\n"+
-"🧭 اتجاه القبلة، وحاسبة الزكاة وزكاة الفطر، وخطط ختمة القرآن مع متابعة تقدمك، وتتبّع صلواتك اليومية، وإمساكية رمضان كاملة لمدينتك.\n"+
+"🧭 اتجاه القبلة، وحاسبة زكاة كاملة (نقد وذهب وفضة وعروض تجارة) وزكاة الفطر، ومناسبات إسلامية بعدّاد تنازلي مع الأيام البيض ومواسم الصيام، وخطط ختمة القرآن مع متابعة تقدمك، وتتبّع صلواتك اليومية، وإمساكية رمضان كاملة لمدينتك.\n"+
 "🎧 إذاعات قرآن مباشرة وقراءات نادرة، ومدير تحميل يحفظ السور على جهازك للاستماع بدون إنترنت.\n"+
 "📴 يعمل بدون إنترنت بعد أول فتح — المحتوى النصي كله محفوظ داخل التطبيق.\n"+
 "🌍 واجهة بخمس لغات: العربية والإنجليزية والأردية والإندونيسية والفرنسية، مع وضع كبار السن وخط عثماني للمصحف.\n\n"+
@@ -2502,19 +2633,55 @@ window.ZAD_PROMO=
   const cb=$("#copyPromoBtn");
   if(cb)cb.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(window.ZAD_PROMO);showToast("تم نسخ نص النشر كاملًا مع الرابط ✓")}catch(e){showToast("تعذّر النسخ على هذا الجهاز")}});
 })();
+/* منطق التحديث: تُحفظ النسخة التي ضغط المستخدم «تحديث الآن» لها (أو أخفى تنبيهها) في localStorage،
+   فلا يعود التنبيه للظهور لنفس النسخة أبدًا — لا بعد إعادة التحميل ولا في الفتحات التالية.
+   ولا يظهر التنبيه من جديد إلا إذا صدرت نسخة أحدث فعليًا من التي تم التعامل معها. */
+let pendingUpdateVer=0;
+function updateHandledVer(){try{return parseInt(localStorage.getItem("zadUpdateHandled")||"0",10)||0}catch(e){return 0}}
+function markUpdateHandled(v){if(v>0)try{localStorage.setItem("zadUpdateHandled",String(v))}catch(e){}}
 async function checkForUpdate(manual){
   try{
     const r=await fetch("index.html?zv="+Date.now(),{cache:"no-store"});
     if(!r.ok)throw new Error("bad");
     const h=await r.text();
     const m=h.match(/name="app-version" content="(\d+)"/);
-    if(m&&parseInt(m[1],10)>APP_VERSION){$("#updateBanner").classList.add("on");if(manual)showToast("يوجد تحديث جديد — اضغط «تحديث الآن» في الأعلى");return true}
+    const remote=m?parseInt(m[1],10):0;
+    if(remote>APP_VERSION){
+      pendingUpdateVer=remote;
+      if(remote<=updateHandledVer()){
+        /* هذه النسخة بالذات سبق طلب تحديثها أو إخفاء تنبيهها — لا تُعاد إزعاجًا */
+        if(manual)showToast("تحديث هذه النسخة طُلب بالفعل وهو محمّل عندك — لا حاجة لتكرار الضغط");
+        return false;
+      }
+      $("#updateBanner").classList.add("on");
+      if(manual)showToast("يوجد تحديث جديد — اضغط «تحديث الآن» في الأعلى");
+      return true;
+    }
     if(manual)showToast("تطبيقك محدّث — أنت على أحدث نسخة ✓");
   }catch(e){if(manual)showToast("تعذّر التحقق من التحديثات — تأكد من اتصالك بالإنترنت")}
   return false;
 }
 const cub=$("#checkUpdateBtn");if(cub)cub.addEventListener("click",()=>checkForUpdate(true));
-const unb=$("#updateNowBtn");if(unb)unb.addEventListener("click",()=>{try{if("caches" in window)caches.delete("zad-shell-v2")}catch(e){}location.reload()});
+const unb=$("#updateNowBtn");
+if(unb)unb.addEventListener("click",async()=>{
+  /* أولًا: سجّل أن هذه النسخة تم التعامل معها، حتى لو أعاد الجهاز تحميل نسخة قديمة من الكاش لا يرجع التنبيه */
+  if(pendingUpdateVer>APP_VERSION)markUpdateHandled(pendingUpdateVer);
+  $("#updateBanner").classList.remove("on");
+  unb.textContent="جارٍ التحديث…";unb.disabled=true;
+  try{
+    if("caches" in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}
+    if("serviceWorker" in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>{try{return r.update()}catch(e){return null}}))}
+  }catch(e){}
+  /* إعادة تحميل برابط مميّز بعلامة وقت، حتى لا يقدّم الكاش أو عامل الخدمة النسخة القديمة من جديد */
+  try{location.replace(location.pathname+"?zv="+String(Date.now()))}
+  catch(e){location.reload()}
+});
+const udb=$("#updateDismissBtn");
+if(udb)udb.addEventListener("click",()=>{
+  if(pendingUpdateVer>APP_VERSION)markUpdateHandled(pendingUpdateVer);
+  $("#updateBanner").classList.remove("on");
+  showToast("تم إخفاء تنبيه هذا التحديث — لن يظهر مرة أخرى لهذه النسخة");
+});
 setTimeout(()=>checkForUpdate(false),3500);
 if(state.nafhaKey!==new Date().toDateString()){
   state.nafhaKey=new Date().toDateString();persist();
