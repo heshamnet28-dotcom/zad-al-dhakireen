@@ -1449,7 +1449,7 @@ function buildSettings(body){
 /* ============ admin panel — لوحة التحكم ============ */
 let adminUnlocked=false, adminTab="adhkar", admFails=0, admLockUntil=0;
 /* كلمة سر المالك ثابتة داخل التطبيق نفسه (بصمتها فقط) — لا تُنشأ ولا تُعاد تعيينها من أي جهاز زائر */
-const OWNER_HASH="h1ocaofix21";
+const OWNER_HASH="h2yill9x21";
 function admHash(s){let h=5381;const str="zad-admin::"+s;for(let i=0;i<str.length;i++){h=((h<<5)+h+str.charCodeAt(i))>>>0}return "h"+h.toString(36)+"x"+str.length}
 function cloneObj(x){return JSON.parse(JSON.stringify(x))}
 function saveContent(){try{localStorage.setItem("zadContent",JSON.stringify({adhkar:DB.adhkar,library:DB.library,nafha:DB.nafha||[]}))}catch(e){}try{renderHomeGrids();smartSuggestion()}catch(e){}}
