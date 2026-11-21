@@ -185,9 +185,22 @@ button{font-family:inherit;cursor:pointer}
 .smart b{font-size:17px}
 .smart span{font-size:13px;opacity:.88;display:block;margin-top:2px}
 .smart .go{background:var(--gold);color:#231d02;border:none;border-radius:10px;padding:9px 14px;font-weight:800;font-size:14px;white-space:nowrap}
+/* duo: أذكار الوقت + المصحف جنب بعض — أصغر وأوضح */
+.home-duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;align-items:stretch}
+.home-duo .smart{margin-top:0;padding:11px 12px;border-radius:14px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;min-height:86px}
+.home-duo .smart b{font-size:16px;line-height:1.35}
+.home-duo .smart span{font-size:12px;line-height:1.5;margin-top:1px}
+.home-duo .smart .go{padding:5px 12px;font-size:12.5px;border-radius:8px}
+.home-duo .quran-btn{margin-top:0;padding:11px 10px;font-size:15.5px;border-radius:14px;line-height:1.5;min-height:86px}
+@media (max-width:340px){.home-duo .smart b{font-size:14.5px}.home-duo .quran-btn{font-size:14px}}
 .today-count{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .today-count .num{font-size:30px;font-weight:900;color:var(--green)}
 [data-theme="dark"] .today-count .num{color:#7ed79b}
+/* عدّاد اليوم: شريط رفيع بسطر واحد بدل كارت كبير فاضي */
+.today-slim{padding:7px 13px;margin-top:8px;border-radius:12px;min-height:0}
+.today-slim .tc-label{font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.today-slim .tc-hint{font-size:11px;color:var(--ink-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today-slim .num{font-size:21px;line-height:1}
 .quran-btn{margin-top:14px;width:100%;background:var(--card);border:1.5px solid var(--green);color:var(--green);border-radius:16px;padding:15px;font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:10px}
 [data-theme="dark"] .quran-btn{color:#7ed79b;border-color:#7ed79b}
 /* ===== views ===== */
@@ -250,9 +263,22 @@ button{font-family:inherit;cursor:pointer}
 /* salawat & ayah of the day */
 .salawat-btn{width:210px;min-height:210px;border-radius:50%;border:6px solid var(--gold);background:radial-gradient(circle at 35% 30%,#c93a6e,#7f0f3d);color:#fff;font-family:"Amiri",serif;font-size:19px;line-height:1.7;box-shadow:0 10px 30px rgba(127,15,61,.35);margin:16px auto;display:block;padding:22px}
 .salawat-btn:active{transform:scale(.97)}
-.home-salawat{display:flex;align-items:center;gap:13px}
-.salawat-tap{flex:none;width:66px;height:66px;border-radius:50%;border:3px solid var(--gold);background:radial-gradient(circle at 35% 30%,#c93a6e,#7f0f3d);color:#fff;font-size:14px;font-weight:800;font-family:inherit;line-height:1.35;box-shadow:0 6px 16px rgba(127,15,61,.3)}
-.salawat-tap:active{transform:scale(.94)}
+.home-salawat{display:flex;align-items:center;gap:11px}
+/* الصلاة على النبي ﷺ: ميدالية/أيقونة مذهّبة أنيقة بدل الكارت العريض */
+#salawatCard{padding:9px 12px;margin-top:8px;border-radius:14px;border-color:#e3cf8a}
+.salawat-medal{flex:none;width:58px;height:58px;border-radius:50%;border:2.5px solid var(--gold);background:radial-gradient(circle at 35% 28%,#12914e,var(--green) 58%,var(--green-d));color:#ffe9a8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;box-shadow:0 5px 14px rgba(6,68,32,.32),inset 0 0 0 3px rgba(212,175,55,.35),inset 0 0 12px rgba(0,0,0,.25);padding:0;position:relative}
+.salawat-medal::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1px dashed rgba(255,233,168,.55);pointer-events:none}
+.salawat-medal .mg{font-family:"Amiri",serif;font-size:21px;line-height:1;color:#ffe9a8}
+.salawat-medal .mt{font-size:10.5px;font-weight:900;line-height:1.15;color:#fff;letter-spacing:.2px}
+.salawat-medal:active{transform:scale(.93)}
+.salawat-info{flex:1;min-width:0;cursor:pointer}
+.salawat-info .st{font-size:15px;font-weight:900;display:flex;align-items:center;gap:6px}
+.salawat-info .st .rose{font-size:14px}
+.salawat-info .sc{font-size:12px;color:var(--ink-2);margin-top:1px;line-height:1.5}
+.salawat-info .sc b{color:var(--green);font-variant-numeric:tabular-nums}
+[data-theme="dark"] .salawat-info .sc b{color:#7ed79b}
+.salawat-info .progress{height:5px;margin:6px 0 0}
+.salawat-open-arr{flex:none;color:var(--ink-2);font-size:19px;padding-inline-start:2px}
 .ayah-txt{font-family:"Amiri",serif;font-size:18.5px;line-height:2;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:6px 0 0}
 .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
 .chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:9px 15px;font-size:14.5px;font-weight:700}
@@ -467,26 +493,29 @@ html.big .dhikr .txt{line-height:2.2}
       <div class="update-note">🔄 <b>التحديثات التلقائية:</b> أي محتوى جديد يصل إلى الزائر تلقائيًا عند فتح التطبيق بالإنترنت، ويظهر تنبيه «تحديث الآن» في منتصف الشاشة.<br><button id="checkUpdateBtn">البحث عن تحديث الآن</button></div>
     </div>
 
-    <button class="smart" id="smartBtn">
-      <div><b id="smartTitle">أذكار الصباح</b><span id="smartSub">هذا وقتها — ابدأ يومك بذكر الله</span></div>
-      <span class="go">ابدأ الآن</span>
-    </button>
+    <div class="home-duo">
+      <button class="smart" id="smartBtn">
+        <div><b id="smartTitle">أذكار الصباح</b><span id="smartSub">هذا وقتها — ابدأ يومك بذكر الله</span></div>
+        <span class="go">ابدأ الآن</span>
+      </button>
 
-    <button class="quran-btn" data-nav="mushaf">📖 المصحف الشريف — اقرأ الآن</button>
+      <button class="quran-btn" data-nav="mushaf">📖 المصحف الشريف — اقرأ الآن</button>
+    </div>
 
-    <div class="card today-count">
-      <div><b style="font-size:16.5px">أذكارك اليوم</b><div class="note" style="margin-top:2px">كل ضغطة ذكر تُحسب هنا، ويُصفَّر العداد منتصف الليل</div></div>
+    <div class="card today-count today-slim">
+      <span class="tc-label">📿 <b>أذكارك اليوم</b> <span class="tc-hint">— يُصفَّر منتصف الليل</span></span>
       <div class="num" id="todayCount">0</div>
     </div>
 
     <div class="card" id="salawatCard">
       <div class="home-salawat">
-        <button class="salawat-tap" id="salawatTap" aria-label="صلِّ على النبي مرة واحدة">🌹<br>صلِّ</button>
-        <div style="flex:1;min-width:0" id="salawatOpen">
-          <b style="font-size:16.5px">الصلاة على النبي ﷺ</b>
-          <div class="note" style="margin-top:2px">اليوم: <b id="salawatToday">0</b> من ورد <span id="salawatGoalLbl">100</span> — اضغط الدائرة للعدّ، أو هنا لفتح العدّاد</div>
-          <div class="progress" style="margin:8px 0 0"><i id="salawatBar" style="width:0%"></i></div>
+        <button class="salawat-medal" id="salawatTap" aria-label="صلِّ على النبي مرة واحدة — اضغط للعدّ"><span class="mg">ﷺ</span><span class="mt">صلِّ</span></button>
+        <div class="salawat-info" id="salawatOpen">
+          <div class="st"><span class="rose">🌹</span> الصلاة على النبي ﷺ</div>
+          <div class="sc">اليوم: <b id="salawatToday">0</b> من ورد <span id="salawatGoalLbl">100</span> — اضغط الميدالية للعدّ</div>
+          <div class="progress"><i id="salawatBar" style="width:0%"></i></div>
         </div>
+        <span class="salawat-open-arr" aria-hidden="true">‹</span>
       </div>
     </div>
 
