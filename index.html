@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>زاد الذاكرين</title>
+<meta name="app-version" content="16" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -41,21 +42,43 @@ button,[role="button"],select,input,summary{min-height:36px}
 button{font-family:inherit;cursor:pointer}
 .wrap{max-width:640px;margin:0 auto;padding:0 14px}
 /* ===== prayer strip (hero, matched to the original theme) ===== */
-.pstrip{background:linear-gradient(90deg,var(--green) 0%,var(--green-2) 100%);color:#fff;border-radius:0 0 44px 44px;padding:14px 0 13px;box-shadow:var(--shadow);text-align:center}
-.pstrip .wrap{display:flex;flex-direction:column;gap:2px;align-items:center}
-.next-label{font-size:13.5px;opacity:.85}
-.next-name{font-size:26px;font-weight:900;line-height:1.2}
-.next-count{font-size:23px;font-weight:900;color:#ffe9a8;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace;letter-spacing:1px}
-.clock-row{display:flex;justify-content:center;align-items:baseline;gap:7px;margin-top:5px}
-.clock{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace}
-.clock-ap{font-size:13.5px;opacity:.9}
-.hijri-pill{background:rgba(255,255,255,.15);border:1px solid var(--gold);border-radius:999px;padding:2px 13px;font-size:13px;display:inline-block;margin-top:6px}
-.greg{font-size:12.5px;opacity:.85;margin-top:4px}
-.ptimes{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:11px;width:100%}
-.ptime{text-align:center;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:6px 1px;min-width:0}
+.pstrip{background:linear-gradient(90deg,var(--green) 0%,var(--green-2) 100%);color:#fff;border-radius:0 0 26px 26px;padding:8px 0 9px;box-shadow:var(--shadow);text-align:center}
+.pstrip .wrap{display:flex;flex-direction:column;gap:0;align-items:center}
+.next-label{font-size:12px;opacity:.85}
+.next-name{font-size:20px;font-weight:900;line-height:1.25}
+.next-count{font-size:18px;font-weight:900;color:#ffe9a8;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace;letter-spacing:1px;line-height:1.25}
+.clock-row{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-top:1px}
+.clock{font-size:15.5px;font-weight:800;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace}
+.clock-ap{font-size:12px;opacity:.9}
+.hijri-pill{background:rgba(255,255,255,.15);border:1px solid var(--gold);border-radius:999px;padding:1px 11px;font-size:12px;display:inline-block;margin-top:3px}
+.greg{font-size:11.5px;opacity:.85;margin-top:2px}
+.ptimes{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:7px;width:100%}
+.ptime{text-align:center;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:4px 1px;min-width:0}
 .ptime b{display:block;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ptime span{font-size:11px;opacity:.85;display:block}
 .ptime.on{background:var(--gold);color:#231d02;border-color:var(--gold)}
+/* ===== share-the-app card & update banner ===== */
+.share-card{border:1px solid #bfe3cc;background:linear-gradient(160deg,#eefaf1 0%,#ffffff 70%);border-radius:16px;padding:14px 16px;margin-top:14px;box-shadow:var(--shadow)}
+[data-theme="dark"] .share-card{background:linear-gradient(160deg,#17301f 0%,var(--card) 70%);border-color:#2c4a34}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .share-card{background:linear-gradient(160deg,#17301f 0%,var(--card) 70%);border-color:#2c4a34}}
+.share-card h3{margin:0 0 4px;font-size:16.5px;color:var(--green);font-weight:900}
+[data-theme="dark"] .share-card h3{color:#8fd6a4}
+.share-card p{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);line-height:1.8}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap}
+.share-btns button{flex:1 1 140px;border-radius:11px;padding:10px 8px;font-size:14.5px;font-weight:800;border:1px solid var(--green)}
+.share-btns a.share-apk{flex:1 1 100%;display:block;text-align:center;border-radius:11px;padding:10px 8px;font-size:14.5px;font-weight:800;border:1px solid var(--green);background:transparent;color:var(--green);text-decoration:none}
+[data-theme="dark"] .share-btns a.share-apk{color:#8fd6a4;border-color:#8fd6a4}
+.share-main{background:var(--green);color:#fff}
+.share-copy{background:transparent;color:var(--green)}
+[data-theme="dark"] .share-copy{color:#8fd6a4;border-color:#8fd6a4}
+.share-full{display:none;margin-top:10px;background:var(--card);border:1px dashed var(--line);border-radius:11px;padding:11px 12px;font-size:13.5px;line-height:2;white-space:pre-wrap;color:var(--ink)}
+.share-full.on{display:block}
+.share-view{background:none;border:none;color:var(--green);font-size:13px;text-decoration:underline;padding:4px 2px;min-height:30px}
+.update-note{margin-top:10px;font-size:12.5px;color:var(--ink-2);line-height:1.9;border-top:1px solid var(--line);padding-top:9px}
+.update-note button{background:none;border:1px solid var(--green);color:var(--green);border-radius:9px;padding:5px 12px;font-size:12.5px;font-weight:700;margin-top:5px}
+#updateBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:999;background:var(--green);color:#fff;border-radius:13px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.3);align-items:center;gap:10px;max-width:92vw;font-size:14px}
+#updateBanner.on{display:flex}
+#updateBanner button{background:var(--gold);color:#231d02;border:none;border-radius:9px;padding:7px 14px;font-weight:900;font-size:13.5px}
 .ptime.on span{opacity:.75}
 /* ===== cards & sections ===== */
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-top:14px}
@@ -266,7 +289,7 @@ html.big .tile b{font-size:14.5px}
 html.big .tile small{font-size:12px}
 html.big .tile .ic{width:40px;height:40px;font-size:20px}
 html.big .row-item b{font-size:18.5px}
-html.big .next-name{font-size:30px}
+html.big .next-name{font-size:24px}
 html.big .bottomnav button{font-size:14px}
 html.big .dhikr .txt{line-height:2.2}
 .player select{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:9px;padding:7px 5px;font-size:13.5px;font-weight:700;flex:0 0 auto;min-height:36px}
@@ -302,6 +325,8 @@ html.big .dhikr .txt{line-height:2.2}
 </style>
 </head>
 <body>
+
+<div id="updateBanner" role="alert"><span>✨ وصل تحديث جديد للتطبيق بمحتوى إضافي</span><button id="updateNowBtn">تحديث الآن</button></div>
 
 <!-- ===== HOME ===== -->
 <section class="view on" id="v-home">
@@ -356,6 +381,19 @@ html.big .dhikr .txt{line-height:2.2}
       <div style="flex:1;min-width:0"><b>ثبّت «زاد الذاكرين» على شاشتك</b><small>أيقونة تطبيق على الشاشة الرئيسية. المحتوى النصي كله مضمّن داخل التطبيق، والسور التي تحمّلها تعمل بدون إنترنت. في آيفون: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».</small></div>
       <button id="installBtn">تثبيت</button>
       <button class="ib-x" id="installBannerClose" aria-label="إخفاء رسالة التثبيت">✕</button>
+    </div>
+
+    <div class="share-card" id="shareAppCard">
+      <h3>📤 شارك التطبيق — صدقة جارية</h3>
+      <p>انشر «زاد الذاكرين» بين أهلك وأحبابك، فالدال على الخير كفاعله. زر واحد يرسل نص النشر الكامل مع رابط التطبيق.</p>
+      <div class="share-btns">
+        <button class="share-main" id="shareAppBtn">📤 مشاركة التطبيق</button>
+        <button class="share-copy" id="copyPromoBtn">📋 نسخ نص النشر</button>
+        <a class="share-apk" href="https://muse.ai/files/1545431941975449/1124235317067807/r3rdeimv18p37iw3vp971yrq/zad-al-dhakireen.apk" download="zad-al-dhakireen.apk">📱 تنزيل تطبيق أندرويد (APK)</a>
+      </div>
+      <button class="share-view" id="viewPromoBtn">عرض نص النشر الكامل</button>
+      <div class="share-full" id="promoFull"></div>
+      <div class="update-note">🔄 <b>التحديثات التلقائية:</b> أي محتوى جديد يُضاف إلى نسخة التطبيق المنشورة يصل إلى الزائر تلقائيًا — عند فتح التطبيق بالإنترنت يتحقق من وجود نسخة أحدث، وإن وُجدت يظهر تنبيه «تحديث الآن» في الأعلى فيُحدَّث التطبيق بضغطة واحدة دون إعادة تثبيت.<br><button id="checkUpdateBtn">البحث عن تحديث الآن</button></div>
     </div>
 
     <button class="smart" id="smartBtn">
@@ -1784,7 +1822,7 @@ function buildSettings(body){
   support.innerHTML=`<span style="font-size:24px">💬</span><span><b>الدعم الفني — واتساب</b><small>راسلنا لأي استفسار أو ملاحظة (يحتاج إنترنت عند الضغط)</small></span>`;
   body.appendChild(support);
   const share=document.createElement("button");share.className="primary";share.textContent="نشر التطبيق — شاركه صدقة جارية";
-  share.addEventListener("click",async()=>{const text="زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);share.textContent="تم نسخ نص المشاركة ✓"}});
+  share.addEventListener("click",async()=>{const text=window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);share.textContent="تم نسخ نص المشاركة ✓"}});
   body.appendChild(share);
   const owner=document.createElement("button");owner.className="reset-btn";owner.style.cssText="margin-top:16px;width:100%";owner.textContent="🔐 دخول المالك — لوحة التحكم";
   owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate));
@@ -2321,6 +2359,54 @@ let sqTaps=0,sqTimer=null;
 $("#sadaqaCard").addEventListener("click",()=>{sqTaps++;clearTimeout(sqTimer);sqTimer=setTimeout(()=>{sqTaps=0},2500);if(sqTaps>=5){sqTaps=0;openDetail("لوحة التحكم",buildAdminGate)}});
 $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
+
+/* ============ share the app: full promo copy + auto-update check ============ */
+const APP_VERSION=16;
+const APP_LINK="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/";
+const APK_LINK="https://muse.ai/files/1545431941975449/1124235317067807/r3rdeimv18p37iw3vp971yrq/zad-al-dhakireen.apk";
+window.ZAD_PROMO=
+"🌿📖 تطبيق «زاد الذاكرين» — رفيقك اليومي للذكر والقرآن 📖🌿\n"+
+"صدقة جارية مجانية، تجمع لك عبادتك اليومية كلها في مكان واحد:\n\n"+
+"📖 المصحف الشريف كاملًا — 114 سورة و6236 آية بالرسم العثماني، مع تلاوة صوتية آيةً آية وبأصوات عدد من القرّاء، وبحث وحفظ علامات.\n"+
+"📚 تفسير القرآن الكريم من 9 مصادر موثوقة: ابن كثير، السعدي، الطبري، القرطبي، البغوي، الجلالين، الميسّر، الوسيط، والمختصر في التفسير.\n"+
+"🤲 الأذكار كاملة: 18 قسمًا و179 ذكرًا — أذكار الصباح والمساء والنوم والصلاة والمناسبات من حصن المسلم، مع عدّاد ذكي وسلسلة التزام يومية تشجعك على المداومة.\n"+
+"🏛️ قسم التاريخ الإسلامي: 12 مجلدًا من الخلافة الراشدة والأموية والعباسية والأندلس والفاطمية والسلجوقية والأيوبية والمملوكية حتى نهاية الدولة العثمانية — كل دولة مجلد، وكل حاكم في موضوع مستقل بالترتيب وبفترة حكمه وأهم أعماله.\n"+
+"📚 الموسوعة الإسلامية: مئات المواد في السيرة النبوية والفقه وقصص القرآن وفضائل الأعمال والفتاوى.\n"+
+"✨ أسماء الله الحسنى الـ99 كاملة.\n"+
+"🕌 مواقيت الصلاة الدقيقة حسب مدينتك مع عدّاد تنازلي للصلاة القادمة، والتقويم الهجري، وتنبيه اختياري بالأذان.\n"+
+"🧭 اتجاه القبلة، وحاسبة الزكاة وزكاة الفطر، وخطط ختمة القرآن مع متابعة تقدمك، وتتبّع صلواتك اليومية، وإمساكية رمضان كاملة لمدينتك.\n"+
+"🎧 إذاعات قرآن مباشرة وقراءات نادرة، ومدير تحميل يحفظ السور على جهازك للاستماع بدون إنترنت.\n"+
+"📴 يعمل بدون إنترنت بعد أول فتح — المحتوى النصي كله محفوظ داخل التطبيق.\n"+
+"🌍 واجهة بخمس لغات: العربية والإنجليزية والأردية والإندونيسية والفرنسية، مع وضع كبار السن وخط عثماني للمصحف.\n\n"+
+"افتح التطبيق من هنا 👇\n"+APP_LINK+"\n\n"+
+"📱 أو نزّل تطبيق أندرويد (APK) مباشرة وثبّته على موبايلك من هنا 👇\n"+APK_LINK+"\n\n"+
+"انشره بين أهلك وأحبابك، فالدال على الخير كفاعله، ولك مثل أجر من انتفع به بإذن الله 🤲";
+(function(){
+  const full=$("#promoFull");if(full)full.textContent=window.ZAD_PROMO;
+  const vb=$("#viewPromoBtn");
+  if(vb)vb.addEventListener("click",()=>{const f=$("#promoFull");const on=f.classList.toggle("on");vb.textContent=on?"إخفاء نص النشر":"عرض نص النشر الكامل"});
+  async function doShare(){
+    if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text:window.ZAD_PROMO});return}catch(_){}}
+    try{await navigator.clipboard.writeText(window.ZAD_PROMO);showToast("تم نسخ نص النشر — الصقه أينما تريد مشاركته")}catch(e){const f=$("#promoFull");if(f)f.classList.add("on");showToast("انسخ النص من «عرض نص النشر الكامل»")}
+  }
+  const sb=$("#shareAppBtn");if(sb)sb.addEventListener("click",doShare);
+  const cb=$("#copyPromoBtn");
+  if(cb)cb.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(window.ZAD_PROMO);showToast("تم نسخ نص النشر كاملًا مع الرابط ✓")}catch(e){showToast("تعذّر النسخ على هذا الجهاز")}});
+})();
+async function checkForUpdate(manual){
+  try{
+    const r=await fetch("index.html?zv="+Date.now(),{cache:"no-store"});
+    if(!r.ok)throw new Error("bad");
+    const h=await r.text();
+    const m=h.match(/name="app-version" content="(\d+)"/);
+    if(m&&parseInt(m[1],10)>APP_VERSION){$("#updateBanner").classList.add("on");if(manual)showToast("يوجد تحديث جديد — اضغط «تحديث الآن» في الأعلى");return true}
+    if(manual)showToast("تطبيقك محدّث — أنت على أحدث نسخة ✓");
+  }catch(e){if(manual)showToast("تعذّر التحقق من التحديثات — تأكد من اتصالك بالإنترنت")}
+  return false;
+}
+const cub=$("#checkUpdateBtn");if(cub)cub.addEventListener("click",()=>checkForUpdate(true));
+const unb=$("#updateNowBtn");if(unb)unb.addEventListener("click",()=>{try{if("caches" in window)caches.delete("zad-shell-v2")}catch(e){}location.reload()});
+setTimeout(()=>checkForUpdate(false),3500);
 if(state.nafhaKey!==new Date().toDateString()){
   state.nafhaKey=new Date().toDateString();persist();
   $("#nafhaText").textContent=nafhaForToday();
