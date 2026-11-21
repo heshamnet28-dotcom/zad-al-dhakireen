@@ -33,7 +33,7 @@
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/IMG-20261121-WA9892.jpg" />
 <meta name="twitter:image:alt" content="زاد الذاكرين — صدقة جارية" />
-<meta name="app-version" content="23" />
+<meta name="app-version" content="24" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -375,6 +375,19 @@ html.big .dhikr .txt{line-height:2.2}
 .modal.on .install-box{animation:installPop .3s ease}
 @keyframes installPop{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.modal.on .install-box{animation:none}}
+/* ===== settings page (organized sections) ===== */
+.set-preview{border:1px dashed var(--line);border-radius:12px;padding:9px 12px;margin-top:9px;background:var(--bg)}
+.set-preview .pv-txt{font-family:"Amiri",serif;font-size:var(--text-size);line-height:2}
+.set-preview .pv-quran{font-family:"Amiri",serif;font-size:var(--quran-size);line-height:2.1;text-align:center;color:var(--green)}
+[data-theme="dark"] .set-preview .pv-quran{color:#7ed79b}
+.font-ctl{display:flex;align-items:center;gap:8px}
+.font-ctl button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 16px;font-weight:800;font-size:15px}
+.font-ctl .fv{font-weight:900;color:var(--green);min-width:52px;text-align:center;font-variant-numeric:tabular-nums;font-size:15.5px}
+[data-theme="dark"] .font-ctl .fv{color:#7ed79b}
+.set-stack{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.set-stack .reset-btn,.set-stack .primary{margin-top:0;width:100%}
+.set-danger{border-color:#d8a49e!important;color:#b3261e!important}
+.set-danger.armed{background:#b3261e;border-color:#b3261e!important;color:#fff!important}
 </style>
 </head>
 <body>
@@ -1311,7 +1324,7 @@ const TOOLS=[
  {ic:"📻",col:"#b3261e",name:"الإذاعة",sub:"٦ محطات مباشرة",build:buildRadio},
  {ic:"🕌",col:"#2e7d32",name:"المساجد والمصليات",sub:"حولك — خرائط",build:buildMosques},
  {ic:"⬇️",col:"#455a64",name:"تحميلات الصوت",sub:"استمع بدون نت",build:buildDownloads},
- {ic:"⚙️",col:"#546e7a",name:"الإعدادات",sub:"المدينة والمظهر",build:buildSettings},
+ {ic:"⚙️",col:"#546e7a",name:"الإعدادات",sub:"الموقع والمظهر والصوت واللغة",build:buildSettings},
  {ic:"🔐",col:"#37474f",name:"لوحة التحكم",sub:"إدارة المحتوى",build:buildAdminGate},
 ];
 
@@ -2508,6 +2521,120 @@ buildSettings=function(body){
   paintInstallBtns();
 };
 TOOLS.forEach(t=>{if(t.build===_buildSettingsOrig)t.build=buildSettings});
+/* ============ settings page — منظمة في أقسام واضحة: الموقع / المظهر والقراءة / الصوت والتنبيهات / اللغة / التطبيق وبياناتي ============ */
+const _buildSettingsV2Prev=buildSettings;
+buildSettings=function(body){
+  const rerender=()=>{body.innerHTML="";buildSettings(body)};
+  const head=txt=>{const h=document.createElement("div");h.className="sec-title";h.textContent=txt;body.appendChild(h)};
+  const newCard=()=>{const c=document.createElement("div");c.className="card";c.style.marginTop="10px";body.appendChild(c);return c};
+
+  /* ١) الموقع ومواقيت الصلاة */
+  head("📍 الموقع ومواقيت الصلاة");
+  const locCard=newCard();
+  locCard.appendChild(cityMethodControls(rerender));
+  const locNote=document.createElement("p");locNote.className="note";locNote.style.marginBottom="0";
+  locNote.textContent="مواقيت الصلاة والتقويم الهجري واتجاه القبلة وإمساكية رمضان تُحسب كلها من هذا الموقع — غيّره هنا ويتحدّث التطبيق كله فورًا.";
+  locCard.appendChild(locNote);
+
+  /* ٢) المظهر والقراءة */
+  head("🎨 المظهر والقراءة");
+  const ap=newCard();
+  ap.innerHTML=`
+  <div class="field" style="margin-top:0"><label>المظهر</label><select id="themeSel"><option value="auto" ${!document.documentElement.dataset.theme?"selected":""}>حسب نظام الجهاز</option><option value="light" ${document.documentElement.dataset.theme==="light"?"selected":""}>نهاري</option><option value="dark" ${document.documentElement.dataset.theme==="dark"?"selected":""}>ليلي</option></select></div>
+  <div class="field"><label>حجم خط الأذكار والنصوص</label><div class="font-ctl"><button id="tfDec" aria-label="تصغير خط النصوص">A−</button><span class="fv" id="tfVal"></span><button id="tfInc" aria-label="تكبير خط النصوص">A+</button></div>
+  <div class="set-preview"><div class="pv-txt">سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ</div></div></div>
+  <div class="field"><label>حجم خط المصحف</label><div class="font-ctl"><button id="qfDec" aria-label="تصغير خط المصحف">A−</button><span class="fv" id="qfVal"></span><button id="qfInc" aria-label="تكبير خط المصحف">A+</button></div>
+  <div class="set-preview"><div class="pv-quran">﴿ إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ ﴾</div></div></div>
+  <div class="field"><label>الخط العثماني في المصحف</label><select id="uthSel"><option value="off" ${!state.uthmani?"selected":""}>الخط العادي</option><option value="on" ${state.uthmani?"selected":""}>الخط العثماني</option></select></div>
+  <div class="field"><label>وضع كبار السن — خط أكبر وأزرار أوضح في التطبيق كله</label><select id="bigSel"><option value="off" ${!state.bigMode?"selected":""}>معطّل</option><option value="on" ${state.bigMode?"selected":""}>مفعّل</option></select></div>`;
+  ap.querySelector("#themeSel").addEventListener("change",e=>{const v=e.target.value;if(v==="auto")delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=v;persist();showToast("تم حفظ المظهر")});
+  const paintFontVals=()=>{const tv=ap.querySelector("#tfVal"),qv=ap.querySelector("#qfVal");if(tv)tv.textContent=state.textFont+"px";if(qv)qv.textContent=state.quranFont+"px"};
+  const bumpText=d=>{state.textFont=Math.min(30,Math.max(15,state.textFont+d));document.documentElement.style.setProperty("--text-size",state.textFont+"px");persist();paintFontVals()};
+  const bumpQuran=d=>{state.quranFont=Math.min(40,Math.max(19,state.quranFont+d));document.documentElement.style.setProperty("--quran-size",state.quranFont+"px");persist();paintFontVals()};
+  ap.querySelector("#tfInc").addEventListener("click",()=>bumpText(2));
+  ap.querySelector("#tfDec").addEventListener("click",()=>bumpText(-2));
+  ap.querySelector("#qfInc").addEventListener("click",()=>bumpQuran(2));
+  ap.querySelector("#qfDec").addEventListener("click",()=>bumpQuran(-2));
+  paintFontVals();
+  ap.querySelector("#uthSel").addEventListener("change",e=>{state.uthmani=e.target.value==="on";persist();showToast(state.uthmani?"الخط العثماني مفعّل في المصحف":"تم الرجوع للخط العادي في المصحف")});
+  ap.querySelector("#bigSel").addEventListener("change",e=>{
+    state.bigMode=e.target.value==="on";
+    document.documentElement.classList.toggle("big",state.bigMode);
+    if(state.bigMode){state.textFont=Math.max(state.textFont,23);state.quranFont=Math.max(state.quranFont,30)}
+    else{state.textFont=19;state.quranFont=26}
+    document.documentElement.style.setProperty("--text-size",state.textFont+"px");
+    document.documentElement.style.setProperty("--quran-size",state.quranFont+"px");
+    persist();paintFontVals();showToast(state.bigMode?"تم تفعيل وضع كبار السن":"تم إيقاف وضع كبار السن ورجعت الخطوط لحجمها الافتراضي");
+  });
+
+  /* ٣) الصوت والتنبيهات */
+  head("🔔 الصوت والتنبيهات");
+  const so=newCard();
+  so.innerHTML=`
+  <div class="field" style="margin-top:0"><label>القارئ الافتراضي لتلاوة السور والآيات</label><select id="recSel">${RECITERS.map(r=>`<option value="${r.id}" ${r.id===state.reciter?"selected":""}>${esc(r.name)}</option>`).join("")}</select></div>
+  <div class="field"><label>سرعة تشغيل الصوت الافتراضية</label><select id="spdSel">${[0.5,0.75,1,1.25,1.5,1.75,2].map(v=>`<option value="${v}" ${state.speed===v?"selected":""}>${v}×</option>`).join("")}</select></div>
+  <div class="field"><label>تنبيه الأذان الصوتي</label><select id="adhanSel"><option value="off" ${!state.adhanOn?"selected":""}>معطّل</option><option value="on" ${state.adhanOn?"selected":""}>مفعّل — يُرفع الأذان عند دخول وقت كل صلاة</option></select></div>
+  <p class="note">يعمل تنبيه الأذان أثناء بقاء التطبيق مفتوحًا على الجهاز، بصوت الأذان وإشعار عند دخول الوقت. فعّله ثم اسمح بالإشعارات إن طلبها المتصفح.</p>
+  <div class="field"><label>تذكير أذكار الصباح والمساء</label><select id="remSel"><option value="off" ${!state.remindOn?"selected":""}>معطّل</option><option value="on" ${state.remindOn?"selected":""}>مفعّل — تنبيه داخل التطبيق وإشعار إن سمحت</option></select></div>`;
+  so.querySelector("#recSel").addEventListener("change",e=>{state.reciter=e.target.value;persist();try{stopAyahSeq()}catch(_){} showToast("القارئ الافتراضي: "+reciterObj().name)});
+  so.querySelector("#spdSel").addEventListener("change",e=>{state.speed=parseFloat(e.target.value)||1;audioEl.playbackRate=state.speed;const sp=$("#plSpeed");if(sp)sp.value=String(state.speed);persist()});
+  so.querySelector("#adhanSel").addEventListener("change",async e=>{
+    state.adhanOn=e.target.value==="on";state.adhanFired="";persist();
+    if(state.adhanOn){showToast("تم تفعيل تنبيه الأذان — سيُرفع عند دخول الوقت ما دام التطبيق مفتوحًا");
+      try{if("Notification" in window&&Notification.permission==="default")await Notification.requestPermission()}catch(_){}}
+    else showToast("تم إيقاف تنبيه الأذان");
+  });
+  so.querySelector("#remSel").addEventListener("change",async e=>{
+    state.remindOn=e.target.value==="on";if(state.remindOn)state.remindKey="";persist();
+    if(state.remindOn){try{if("Notification" in window&&Notification.permission==="default")await Notification.requestPermission()}catch(_){}}
+    showToast(state.remindOn?"تم تفعيل تذكير الأذكار":"تم إيقاف تذكير الأذكار");
+  });
+
+  /* ٤) اللغة */
+  head("🌐 اللغة");
+  const lg=newCard();
+  lg.innerHTML=`
+  <div class="field" style="margin-top:0"><label>لغة الواجهة — Interface Language</label><select id="langSel">
+    <option value="ar" ${state.lang==="ar"?"selected":""}>العربية</option>
+    <option value="en" ${state.lang==="en"?"selected":""}>English</option>
+    <option value="ur" ${state.lang==="ur"?"selected":""}>اردو</option>
+    <option value="id" ${state.lang==="id"?"selected":""}>Bahasa Indonesia</option>
+    <option value="fr" ${state.lang==="fr"?"selected":""}>Français</option></select></div>
+  <p class="note" style="margin-bottom:0">تتغيّر لغة الواجهة والتنقّل والإعدادات، ويبقى نص القرآن والأذكار بالعربية كما هو.</p>`;
+  lg.querySelector("#langSel").addEventListener("change",e=>{state.lang=e.target.value;persist();applyLanguage();showToast("تم تغيير لغة الواجهة");rerender()});
+
+  /* ٥) التطبيق وبياناتي */
+  head("📱 التطبيق وبياناتي");
+  const stack=document.createElement("div");stack.className="set-stack";body.appendChild(stack);
+  const install=document.createElement("button");install.className="primary";install.id="installBtn2";install.textContent="📲 تثبيت التطبيق على الشاشة الرئيسية";stack.appendChild(install);
+  const upd=document.createElement("button");upd.className="reset-btn";upd.textContent="🔄 البحث عن تحديث للتطبيق";upd.addEventListener("click",()=>checkForUpdate(true));stack.appendChild(upd);
+  const dl=document.createElement("button");dl.className="reset-btn";dl.textContent="⬇️ إدارة تحميلات الصوت — عرض المساحة وحذف سورة";dl.addEventListener("click",()=>openDetail("تحميلات الصوت",buildDownloads));stack.appendChild(dl);
+  const fav=document.createElement("button");fav.className="reset-btn";fav.textContent="⭐ مفضلتي"+(state.favorites.size?" ("+state.favorites.size+")":"");fav.addEventListener("click",()=>openDetail("المفضلة",buildFavorites));stack.appendChild(fav);
+  const share=document.createElement("button");share.className="primary";share.textContent="📤 نشر التطبيق — شاركه صدقة جارية";
+  share.addEventListener("click",async()=>{const text=window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);showToast("تم نسخ نص المشاركة ✓")}});
+  stack.appendChild(share);
+  const support=document.createElement("a");support.className="ext-btn";support.style.marginTop="0";support.href="https://wa.me/966562320908";support.target="_blank";support.rel="noopener";
+  support.innerHTML=`<span style="font-size:24px">💬</span><span><b>الدعم الفني — واتساب</b><small>راسلنا لأي استفسار أو ملاحظة (يحتاج إنترنت عند الضغط)</small></span>`;
+  stack.appendChild(support);
+  const reset=document.createElement("button");reset.className="reset-btn set-danger";reset.textContent="🧹 تصفير تقدّم الأذكار وعدادات اليوم وصلواتي";
+  let resetArmed=false,resetTimer=null;
+  reset.addEventListener("click",()=>{
+    if(!resetArmed){resetArmed=true;reset.classList.add("armed");reset.textContent="متأكد؟ اضغط مرة أخرى للتصفير النهائي";resetTimer=setTimeout(()=>{resetArmed=false;reset.classList.remove("armed");reset.textContent="🧹 تصفير تقدّم الأذكار وعدادات اليوم وصلواتي"},3500);return}
+    clearTimeout(resetTimer);
+    state.dhikrProgress={};state.todayCount=0;state.prayerStatus={};state.prayerKey="";state.tasbeeh.session=0;state.tasbeeh.total=0;
+    persist();const tc=$("#todayCount");if(tc)tc.textContent="0";
+    showToast("تم تصفير تقدّم الأذكار والعدادات");rerender();
+  });
+  stack.appendChild(reset);
+  const about=newCard();
+  about.innerHTML=`<b style="font-size:15.5px">عن التطبيق</b>
+  <p class="note" style="margin-bottom:0">إصدار التطبيق: ${APP_VERSION}<br>كل محتوى التطبيق — الأذكار والموسوعة والمصحف والأدوات — مضمّن داخله ويعمل بدون إنترنت عند أي زائر، وعداداتك وعلامتك وإعداداتك محفوظة على جهازك فقط.<br>البحث في التطبيق ذكي: يفهم النص بلا تشكيل، ويعامل الهمزات والألفات والتاء المربوطة والياء كحروف واحدة.</p>`;
+  const owner=document.createElement("button");owner.className="reset-btn";owner.style.cssText="margin-top:16px;width:100%";owner.textContent="🔐 دخول المالك — لوحة التحكم";
+  owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate));
+  body.appendChild(owner);
+  paintInstallBtns();
+};
+TOOLS.forEach(t=>{if(t.build===_buildSettingsV2Prev)t.build=buildSettings});
 /* share button on every dhikr card */
 const _buildAdhkarSessionOrig=buildAdhkarSession;
 buildAdhkarSession=function(body,sec){
@@ -2626,7 +2753,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=22;
+const APP_VERSION=24;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
