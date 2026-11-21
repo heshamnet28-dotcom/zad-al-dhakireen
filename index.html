@@ -12,7 +12,22 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>زاد الذاكرين</title>
-<meta name="app-version" content="16" />
+<meta name="description" content="زاد الذاكرين — أذكار ومصحف كامل مع التفسير والتاريخ الإسلامي ومواقيت الصلاة وأدوات إسلامية، يعمل بدون إنترنت. صدقة جارية." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="زاد الذاكرين" />
+<meta property="og:title" content="زاد الذاكرين — صدقة جارية" />
+<meta property="og:description" content="رفيقك اليومي للذكر والقرآن: أذكار كاملة، المصحف مع التفسير من 9 مصادر، التاريخ الإسلامي، مواقيت الصلاة والقبلة — ويعمل بدون إنترنت." />
+<meta property="og:url" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/" />
+<meta property="og:image" content="https://images.weserv.nl/?url=heshamnet28-dotcom.github.io/zad-al-dhakireen/icon.svg&amp;output=png&amp;w=512&amp;h=512&amp;fit=cover" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="512" />
+<meta property="og:image:height" content="512" />
+<meta property="og:image:alt" content="أيقونة تطبيق زاد الذاكرين" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="زاد الذاكرين — صدقة جارية" />
+<meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
+<meta name="twitter:image" content="https://images.weserv.nl/?url=heshamnet28-dotcom.github.io/zad-al-dhakireen/icon.svg&amp;output=png&amp;w=512&amp;h=512&amp;fit=cover" />
+<meta name="app-version" content="17" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -42,40 +57,56 @@ button,[role="button"],select,input,summary{min-height:36px}
 button{font-family:inherit;cursor:pointer}
 .wrap{max-width:640px;margin:0 auto;padding:0 14px}
 /* ===== prayer strip (hero, matched to the original theme) ===== */
-.pstrip{background:linear-gradient(90deg,var(--green) 0%,var(--green-2) 100%);color:#fff;border-radius:0 0 26px 26px;padding:8px 0 9px;box-shadow:var(--shadow);text-align:center}
-.pstrip .wrap{display:flex;flex-direction:column;gap:0;align-items:center}
-.next-label{font-size:12px;opacity:.85}
-.next-name{font-size:20px;font-weight:900;line-height:1.25}
-.next-count{font-size:18px;font-weight:900;color:#ffe9a8;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace;letter-spacing:1px;line-height:1.25}
-.clock-row{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-top:1px}
-.clock{font-size:15.5px;font-weight:800;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace}
-.clock-ap{font-size:12px;opacity:.9}
-.hijri-pill{background:rgba(255,255,255,.15);border:1px solid var(--gold);border-radius:999px;padding:1px 11px;font-size:12px;display:inline-block;margin-top:3px}
-.greg{font-size:11.5px;opacity:.85;margin-top:2px}
-.ptimes{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:7px;width:100%}
-.ptime{text-align:center;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:4px 1px;min-width:0}
-.ptime b{display:block;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.ptime span{font-size:11px;opacity:.85;display:block}
+.pstrip{background:linear-gradient(90deg,var(--green) 0%,var(--green-2) 100%);color:#fff;border-radius:0 0 22px 22px;padding:7px 0 8px;box-shadow:var(--shadow)}
+.pstrip .wrap{display:flex;flex-direction:column;gap:0}
+.next-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%}
+.next-side{flex:1 1 0;min-width:0}
+.next-side.start{text-align:right}
+.next-side.end{text-align:left}
+.next-label{font-size:11px;opacity:.85;line-height:1.25}
+.next-name{font-size:17px;font-weight:900;line-height:1.25;white-space:nowrap}
+.next-mid{flex:0 0 auto;text-align:center}
+.next-count{font-size:17px;font-weight:900;color:#ffe9a8;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1.25}
+.clock-row{display:flex;justify-content:flex-end;align-items:baseline;gap:5px}
+.clock{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,monospace;line-height:1.25}
+.clock-ap{font-size:11.5px;opacity:.9}
+.date-row{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:5px}
+.hijri-pill{background:rgba(255,255,255,.15);border:1px solid var(--gold);border-radius:999px;padding:1px 10px;font-size:11.5px;display:inline-block}
+.greg{font-size:11px;opacity:.85}
+@media (max-width:380px){.next-row{gap:6px}.next-name{font-size:15px}.next-count{font-size:15px;letter-spacing:0}.clock{font-size:12px}.next-label{font-size:10px}.greg{font-size:10px}}
+.ptimes{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:6px;width:100%}
+.ptime{text-align:center;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:3px 1px;min-width:0}
+.ptime b{display:block;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ptime span{font-size:10.5px;opacity:.85;display:block}
 .ptime.on{background:var(--gold);color:#231d02;border-color:var(--gold)}
 /* ===== share-the-app card & update banner ===== */
-.share-card{border:1px solid #bfe3cc;background:linear-gradient(160deg,#eefaf1 0%,#ffffff 70%);border-radius:16px;padding:14px 16px;margin-top:14px;box-shadow:var(--shadow)}
-[data-theme="dark"] .share-card{background:linear-gradient(160deg,#17301f 0%,var(--card) 70%);border-color:#2c4a34}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .share-card{background:linear-gradient(160deg,#17301f 0%,var(--card) 70%);border-color:#2c4a34}}
-.share-card h3{margin:0 0 4px;font-size:16.5px;color:var(--green);font-weight:900}
-[data-theme="dark"] .share-card h3{color:#8fd6a4}
-.share-card p{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);line-height:1.8}
-.share-btns{display:flex;gap:8px;flex-wrap:wrap}
-.share-btns button{flex:1 1 140px;border-radius:11px;padding:10px 8px;font-size:14.5px;font-weight:800;border:1px solid var(--green)}
-.share-btns a.share-apk{flex:1 1 100%;display:block;text-align:center;border-radius:11px;padding:10px 8px;font-size:14.5px;font-weight:800;border:1px solid var(--green);background:transparent;color:var(--green);text-decoration:none}
-[data-theme="dark"] .share-btns a.share-apk{color:#8fd6a4;border-color:#8fd6a4}
+.share-card{border:1.5px solid var(--green-2);background:var(--card);border-radius:14px;padding:11px 13px;margin-top:12px;box-shadow:var(--shadow)}
+.share-card h3{margin:0 0 3px;font-size:15.5px;color:var(--green);font-weight:900}
+.share-card p{margin:0 0 8px;font-size:13px;color:var(--ink);line-height:1.7}
+.share-btns{display:flex;gap:7px;flex-wrap:wrap}
+.share-btns button{flex:1 1 130px;border-radius:10px;padding:8px 6px;font-size:13.5px;font-weight:800;border:1.5px solid var(--green)}
+.share-btns a.share-apk{flex:1 1 100%;display:block;text-align:center;border-radius:10px;padding:8px 6px;font-size:13.5px;font-weight:800;border:1.5px solid var(--gold);background:var(--gold-soft);color:#6b5510;text-decoration:none}
 .share-main{background:var(--green);color:#fff}
-.share-copy{background:transparent;color:var(--green)}
-[data-theme="dark"] .share-copy{color:#8fd6a4;border-color:#8fd6a4}
-.share-full{display:none;margin-top:10px;background:var(--card);border:1px dashed var(--line);border-radius:11px;padding:11px 12px;font-size:13.5px;line-height:2;white-space:pre-wrap;color:var(--ink)}
+.share-copy{background:#e7f4ea;color:var(--green)}
+.share-full{display:none;margin-top:8px;background:var(--bg);border:1px dashed var(--green-2);border-radius:10px;padding:9px 10px;font-size:12.5px;line-height:1.9;white-space:pre-wrap;color:var(--ink)}
 .share-full.on{display:block}
-.share-view{background:none;border:none;color:var(--green);font-size:13px;text-decoration:underline;padding:4px 2px;min-height:30px}
-.update-note{margin-top:10px;font-size:12.5px;color:var(--ink-2);line-height:1.9;border-top:1px solid var(--line);padding-top:9px}
-.update-note button{background:none;border:1px solid var(--green);color:var(--green);border-radius:9px;padding:5px 12px;font-size:12.5px;font-weight:700;margin-top:5px}
+.share-view{background:none;border:none;color:var(--green);font-size:12.5px;font-weight:800;text-decoration:underline;padding:2px;min-height:26px}
+.update-note{margin-top:8px;font-size:12px;color:var(--ink);line-height:1.7;border-top:1px solid var(--line);padding-top:7px}
+.update-note button{background:var(--green);border:1px solid var(--green);color:#fff;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800;margin-top:4px}
+[data-theme="dark"] .share-card{border-color:#3f7d55}
+[data-theme="dark"] .share-card h3{color:#8fe3ab}
+[data-theme="dark"] .share-copy{background:#274433;color:#a9ecc0;border-color:#3f7d55}
+[data-theme="dark"] .share-btns a.share-apk{background:rgba(212,175,55,.16);color:#ffe9a8;border-color:var(--gold)}
+[data-theme="dark"] .share-view{color:#8fe3ab}
+[data-theme="dark"] .update-note button{background:var(--green-2);border-color:var(--green-2)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .share-card{border-color:#3f7d55}
+  :root:not([data-theme="light"]) .share-card h3{color:#8fe3ab}
+  :root:not([data-theme="light"]) .share-copy{background:#274433;color:#a9ecc0;border-color:#3f7d55}
+  :root:not([data-theme="light"]) .share-btns a.share-apk{background:rgba(212,175,55,.16);color:#ffe9a8;border-color:var(--gold)}
+  :root:not([data-theme="light"]) .share-view{color:#8fe3ab}
+  :root:not([data-theme="light"]) .update-note button{background:var(--green-2);border-color:var(--green-2)}
+}
 #updateBanner{display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:999;background:var(--green);color:#fff;border-radius:13px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.3);align-items:center;gap:10px;max-width:92vw;font-size:14px}
 #updateBanner.on{display:flex}
 #updateBanner button{background:var(--gold);color:#231d02;border:none;border-radius:9px;padding:7px 14px;font-weight:900;font-size:13.5px}
@@ -289,7 +320,7 @@ html.big .tile b{font-size:14.5px}
 html.big .tile small{font-size:12px}
 html.big .tile .ic{width:40px;height:40px;font-size:20px}
 html.big .row-item b{font-size:18.5px}
-html.big .next-name{font-size:24px}
+html.big .next-name{font-size:20px}
 html.big .bottomnav button{font-size:14px}
 html.big .dhikr .txt{line-height:2.2}
 .player select{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:9px;padding:7px 5px;font-size:13.5px;font-weight:700;flex:0 0 auto;min-height:36px}
@@ -331,15 +362,27 @@ html.big .dhikr .txt{line-height:2.2}
 <!-- ===== HOME ===== -->
 <section class="view on" id="v-home">
   <div class="pstrip"><div class="wrap">
-    <div class="next-label">الصلاة القادمة</div>
-    <div class="next-name" id="nextName">—</div>
-    <div class="next-count" id="nextCount">--:--:--</div>
-    <div class="clock-row">
-      <span class="clock" id="clock">--:--:--</span>
-      <span class="clock-ap" id="clockAp"></span>
+    <div class="next-row">
+      <div class="next-side start">
+        <div class="next-label">الصلاة القادمة</div>
+        <div class="next-name" id="nextName">—</div>
+      </div>
+      <div class="next-mid">
+        <div class="next-label">المتبقي عليها</div>
+        <div class="next-count" id="nextCount">--:--:--</div>
+      </div>
+      <div class="next-side end">
+        <div class="next-label">الوقت الآن</div>
+        <div class="clock-row">
+          <span class="clock" id="clock">--:--:--</span>
+          <span class="clock-ap" id="clockAp"></span>
+        </div>
+      </div>
     </div>
-    <div><span class="hijri-pill" id="hijriDate">—</span></div>
-    <div class="greg" id="gregDate">—</div>
+    <div class="date-row">
+      <span class="hijri-pill" id="hijriDate">—</span>
+      <span class="greg" id="gregDate">—</span>
+    </div>
     <div class="ptimes" id="ptimes"></div>
   </div></div>
   <div class="wrap">
@@ -385,7 +428,7 @@ html.big .dhikr .txt{line-height:2.2}
 
     <div class="share-card" id="shareAppCard">
       <h3>📤 شارك التطبيق — صدقة جارية</h3>
-      <p>انشر «زاد الذاكرين» بين أهلك وأحبابك، فالدال على الخير كفاعله. زر واحد يرسل نص النشر الكامل مع رابط التطبيق.</p>
+      <p>انشر «زاد الذاكرين» بين أهلك وأحبابك، فالدال على الخير كفاعله.</p>
       <div class="share-btns">
         <button class="share-main" id="shareAppBtn">📤 مشاركة التطبيق</button>
         <button class="share-copy" id="copyPromoBtn">📋 نسخ نص النشر</button>
@@ -393,7 +436,7 @@ html.big .dhikr .txt{line-height:2.2}
       </div>
       <button class="share-view" id="viewPromoBtn">عرض نص النشر الكامل</button>
       <div class="share-full" id="promoFull"></div>
-      <div class="update-note">🔄 <b>التحديثات التلقائية:</b> أي محتوى جديد يُضاف إلى نسخة التطبيق المنشورة يصل إلى الزائر تلقائيًا — عند فتح التطبيق بالإنترنت يتحقق من وجود نسخة أحدث، وإن وُجدت يظهر تنبيه «تحديث الآن» في الأعلى فيُحدَّث التطبيق بضغطة واحدة دون إعادة تثبيت.<br><button id="checkUpdateBtn">البحث عن تحديث الآن</button></div>
+      <div class="update-note">🔄 <b>التحديثات التلقائية:</b> أي محتوى جديد يصل إلى الزائر تلقائيًا عند فتح التطبيق بالإنترنت، ويظهر تنبيه «تحديث الآن» في الأعلى.<br><button id="checkUpdateBtn">البحث عن تحديث الآن</button></div>
     </div>
 
     <button class="smart" id="smartBtn">
@@ -2361,9 +2404,9 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=16;
-const APP_LINK="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/";
-const APK_LINK="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/%D8%B2%D8%A7%D8%AF%20%D8%A7%D9%84%D8%B0%D8%A7%D9%83%D8%B1%D9%8A%D9%86.apk";
+const APP_VERSION=17;
+const APP_LINK="https://is.gd/J4yZdK";
+const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
 "🌿📖 تطبيق «زاد الذاكرين» — رفيقك اليومي للذكر والقرآن 📖🌿\n"+
 "صدقة جارية مجانية، تجمع لك عبادتك اليومية كلها في مكان واحد:\n\n"+
