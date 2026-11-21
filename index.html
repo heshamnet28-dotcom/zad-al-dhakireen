@@ -230,6 +230,7 @@ body.has-player{padding-bottom:186px}
 [data-theme="dark"] .modal h3{color:#7ed79b}
 .modal .ntxt{font-family:"Amiri",serif;font-size:20px;line-height:2}
 .modal .close{margin-top:16px;background:var(--green);color:#fff;border:none;border-radius:12px;padding:11px 34px;font-size:16px;font-weight:800}
+.modal .close.exit-danger{background:#b3261e}
 .empty{padding:26px 10px;text-align:center;color:var(--ink-2);font-size:15.5px;line-height:1.9}
 .done-banner{background:var(--green);color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:800;font-size:16.5px;margin-top:12px}
 .small-link{color:var(--green);font-weight:700}
@@ -409,6 +410,18 @@ html.big .dhikr .txt{line-height:2.2}
     <div id="ayahModalBody"></div>
     <div class="sheet-actions" id="ayahModalActions"></div>
     <div style="text-align:center"><button class="close" id="ayahModalClose">إغلاق</button></div>
+  </div>
+</div>
+
+<!-- ===== exit confirmation (device back on home) ===== -->
+<div class="modal" id="exitModal" role="dialog" aria-modal="true" aria-labelledby="exitModalTitle">
+  <div class="box">
+    <h3 id="exitModalTitle">الخروج من التطبيق؟</h3>
+    <p class="ntxt" style="font-size:18px">هل تريد الخروج من «زاد الذاكرين»؟</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="close" id="exitStayBtn">البقاء في التطبيق</button>
+      <button class="close exit-danger" id="exitYesBtn">خروج</button>
+    </div>
   </div>
 </div>
 
@@ -784,27 +797,98 @@ function applyLanguage(){
 
 /* ============ navigation ============ */
 const navStack=[];
+let homeScroll=0;
+let histOK=false;   // device-back integration through the History API
+let navJump=null;   // pending multi-step history jump {target,after}
+function saveScroll(){
+  const t=navStack[navStack.length-1];
+  if(t)t.scroll=window.scrollY||0;else homeScroll=window.scrollY||0;
+}
 function showHome(){
   navStack.length=0;
   $("#v-detail").classList.remove("on");$("#v-home").classList.add("on");
   document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("on",b.dataset.nav==="home"));
-  window.scrollTo(0,0);
+  window.scrollTo(0,homeScroll||0);
 }
 function openDetail(title,build,favKey){
-  navStack.push({title,build,favKey});
+  saveScroll();
+  navStack.push({title,build,favKey,scroll:0});
+  if(histOK){try{history.pushState({zad:navStack.length},"")}catch(e){histOK=false}}
   renderDetail();
 }
-function renderDetail(){
+function renderDetail(keepScroll){
   const top=navStack[navStack.length-1];if(!top)return showHome();
+  if(keepScroll)top.scroll=window.scrollY||0;
   $("#v-home").classList.remove("on");$("#v-detail").classList.add("on");
   $("#detailTitle").textContent=top.title;
   const favBtn=$("#detailFav");
   if(top.favKey){favBtn.style.display="";favBtn.textContent=state.favorites.has(top.favKey)?"★":"☆"}
   else favBtn.style.display="none";
   const body=$("#detailBody");body.innerHTML="";top.build(body);
-  window.scrollTo(0,0);
+  window.scrollTo(0,top.scroll||0);
 }
-$("#backBtn").addEventListener("click",()=>{navStack.pop();if(navStack.length)renderDetail();else showHome()});
+/* --- device back button: step back inside the app; on home, ask before exiting --- */
+function pushGuard(){
+  if(!histOK)return;
+  try{history.pushState({zad:0,guard:1},"")}catch(e){histOK=false}
+}
+function openExitModal(){$("#exitModal").classList.add("on")}
+function closeExitModal(){$("#exitModal").classList.remove("on")}
+function goBackLevels(target,after){
+  if(navStack.length<=target){if(after)after();return}
+  if(!histOK){
+    navStack.length=target;
+    if(target)renderDetail();else showHome();
+    if(after)after();return;
+  }
+  navJump={target:target,after:after||null};
+  try{history.back()}catch(e){
+    navJump=null;navStack.length=target;
+    if(target)renderDetail();else showHome();
+    if(after)after();
+  }
+}
+function navBack(){
+  if(!navStack.length)return;
+  if(histOK){try{history.back();return}catch(e){histOK=false}}
+  navStack.pop();
+  if(navStack.length)renderDetail();else showHome();
+}
+window.addEventListener("popstate",()=>{
+  if(!histOK)return;
+  if(navJump){
+    if(navStack.length>navJump.target){
+      navStack.pop();
+      if(navStack.length>navJump.target){try{history.back()}catch(e){}return}
+    }
+    const after=navJump.after;navJump=null;
+    if(navStack.length)renderDetail();else showHome();
+    if(after)after();
+    return;
+  }
+  if(navStack.length){
+    navStack.pop();
+    if(navStack.length)renderDetail();else showHome();
+    return;
+  }
+  /* back pressed on the home screen: close any open sheet first, else confirm exit */
+  const m=document.querySelector(".modal.on");
+  if(m){
+    if(m.id==="installModal")closeInstallPopup();else m.classList.remove("on");
+    pushGuard();return;
+  }
+  openExitModal();
+});
+try{
+  history.replaceState({zad:0},"");
+  history.pushState({zad:0,guard:1},"");
+  if("scrollRestoration" in history)history.scrollRestoration="manual";
+  histOK=true;
+}catch(e){histOK=false}
+$("#exitStayBtn").addEventListener("click",()=>{closeExitModal();pushGuard()});
+$("#exitYesBtn").addEventListener("click",()=>{closeExitModal();try{history.back()}catch(e){}});
+$("#exitModal").addEventListener("click",e=>{if(e.target.id==="exitModal"){closeExitModal();pushGuard()}});
+$("#backBtn").addEventListener("click",navBack);
 $("#detailFav").addEventListener("click",()=>{
   const top=navStack[navStack.length-1];if(!top||!top.favKey)return;
   if(state.favorites.has(top.favKey))state.favorites.delete(top.favKey);else state.favorites.add(top.favKey);
@@ -813,13 +897,17 @@ $("#detailFav").addEventListener("click",()=>{
 });
 document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>{
   const n=b.dataset.nav;
-  document.querySelectorAll("#bottomNav button").forEach(x=>x.classList.toggle("on",x===b));
-  if(n==="home")return showHome();
-  navStack.length=0;
-  if(n==="adhkar")openDetail("الأذكار",buildAdhkarIndex);
-  if(n==="mushaf")openDetail("المصحف الشريف",buildMushafIndex);
-  if(n==="library")openDetail("الموسوعة والمكتبة",buildLibraryIndex);
-  if(n==="tools")openDetail("أدوات وخدمات",buildToolsIndex);
+  const mark=()=>document.querySelectorAll("#bottomNav button").forEach(x=>x.classList.toggle("on",x===b));
+  mark();
+  if(n==="home"){goBackLevels(0,null);return}
+  const open=()=>{
+    mark();
+    if(n==="adhkar")openDetail("الأذكار",buildAdhkarIndex);
+    if(n==="mushaf")openDetail("المصحف الشريف",buildMushafIndex);
+    if(n==="library")openDetail("الموسوعة والمكتبة",buildLibraryIndex);
+    if(n==="tools")openDetail("أدوات وخدمات",buildToolsIndex);
+  };
+  goBackLevels(0,open);
 }));
 
 /* ============ clock & home strip ============ */
@@ -1004,11 +1092,11 @@ function openSurah(idx,scrollAyah){
     tools.innerHTML=`<button data-a="dec">A−</button><button data-a="inc">A+</button><button data-a="uth">${state.uthmani?"الخط العادي":"الخط العثماني"}</button><span class="badge">${s.ayahs} آية — ${s.type}</span>`;
     tools.querySelector('[data-a="inc"]').addEventListener("click",()=>{state.quranFont=Math.min(40,state.quranFont+2);document.documentElement.style.setProperty("--quran-size",state.quranFont+"px");persist()});
     tools.querySelector('[data-a="dec"]').addEventListener("click",()=>{state.quranFont=Math.max(19,state.quranFont-2);document.documentElement.style.setProperty("--quran-size",state.quranFont+"px");persist()});
-    tools.querySelector('[data-a="uth"]').addEventListener("click",()=>{state.uthmani=!state.uthmani;persist();renderDetail()});
+    tools.querySelector('[data-a="uth"]').addEventListener("click",()=>{state.uthmani=!state.uthmani;persist();renderDetail(true)});
     body.appendChild(tools);
     const rec=document.createElement("div");rec.className="field";rec.style.marginTop="10px";
     rec.innerHTML=`<label>القارئ</label><select id="recSel">${RECITERS.map(r=>`<option value="${r.id}" ${r.id===state.reciter?"selected":""}>${esc(r.name)}</option>`).join("")}</select>`;
-    rec.querySelector("#recSel").addEventListener("change",e=>{state.reciter=e.target.value;persist();stopAyahSeq();showToast("القارئ: "+reciterObj().name);renderDetail()});
+    rec.querySelector("#recSel").addEventListener("change",e=>{state.reciter=e.target.value;persist();stopAyahSeq();showToast("القارئ: "+reciterObj().name);renderDetail(true)});
     body.appendChild(rec);
     const au=document.createElement("div");au.className="aud-row";au.style.marginTop="10px";
     const key=surahKey(s.n,state.reciter), url=surahUrlFor(s.n,state.reciter), ttl="سورة "+s.name+" — "+reciterObj().name;
@@ -1021,7 +1109,7 @@ function openSurah(idx,scrollAyah){
     const seq=document.createElement("button");seq.className="primary";seq.style.background="var(--gold)";seq.style.color="#231d02";seq.style.marginTop="10px";
     seq.textContent=ayahSeq.active&&ayahSeq.surah===idx?"⏹ إيقاف التشغيل آية بآية":"▶ تشغيل آية بآية مع تظليل الآية الجارية";
     seq.addEventListener("click",()=>{
-      if(ayahSeq.active&&ayahSeq.surah===idx){stopAyahSeq();stopPlayer();renderDetail()}
+      if(ayahSeq.active&&ayahSeq.surah===idx){stopAyahSeq();stopPlayer();renderDetail(true)}
       else playAyahAudio(idx,0);
     });
     body.appendChild(seq);
