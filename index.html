@@ -33,7 +33,7 @@
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/IMG-20261121-WA9892.jpg" />
 <meta name="twitter:image:alt" content="زاد الذاكرين — صدقة جارية" />
-<meta name="app-version" content="26" />
+<meta name="app-version" content="27" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -432,6 +432,39 @@ html.big .dhikr .txt{line-height:2.2}
 .set-stack .reset-btn,.set-stack .primary{margin-top:0;width:100%}
 .set-danger{border-color:#d8a49e!important;color:#b3261e!important}
 .set-danger.armed{background:#b3261e;border-color:#b3261e!important;color:#fff!important}
+/* ===== الترقية العالمية: صوت وختمة ذكية وبطاقات وإحصائيات وترجمات وقراءة ليلية ===== */
+.qa-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.qa-btn{border:1.5px solid var(--gold);background:var(--card);color:var(--green);border-radius:12px;padding:10px 8px;font-size:14.5px;font-weight:900;box-shadow:var(--shadow)}
+[data-theme="dark"] .qa-btn{color:#8fe3ab}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .qa-btn{color:#8fe3ab}}
+.voice-fab{position:fixed;bottom:138px;inset-inline-end:12px;width:52px;height:52px;border-radius:50%;border:2px solid var(--gold);background:var(--green);color:#fff;font-size:22px;z-index:45;box-shadow:0 8px 22px rgba(6,68,32,.4);display:flex;align-items:center;justify-content:center;padding:0}
+.voice-fab.on{background:#b3261e;border-color:#ff9d94}
+@media (prefers-reduced-motion: no-preference){.voice-fab.on{animation:fabPulse 1s ease-in-out infinite}}
+@keyframes fabPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.mic-big{width:118px;height:118px;border-radius:50%;border:4px solid var(--gold);background:radial-gradient(circle at 35% 30%,var(--green-2),var(--green-d));color:#fff;font-size:44px;box-shadow:0 12px 30px rgba(6,68,32,.35);display:block;margin:14px auto;padding:0}
+.mic-big.on{background:#b3261e;border-color:#ff9d94}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.stat-box{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:11px;text-align:center}
+.stat-box .n{font-size:24px;font-weight:900;color:var(--green);font-variant-numeric:tabular-nums}
+[data-theme="dark"] .stat-box .n{color:#7ed79b}
+.stat-box .l{font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.5}
+.chart-wrap{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 10px 6px;margin-top:12px}
+.chart-wrap b{font-size:15.5px;display:block;margin:0 2px 6px}
+.tr-ayah{border-top:1px solid var(--line);padding:12px 2px 4px}
+.tr-ayah:first-child{border-top:none}
+.tr-ayah .tr-ar{font-family:"Amiri",serif;font-size:21px;line-height:2.05;margin:0}
+.tr-ayah .tr-tx{font-size:15.5px;line-height:1.85;color:var(--ink-2);margin:6px 0 2px}
+.read-warm{background:#171106!important;border-color:#4a3a10!important}
+.read-warm .surah-text{color:#f5e7bd!important}
+.read-warm .surah-text .anum{color:#ffd76a!important}
+.read-warm .taf-chip{background:#3a2c08;color:#ffe9a8;border-color:#8a6d1a}
+.read-black{background:#000!important;border-color:#333!important}
+.read-black .surah-text{color:#e9e9e9!important}
+.read-black .surah-text .anum{color:#9ecbff!important}
+.read-black .taf-chip{background:#1c1c1c;color:#ffe9a8;border-color:#555}
+html.lite *,html.lite *::before,html.lite *::after{animation:none!important;transition:none!important}
+html.lite .card,html.lite .tile,html.lite .row-item,html.lite .stat-box{box-shadow:none}
+.tpl-chip.on{background:var(--green);color:#fff;border-color:var(--green)}
 </style>
 </head>
 <body>
@@ -509,6 +542,11 @@ html.big .dhikr .txt{line-height:2.2}
       </button>
 
       <button class="quran-btn" data-nav="mushaf">📖 المصحف الشريف — اقرأ الآن</button>
+    </div>
+
+    <div class="qa-row">
+      <button class="qa-btn" id="qaVoice" type="button">🎤 أوامر صوتية — تكلّم وسيُنفَّذ طلبك</button>
+      <button class="qa-btn" id="qaStats" type="button">📊 إحصائيات عبادتي — رسوم آخر ١٤ يومًا</button>
     </div>
 
     <div class="sec-title">الأذكار</div>
@@ -622,6 +660,8 @@ html.big .dhikr .txt{line-height:2.2}
 </div>
 <div class="toast" id="toast"></div>
 <audio id="audioEl" preload="none"></audio>
+
+<button class="voice-fab" id="voiceFab" type="button" aria-label="بحث وأوامر صوتية بالميكروفون">🎤</button>
 
 <!-- ===== bottom nav ===== -->
 <nav class="bottomnav" id="bottomNav">
@@ -3173,6 +3213,470 @@ function notifTick(){
     showToast("💡 وصلت حكمة اليوم");
   }
 }
+
+
+/* ============ الترقية العالمية (٦ خطوات): بحث صوتي • ختمة ذكية • بطاقات مشاركة • إحصائيات • صوت وترجمات • قراءة ليلية وأداء ============ */
+const PRO_KEY="zadPro27";
+let pro={hist:{},shareTpl:"green",lite:false,readTheme:"off",transLang:"en.asad",kh:{minutes:15,pace:2,done:{}}};
+try{const _p=JSON.parse(localStorage.getItem(PRO_KEY)||"null");if(_p){pro=Object.assign(pro,_p);if(_p.kh)pro.kh=Object.assign({minutes:15,pace:2,done:{}},_p.kh)}}catch(e){}
+function proSave(){try{localStorage.setItem(PRO_KEY,JSON.stringify(pro))}catch(e){}}
+function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function norm2(s){return normAr(String(s||"").replace(/ٱ/g,"ا"))}
+function openToolByName(name){const t=TOOLS.find(x=>x.name===name);if(t)openDetail(t.name,t.build,null,{k:"tool",name:t.name});else showToast("الأداة غير متاحة حاليًا")}
+/* ----- سجلّ الإحصائيات اليومي (يُبنى من استخدام الزائر الفعلي على جهازه) ----- */
+function syncHist(){
+  try{
+    const k=dayKey();const e=pro.hist[k]||(pro.hist[k]={d:0,s:0,p:0,pg:0});
+    e.d=Math.max(e.d||0,state.todayCount||0);
+    e.s=Math.max(e.s||0,(state.salawat&&state.salawat.day)||0);
+    e.pg=Math.max(e.pg||0,(state.khatma&&state.khatma.page)||1);
+    const ks=Object.keys(pro.hist).sort();while(ks.length>120){delete pro.hist[ks.shift()]}
+    proSave();
+  }catch(e){}
+}
+function syncPrayers(){try{const k=dayKey();const e=pro.hist[k]||(pro.hist[k]={d:0,s:0,p:0,pg:0});e.p=Object.keys(state.prayerStatus||{}).filter(x=>state.prayerStatus[x]==="done").length;proSave()}catch(e){}}
+setInterval(()=>{syncHist();syncPrayers()},20000);
+document.addEventListener("click",e=>{const t=e.target;if(t&&t.closest&&t.closest(".tap-btn,.tasbeeh-btn,.st-btn,#salawatTap,.salawat-btn"))setTimeout(()=>{syncHist();syncPrayers()},90)},true);
+/* ----- قرّاء إضافيون للمصحف المرتل (نفس مصدر mp3quran المستخدم في التطبيق) ----- */
+[["basit","عبد الباسط عبد الصمد","https://server7.mp3quran.net/basit/","ar.abdulbasitmurattal"],
+ ["shatri","أبو بكر الشاطري","https://server11.mp3quran.net/shatri/",null],
+ ["yasser","ياسر الدوسري","https://server11.mp3quran.net/yasser/",null],
+ ["qatami","ناصر القطامي","https://server6.mp3quran.net/qtm/",null]
+].forEach(rw=>{if(!RECITERS.some(r=>r.id===rw[0])){RECITERS.push({id:rw[0],name:rw[1],base:rw[2]});if(rw[3])AYAH_EDITIONS[rw[0]]=rw[3]}});
+
+/* ============ ١) البحث الصوتي والأوامر الصوتية ============ */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recog=null,listening=false;
+function paintVoiceFab(){const f=document.getElementById("voiceFab");if(f){f.classList.toggle("on",listening);f.textContent=listening?"⏺":"🎤";f.setAttribute("aria-label",listening?"جارٍ الاستماع — اضغط للإيقاف":"بحث وأوامر صوتية بالميكروفون")}}
+function openSurahPlay(idx){openSurah(idx);setTimeout(()=>{const b=document.querySelector("#detailBody .aud-row .play-btn");if(b)b.click();else showToast("اضغط زر الاستماع داخل صفحة السورة")},550)}
+function handleVoiceCommand(raw){
+  const txt=String(raw||"").trim();if(!txt)return;
+  const q=norm2(txt);
+  showToast("🎤 سمعتك تقول: "+txt);
+  const wantPlay=/شغل|اسمع|استمع|تشغيل/.test(q);
+  if(q.indexOf("ايه الكرسي")>=0||q.indexOf("اية الكرسي")>=0){openSurah(1,254);return}
+  if(q.indexOf("احصائ")>=0){openToolByName("إحصائيات عبادتي");return}
+  if(q.indexOf("بطاق")>=0){openToolByName("بطاقات المشاركة");return}
+  if(q.indexOf("مكتبه صوتيه")>=0||q.indexOf("المكتبه الصوتيه")>=0){openToolByName("المكتبة الصوتية");return}
+  if(q.indexOf("ترجم")>=0){
+    let si=-1;DB.surahs.forEach((s,i)=>{const nm=norm2(s.name);if(nm.length>=3&&q.indexOf(nm)>=0)si=i});
+    if(si>=0){openTransSurah(si)}else{openToolByName("ترجمات المعاني")}
+    return;
+  }
+  if(q.indexOf("ختمه")>=0){openToolByName("الختمة الذكية");return}
+  if(q.indexOf("قبله")>=0){openToolByName("القبلة");return}
+  if(q.indexOf("زكاه")>=0){openToolByName("حاسبة الزكاة");return}
+  if(q.indexOf("سبحه")>=0||q.indexOf("تسبيح")>=0){openToolByName("السبحة الإلكترونية");return}
+  if(q.indexOf("اذاعه")>=0||q.indexOf("راديو")>=0){openToolByName("الإذاعة");return}
+  if(q.indexOf("مواقيت")>=0){openToolByName("مواقيت الصلاة");return}
+  if(q.indexOf("اسماء الله")>=0){openDetail("أسماء الله الحسنى",buildNames,null,{k:"names"});return}
+  if(q.indexOf("النبي")>=0&&(q.indexOf("صل")>=0)){openDetail("الصلاة على النبي ﷺ",buildSalawat,null,{k:"salawat"});return}
+  let si=-1;DB.surahs.forEach((s,i)=>{const nm=norm2(s.name);if(nm.length>=3&&q.indexOf(nm)>=0)si=i});
+  if(si>=0){if(wantPlay)openSurahPlay(si);else openSurah(si);return}
+  const sec=DB.adhkar.find(s=>q.indexOf(norm2(s.name))>=0);
+  if(sec&&(q.indexOf("اذكار")>=0||q.indexOf("أذكار")>=0||sec)){openAdhkarSection(sec);return}
+  openToolByName("بحث");
+  setTimeout(()=>{const inp=document.querySelector("#detailBody input.searchbox");if(inp){inp.value=txt;inp.dispatchEvent(new Event("input",{bubbles:true}))}},120);
+}
+function startVoice(cb){
+  if(listening){try{recog&&recog.stop()}catch(e){}return}
+  if(!SR){openToolByName("البحث الصوتي");showToast("هذا المتصفح لا يدعم الأوامر الصوتية — اكتب أمرك نصيًا في صفحة البحث الصوتي");return}
+  try{
+    recog=new SR();recog.lang="ar-EG";recog.interimResults=false;recog.maxAlternatives=1;
+    listening=true;paintVoiceFab();
+    showToast("🎤 أستمع إليك… قل مثلًا: شغّل سورة الكهف");
+    recog.onresult=e=>{const t=e.results[0][0].transcript;if(cb)cb(t);else handleVoiceCommand(t)};
+    recog.onerror=e=>{showToast(e&&e.error==="not-allowed"?"فعّل إذن الميكروفون من إعدادات المتصفح لاستخدام الأوامر الصوتية":"تعذّر التعرّف على الصوت — حاول مرة أخرى بصوت واضح")};
+    recog.onend=()=>{listening=false;paintVoiceFab()};
+    recog.start();
+  }catch(e){listening=false;paintVoiceFab();showToast("تعذّر تشغيل الميكروفون على هذا الجهاز")}
+}
+function buildVoice(body){
+  const card=document.createElement("div");card.className="card";card.style.marginTop="4px";card.style.textAlign="center";
+  card.innerHTML=`<b style="font-size:17px">🎤 البحث والأوامر الصوتية</b>
+  <p class="note" style="text-align:center">اضغط الميكروفون وتحدّث بالعربية — يفهم التطبيق طلبك وينفّذه فورًا.<br>جرّب: «شغّل سورة الكهف» • «افتح أذكار الصباح» • «ترجمة سورة يس» • «إحصائيات عبادتي» • «اتجاه القبلة»</p>
+  <button class="mic-big" id="vMic" aria-label="ابدأ الاستماع">🎤</button>
+  <p class="note" id="vStatus" style="text-align:center;margin-top:0">${SR?"جاهز — اضغط الميكروفون وابدأ الكلام":"⚠️ متصفحك لا يدعم التعرّف على الصوت (يعمل في كروم وأندرويد غالبًا) — استخدم كتابة الأمر بالأسفل، وسيُنفَّذ بنفس الطريقة."}</p>
+  <div class="field" style="text-align:right"><label>أو اكتب أمرك هنا</label><input id="vText" placeholder="مثال: شغّل سورة الملك"></div>
+  <button class="primary" id="vGo" style="margin-top:10px">تنفيذ الأمر</button>`;
+  body.appendChild(card);
+  const mic=card.querySelector("#vMic"),st=card.querySelector("#vStatus");
+  mic.addEventListener("click",()=>{
+    if(!SR){showToast("التعرّف على الصوت غير مدعوم هنا — اكتب الأمر ونفّذه");return}
+    st.textContent="🎤 أستمع إليك الآن… تكلّم";
+    mic.classList.add("on");
+    startVoice(t=>{mic.classList.remove("on");st.textContent="سمعتك تقول: "+t;handleVoiceCommand(t)});
+    setTimeout(()=>mic.classList.remove("on"),6000);
+  });
+  const runTxt=()=>{const v=card.querySelector("#vText").value.trim();if(v)handleVoiceCommand(v)};
+  card.querySelector("#vGo").addEventListener("click",runTxt);
+  card.querySelector("#vText").addEventListener("keydown",e=>{if(e.key==="Enter")runTxt()});
+  const ex=document.createElement("div");ex.className="card";
+  ex.innerHTML=`<b style="font-size:15.5px">أوامر جاهزة — اضغط أيًّا منها</b><div class="chips" style="justify-content:flex-start"></div>`;
+  const chips=ex.querySelector(".chips");
+  ["شغّل سورة الكهف","افتح أذكار الصباح","افتح أذكار المساء","ترجمة سورة يس","افتح الختمة الذكية","إحصائيات عبادتي","افتح السبحة الإلكترونية","اتجاه القبلة","مواقيت الصلاة","الصلاة على النبي"].forEach(c=>{
+    const b=document.createElement("button");b.className="chip";b.textContent=c;b.addEventListener("click",()=>handleVoiceCommand(c));chips.appendChild(b);
+  });
+  body.appendChild(ex);
+}
+
+/* ============ ٢) الختمة الذكية — خطة حسب وقتك الفعلي ============ */
+function khPerDay(){return Math.max(1,Math.round((pro.kh.minutes||15)/(pro.kh.pace||2)))}
+function khStreak(){
+  let n=0;const d=new Date();
+  if(!pro.kh.done[dayKey(d)])d.setDate(d.getDate()-1);
+  while(pro.kh.done[dayKey(d)]){n++;d.setDate(d.getDate()-1)}
+  return n;
+}
+function buildSmartKhatma(body){
+  const card=document.createElement("div");card.className="card";card.style.marginTop="4px";
+  const paint=()=>{
+    syncHist();
+    const page=Math.min(604,Math.max(1,state.khatma.page||1));
+    const per=khPerDay(),to=Math.min(604,page+per-1),remaining=604-page+1;
+    const daysLeft=Math.max(0,Math.ceil(remaining/per));
+    const finish=new Date(Date.now()+daysLeft*86400000);
+    const doneToday=!!pro.kh.done[dayKey()];
+    let juz=1;JUZ_STARTS.forEach((sv,i)=>{if(page>=sv)juz=i+1});
+    const streak=khStreak();
+    if(page>=604&&remaining<=1&&state.khatma.page>=604){
+      card.innerHTML=`<b style="font-size:17px">📗 الختمة الذكية</b>
+      <div class="done-banner">🎉 مبارك! أتممت ختمة القرآن كاملة (٦٠٤ صفحات) — تقبّل الله منك</div>
+      <p class="note">سلسلة أيام إنجاز الورد: ${streak} يومًا. ابدأ ختمة جديدة متى شئت.</p>
+      <button class="primary" id="khRestart">بدء ختمة جديدة من الصفحة ١</button>
+      <button class="reset-btn" id="khOpen" style="width:100%;margin-top:8px">📖 افتح المصحف</button>`;
+      card.querySelector("#khRestart").addEventListener("click",()=>{state.khatma.page=1;persist();paint();showToast("بدأت ختمة جديدة — تقبّل الله")});
+      card.querySelector("#khOpen").addEventListener("click",()=>openDetail("المصحف الشريف",buildMushafIndex,null,{k:"mushafIndex"}));
+      return;
+    }
+    card.innerHTML=`<b style="font-size:17px">📗 الختمة الذكية — خطتك حسب وقتك</b>
+    <p class="note" style="margin-top:4px">أخبر التطبيق بوقت القراءة المتاح لك يوميًا وسرعتك، فيحسب وردك اليومي بالصفحات ويتابع إنجازك يومًا بيوم.</p>
+    <div class="field"><label>كم دقيقة تستطيع القراءة يوميًا؟</label><select id="khMin">${[5,10,15,20,30,45,60].map(m=>`<option value="${m}" ${m===pro.kh.minutes?"selected":""}>${m} دقيقة</option>`).join("")}</select></div>
+    <div class="field"><label>سرعة قراءتك</label><select id="khPace">
+      <option value="3" ${pro.kh.pace===3?"selected":""}>هادئة ومتدبّرة — نحو ٣ دقائق للصفحة</option>
+      <option value="2" ${pro.kh.pace===2?"selected":""}>متوسطة — نحو دقيقتين للصفحة</option>
+      <option value="1" ${pro.kh.pace===1?"selected":""}>سريعة — نحو دقيقة للصفحة</option></select></div>
+    <div class="result-box" style="text-align:center"><b style="font-size:17px">وردك اليوم: من صفحة ${page} إلى صفحة ${to}</b><br>${per} صفحة في ${pro.kh.minutes} دقيقة تقريبًا — أنت الآن في الجزء ${juz} من ٣٠${doneToday?"<br>✅ أنجزت ورد اليوم — أحسنت!":""}</div>
+    <button class="primary" id="khDone" ${doneToday?"disabled style='margin-top:12px;opacity:.55'":"style='margin-top:12px'"}>${doneToday?"✅ تم إنجاز ورد اليوم":"✓ أنجزت ورد اليوم — سجّله وتقدّم"}</button>
+    <div class="note" style="margin-top:14px">تقدّم الختمة كاملة — صفحة ${page} من ٦٠٤</div>
+    <div class="progress"><i style="width:${(page/604*100).toFixed(1)}%"></i></div>
+    <div style="font-weight:800">${(page/604*100).toFixed(1)}٪ — تبقّى ${remaining} صفحة</div>
+    <div class="result-box">بوردك الحالي (${per} صفحة يوميًا) تُنهي الختمة خلال نحو ${daysLeft} يومًا — الموعد التقديري: ${finish.toLocaleDateString("ar-EG")} (${hijriString(finish)}).<br>🔥 سلسلة أيام إنجاز الورد المتتالية: <b>${streak} يومًا</b></div>
+    <div class="field"><label>خطط بديلة لإنهاء المتبقّي (${remaining} صفحة)</label><div class="note" style="margin-top:0">${[30,60,90].map(d=>`• خلال ${d} يومًا: ${Math.max(1,Math.ceil(remaining/d))} صفحة يوميًا`).join("<br>")}</div></div>
+    <div class="field"><label>تصحيح موضعك الحالي يدويًا (رقم الصفحة)</label><input type="number" id="khPage" min="1" max="604" value="${page}"></div>
+    <button class="reset-btn" id="khOpen" style="width:100%">📖 افتح المصحف للقراءة الآن</button>`;
+    card.querySelector("#khMin").addEventListener("change",e=>{pro.kh.minutes=+e.target.value;proSave();paint()});
+    card.querySelector("#khPace").addEventListener("change",e=>{pro.kh.pace=+e.target.value;proSave();paint()});
+    card.querySelector("#khPage").addEventListener("change",e=>{state.khatma.page=Math.min(604,Math.max(1,+e.target.value||1));persist();paint()});
+    const kd=card.querySelector("#khDone");
+    if(kd)kd.addEventListener("click",()=>{state.khatma.page=Math.min(604,to+1);pro.kh.done[dayKey()]=1;proSave();persist();syncHist();paint();showToast("تقبّل الله — سُجّل إنجاز ورد اليوم ✓")});
+    card.querySelector("#khOpen").addEventListener("click",()=>openDetail("المصحف الشريف",buildMushafIndex,null,{k:"mushafIndex"}));
+  };
+  paint();body.appendChild(card);
+}
+
+
+/* ============ ٣) بطاقات المشاركة البصرية — ٣ قوالب ============ */
+shareCardImage=function(text,title){
+  const TPLS={
+    green:{g0:"#064420",g1:"#0a6b32",band:"#d4af37",sub:"rgba(255,255,255,.78)"},
+    gold:{g0:"#241b02",g1:"#57450d",band:"#ffe9a8",sub:"rgba(255,233,168,.85)"},
+    midnight:{g0:"#0b1526",g1:"#1d3a5f",band:"#9ecbff",sub:"rgba(207,224,255,.85)"}
+  };
+  const T=TPLS[pro.shareTpl]||TPLS.green;
+  const c=document.createElement("canvas");c.width=1080;c.height=1350;const x=c.getContext("2d");
+  const g=x.createLinearGradient(0,0,1080,1350);g.addColorStop(0,T.g0);g.addColorStop(1,T.g1);
+  x.fillStyle=g;x.fillRect(0,0,1080,1350);
+  x.strokeStyle=T.band;x.lineWidth=10;x.strokeRect(36,36,1008,1278);
+  x.strokeStyle="rgba(212,175,55,.4)";x.lineWidth=3;x.strokeRect(60,60,960,1230);
+  x.fillStyle=T.band;x.font="900 52px Tajawal, sans-serif";x.textAlign="center";
+  x.fillText(title||"زاد الذاكرين",540,180);
+  x.fillStyle=T.band;x.fillRect(390,220,300,4);
+  let fs=58,lines=[];
+  while(fs>=34){x.font=fs+"px Amiri, serif";lines=wrapLines(x,String(text),880);if(lines.length<=11)break;fs-=4}
+  x.fillStyle="#ffffff";x.font=fs+"px Amiri, serif";
+  let y=360;const lh=Math.round(fs*1.85);
+  lines.slice(0,11).forEach(l=>{x.fillText(l,540,y);y+=lh});
+  x.fillStyle=T.band;x.font="900 44px Tajawal, sans-serif";
+  x.fillText("زاد الذاكرين",540,1150);
+  x.fillStyle=T.sub;x.font="30px Tajawal, sans-serif";
+  x.fillText("صدقة جارية — شاركها تؤجر",540,1210);
+  x.fillStyle=T.band;x.font="700 32px Tajawal, sans-serif";
+  x.fillText("is.gd/J4yZdK",540,1262);
+  c.toBlob(async b=>{
+    if(!b)return;
+    const url=URL.createObjectURL(b);
+    const a=document.createElement("a");a.href=url;a.download="zad-share-card.png";document.body.appendChild(a);a.click();a.remove();
+    showToast("تم إنشاء بطاقة المشاركة وتحميلها كصورة");
+    try{
+      const f=new File([b],"zad-share-card.png",{type:"image/png"});
+      if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],title:title||"زاد الذاكرين"});
+    }catch(e){}
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+  },"image/png");
+};
+function buildShareStudio(body){
+  const card=document.createElement("div");card.className="card";card.style.marginTop="4px";
+  card.innerHTML=`<b style="font-size:17px">🖼️ بطاقات المشاركة — صورة جاهزة للنشر</b>
+  <p class="note">اكتب أو اختر نصًا، واختر القالب، ثم أنشئ بطاقة صورة عمودية (مناسبة لواتساب وفيسبوك) تحمل اسم التطبيق ورابطه المختصر — صدقة جارية تنتشر.</p>
+  <div class="field"><label>عنوان البطاقة</label><input id="ssTitle" value="زاد الذاكرين"></div>
+  <div class="field"><label>نص البطاقة</label><textarea id="ssText" style="min-height:120px"></textarea></div>
+  <div class="field"><label>محتوى جاهز</label><div class="chips" style="justify-content:flex-start" id="ssQuick"></div></div>
+  <div class="field"><label>قالب البطاقة</label><div class="chips" style="justify-content:flex-start" id="ssTpl">
+    <button class="chip tpl-chip ${pro.shareTpl==="green"?"on":""}" data-t="green">أخضر ملكي</button>
+    <button class="chip tpl-chip ${pro.shareTpl==="gold"?"on":""}" data-t="gold">ذهبي ليلي</button>
+    <button class="chip tpl-chip ${pro.shareTpl==="midnight"?"on":""}" data-t="midnight">سماوي</button></div></div>
+  <button class="primary" id="ssMake">🖼️ إنشاء البطاقة وتحميلها / مشاركتها</button>`;
+  body.appendChild(card);
+  const ta=card.querySelector("#ssText"),ti=card.querySelector("#ssTitle");
+  const ay=ayahForToday();ta.value=ay.txt;ti.value="آية اليوم — سورة "+ay.name;
+  const quick=card.querySelector("#ssQuick");
+  const setQ=(label,fn)=>{const b=document.createElement("button");b.className="chip";b.textContent=label;b.addEventListener("click",fn);quick.appendChild(b)};
+  setQ("📖 آية اليوم",()=>{const a=ayahForToday();ta.value=a.txt;ti.value="آية اليوم — سورة "+a.name});
+  setQ("💡 حديث اليوم",()=>{const h=hikmaForToday();ta.value="قال رسول الله ﷺ: «"+h[0]+"»";ti.value="حديث اليوم"});
+  setQ("📿 ذكر من أذكار الصباح",()=>{const s=DB.adhkar.find(x=>x.name==="الصباح");if(s&&s.items[1]){ta.value=s.items[1].text.replace(/[{}]/g,"");ti.value="أذكار الصباح"}});
+  setQ("📗 تقدّم ختمتي",()=>{const p=state.khatma.page||1;ta.value="وصلت بحمد الله إلى صفحة "+p+" من المصحف ("+(p/604*100).toFixed(1)+"٪ من الختمة). اللهم اجعل القرآن ربيع قلوبنا.";ti.value="ختمة القرآن الكريم"});
+  setQ("📊 إحصائياتي",()=>{syncHist();const ks=Object.keys(pro.hist);const sum=ks.reduce((a,k)=>a+(pro.hist[k].d||0),0);ta.value="بفضل الله: "+sum+" ذكرًا مسجلًا في «زاد الذاكرين»، وسلسلة التزام "+((state.streak&&state.streak.count)||0)+" يومًا متتاليًا. واصل الذكر وشارك الأجر.";ti.value="إحصائيات عبادتي"});
+  card.querySelectorAll(".tpl-chip").forEach(ch=>ch.addEventListener("click",()=>{pro.shareTpl=ch.dataset.t;proSave();card.querySelectorAll(".tpl-chip").forEach(o=>o.classList.toggle("on",o===ch));showToast("تم اختيار القالب — جرّب إنشاء البطاقة")}));
+  card.querySelector("#ssMake").addEventListener("click",()=>{const t=ta.value.trim();if(!t){showToast("اكتب نص البطاقة أولًا");return}shareCardImage(t,ti.value.trim()||"زاد الذاكرين")});
+}
+
+/* ============ ٤) إحصائيات العبادة — رسوم بيانية شهرية ============ */
+function barChartSVG(days,field,max,color,unit){
+  const W=340,H=196,base=158,top=26,bw=15,gap=(W-20-days.length*bw)/Math.max(1,days.length-1);
+  let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="رسم بياني">`;
+  s+=`<line x1="8" y1="${base}" x2="${W-8}" y2="${base}" style="stroke:var(--line)" stroke-width="1.5"/>`;
+  days.forEach((d,i)=>{
+    const v=Math.max(0,d.e[field]||0);const h=max>0?Math.round(v/max*(base-top)):0;
+    const bx=10+i*(bw+gap);
+    s+=`<rect x="${bx.toFixed(1)}" y="${base-h}" width="${bw}" height="${h}" rx="3.5" fill="${color}"/>`;
+    if(v>0)s+=`<text x="${(bx+bw/2).toFixed(1)}" y="${base-h-4}" font-size="9.5" font-weight="700" style="fill:var(--ink)" text-anchor="middle">${v}</text>`;
+    s+=`<text x="${(bx+bw/2).toFixed(1)}" y="${base+15}" font-size="8" style="fill:var(--ink-2)" text-anchor="middle">${d.label}</text>`;
+  });
+  s+=`<text x="${W-10}" y="14" font-size="9.5" style="fill:var(--ink-2)" text-anchor="end">${unit}</text></svg>`;
+  return s;
+}
+function buildStats(body){
+  syncHist();syncPrayers();
+  const days=[];for(let i=13;i>=0;i--){const d=new Date(Date.now()-i*86400000);days.push({k:dayKey(d),label:d.getDate()+"/"+(d.getMonth()+1),e:pro.hist[dayKey(d)]||{d:0,s:0,p:0,pg:0}})}
+  const keys=Object.keys(pro.hist);
+  const sumD=keys.reduce((a,k)=>a+(pro.hist[k].d||0),0);
+  const sumS=keys.reduce((a,k)=>a+(pro.hist[k].s||0),0);
+  const activeDays=keys.filter(k=>(pro.hist[k].d||0)>0||(pro.hist[k].p||0)>0||(pro.hist[k].s||0)>0).length;
+  const maxD=Math.max(10,...days.map(d=>d.e.d||0));
+  const maxS=Math.max(10,...days.map(d=>d.e.s||0));
+  const head=document.createElement("div");head.className="card";head.style.marginTop="4px";
+  head.innerHTML=`<b style="font-size:17px">📊 إحصائيات عبادتي</b>
+  <p class="note" style="margin-bottom:0">تُبنى من استخدامك الفعلي للتطبيق على هذا الجهاز: كل «سبّح» وعدّ في السبحة وصلاة تُعلّمها «صليتها» تُسجَّل هنا يومًا بيوم. ابدأ اليوم وستنمو رسومك معك.</p>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="n">${sumD}</div><div class="l">مجموع الأذكار والتسبيح المسجّل</div></div>
+    <div class="stat-box"><div class="n">${(state.streak&&state.streak.count)||0}</div><div class="l">يومًا متتاليًا — سلسلة الالتزام الحالية</div></div>
+    <div class="stat-box"><div class="n">${activeDays}</div><div class="l">يوم نشاط مسجّل في سجلّك</div></div>
+    <div class="stat-box"><div class="n">${sumS}</div><div class="l">مجموع الصلوات على النبي ﷺ المسجّلة</div></div>
+    <div class="stat-box"><div class="n">${state.khatma.page||1} / ٦٠٤</div><div class="l">موضعك في ختمة القرآن (صفحة)</div></div>
+    <div class="stat-box"><div class="n">${(state.tasbeeh&&state.tasbeeh.total)||0}</div><div class="l">إجمالي السبحة الإلكترونية التراكمي</div></div>
+  </div>`;
+  body.appendChild(head);
+  const c1=document.createElement("div");c1.className="chart-wrap";
+  c1.innerHTML=`<b>📿 أذكارك وتسبيحك — آخر ١٤ يومًا</b>`+barChartSVG(days,"d",maxD,"#0a6b32","عدد الأذكار في اليوم");
+  body.appendChild(c1);
+  const c2=document.createElement("div");c2.className="chart-wrap";
+  c2.innerHTML=`<b>🕌 صلواتك المعلّمة «صليتها» — آخر ١٤ يومًا (من ٥)</b>`+barChartSVG(days,"p",5,"#d4af37","صلاة في اليوم من ٥");
+  body.appendChild(c2);
+  const c3=document.createElement("div");c3.className="chart-wrap";
+  c3.innerHTML=`<b>🌹 صلواتك على النبي ﷺ — آخر ١٤ يومًا</b>`+barChartSVG(days,"s",maxS,"#b8860b","مرة في اليوم");
+  body.appendChild(c3);
+  const tbl=document.createElement("div");tbl.className="card";
+  const rows=days.slice(-7).reverse().map(d=>`<div class="pray-row"><b style="font-size:14.5px">${d.k===dayKey()?"اليوم":d.label}</b><span class="tm">أذكار: ${d.e.d||0} • صلوات: ${d.e.p||0}/٥ • صلاة على النبي: ${d.e.s||0}</span></div>`).join("");
+  tbl.innerHTML=`<b style="font-size:15.5px">سجلّ آخر ٧ أيام</b>${rows}
+  <button class="primary" id="stShare">📤 شارك ملخص إحصائياتي كبطاقة</button>
+  <p class="note">بياناتك محفوظة على جهازك فقط داخل التطبيق، وتُمسح بمسح بيانات المتصفح.</p>`;
+  body.appendChild(tbl);
+  tbl.querySelector("#stShare").addEventListener("click",()=>shareCardImage("بفضل الله: "+sumD+" ذكرًا وتسبيحة مسجلة، وسلسلة التزام "+(((state.streak&&state.streak.count)||0))+" يومًا متتاليًا، و"+sumS+" صلاة على النبي ﷺ. اللهم تقبّل وبارك.","إحصائيات عبادتي"));
+}
+
+/* ============ ٥) مكتبة صوتية أوسع + ترجمات معاني القرآن ============ */
+function splitSpeak(text){
+  const clean=String(text||"").replace(/[{}﴿﴾]/g," ").replace(/\s+/g," ").trim().slice(0,3600);
+  const out=[];let cur="";
+  for(let i=0;i<clean.length;i++){cur+=clean[i];if(".:؛!؟،".indexOf(clean[i])>=0&&cur.length>60){out.push(cur);cur=""}else if(cur.length>=200){out.push(cur);cur=""}}
+  if(cur)out.push(cur);return out.filter(s=>s.trim().length>1);
+}
+function speakText(text){
+  if(!("speechSynthesis" in window)){showToast("هذا الجهاز لا يدعم القراءة الصوتية");return}
+  try{
+    speechSynthesis.cancel();
+    const parts=splitSpeak(text);if(!parts.length)return;
+    const voice=(speechSynthesis.getVoices()||[]).find(v=>/^ar/.test(v.lang))||null;
+    parts.forEach(p=>{const u=new SpeechSynthesisUtterance(p);u.lang="ar-SA";if(voice)u.voice=voice;u.rate=0.95;speechSynthesis.speak(u)});
+    showToast("🔊 بدأت القراءة الصوتية — بصوت جهازك");
+  }catch(e){showToast("تعذّرت القراءة الصوتية على هذا الجهاز")}
+}
+function stopSpeak(){try{if("speechSynthesis" in window)speechSynthesis.cancel()}catch(e){}}
+function buildAudioHub(body){
+  const intro=document.createElement("div");intro.className="card";intro.style.marginTop="4px";
+  intro.innerHTML=`<b style="font-size:17px">🎧 المكتبة الصوتية</b>
+  <p class="note" style="margin-bottom:0">المصحف المرتل كاملًا بثمانية قرّاء، وأذكار ومواد تُقرأ عليك صوتيًا بصوت جهازك، وروابط سريعة للإذاعات والتلاوات النادرة. التشغيل والتحميل للاستماع بدون إنترنت متاحان من كل صف.</p>`;
+  body.appendChild(intro);
+  const h1=document.createElement("div");h1.className="sec-title";h1.textContent="المصحف المرتل — سورة الفاتحة بكل قارئ";body.appendChild(h1);
+  const note1=document.createElement("p");note1.className="note";note1.textContent="لأي سورة أخرى: افتح المصحف واختر القارئ من صفحة السورة — القرّاء الثمانية متاحون لكل السور الـ١١٤.";body.appendChild(note1);
+  RECITERS.forEach(r=>body.appendChild(audRow(surahKey(1,r.id),"سورة الفاتحة — "+r.name,"المصحف المرتل كاملًا بهذا الصوت في قسم المصحف",surahUrlFor(1,r.id),false)));
+  const h2=document.createElement("div");h2.className="sec-title";h2.textContent="أذكار ومواد تُسمَع بصوت الجهاز";body.appendChild(h2);
+  const tcard=document.createElement("div");tcard.className="card";tcard.style.marginTop="8px";
+  tcard.innerHTML=`<div class="sheet-actions" style="margin-top:0;justify-content:flex-start">
+    <button id="auMorning">🔊 اسمع أذكار الصباح</button>
+    <button id="auEvening">🔊 اسمع أذكار المساء</button>
+    <button id="auHikma">🔊 اسمع حديث اليوم</button>
+    <button id="auStop">⏹ إيقاف القراءة</button></div>
+  <p class="note" style="margin-bottom:0">القراءة الصوتية هنا تتم بصوت جهازك نفسه (تقنية النطق المدمجة) فتعمل بدون إنترنت، وجودة الصوت حسب أصوات جهازك.</p>`;
+  body.appendChild(tcard);
+  const secText=n=>{const s=DB.adhkar.find(x=>x.name===n);return s?s.items.map(it=>it.text.replace(/[{}]/g,"")).join(". "):""};
+  tcard.querySelector("#auMorning").addEventListener("click",()=>speakText(secText("الصباح")));
+  tcard.querySelector("#auEvening").addEventListener("click",()=>speakText(secText("المساء")));
+  tcard.querySelector("#auHikma").addEventListener("click",()=>{const h=hikmaForToday();speakText("قال رسول الله صلى الله عليه وسلم: "+h[0]+". "+h[1])});
+  tcard.querySelector("#auStop").addEventListener("click",stopSpeak);
+  const h3=document.createElement("div");h3.className="sec-title";h3.textContent="بث مباشر وتلاوات نادرة";body.appendChild(h3);
+  const list=document.createElement("div");list.className="list";
+  list.appendChild(rowItem("إذاعات القرآن المباشرة","٦ محطات بث مباشر — تحتاج إنترنت",()=>openToolByName("الإذاعة"),"📻"));
+  list.appendChild(rowItem("نوادر القراءات","٨ تلاوات نادرة قابلة للتحميل",()=>openToolByName("نوادر القراءات"),"🎧"));
+  list.appendChild(rowItem("تحميلات الصوت","ما حمّلته يعمل بدون إنترنت",()=>openToolByName("تحميلات الصوت"),"⬇️"));
+  body.appendChild(list);
+}
+const TRANS_LANGS=[
+  {id:"en.asad",name:"English — Muhammad Asad",dir:"ltr"},
+  {id:"en.pickthall",name:"English — Pickthall",dir:"ltr"},
+  {id:"en.yusufali",name:"English — Yusuf Ali",dir:"ltr"},
+  {id:"fr.hamidullah",name:"Français — Hamidullah",dir:"ltr"},
+  {id:"ur.jalandhry",name:"اردو — فتح محمد جالندھری",dir:"rtl"},
+  {id:"id.indonesian",name:"Bahasa Indonesia — Kementerian Agama",dir:"ltr"},
+  {id:"tr.diyanet",name:"Türkçe — Diyanet İşleri",dir:"ltr"},
+  {id:"es.cortes",name:"Español — Julio Cortés",dir:"ltr"}
+];
+async function fetchTrans(edition,surahNo){
+  const ck="zadTr:"+edition+":"+surahNo,c=tafGet(ck);
+  if(c){try{const a=JSON.parse(c);if(Array.isArray(a)&&a.length)return a}catch(e){}}
+  const r=await fetch("https://api.alquran.cloud/v1/surah/"+surahNo+"/"+edition);
+  const j=await r.json();
+  if(!j||!j.data||!Array.isArray(j.data.ayahs))throw new Error("empty");
+  const arr=j.data.ayahs.map(a=>String(a.text||""));
+  tafSet(ck,JSON.stringify(arr));return arr;
+}
+function buildTransHub(body,presetIdx){
+  const card=document.createElement("div");card.className="card";card.style.marginTop="4px";
+  card.innerHTML=`<b style="font-size:17px">🌐 ترجمات معاني القرآن الكريم</b>
+  <p class="note">معاني الآيات مترجمة إلى ٨ لغات من ترجمات معروفة (أسد، بيكثول، يوسف علي، حميد الله، وغيرها) — تُجلب من خدمة AlQuran Cloud عند أول فتح للسورة ثم تُحفظ على جهازك للقراءة بدون إنترنت.</p>
+  <div class="field"><label>السورة</label><select id="trSurah">${DB.surahs.map((s,i)=>`<option value="${i}" ${i===(presetIdx||0)?"selected":""}>${s.n}. سورة ${esc(s.name)} — ${s.ayahs} آية</option>`).join("")}</select></div>
+  <div class="field"><label>لغة الترجمة</label><select id="trLang">${TRANS_LANGS.map(l=>`<option value="${l.id}" ${l.id===pro.transLang?"selected":""}>${esc(l.name)}</option>`).join("")}</select></div>
+  <button class="primary" id="trGo" style="margin-top:12px">عرض الترجمة مع النص العربي</button>`;
+  body.appendChild(card);
+  const host=document.createElement("div");body.appendChild(host);
+  const load=async()=>{
+    const idx=+card.querySelector("#trSurah").value,ed=card.querySelector("#trLang").value;
+    const L=TRANS_LANGS.find(x=>x.id===ed)||TRANS_LANGS[0];const s=DB.surahs[idx];
+    pro.transLang=ed;proSave();
+    host.innerHTML='<p class="note">جارٍ تحميل ترجمة سورة '+esc(s.name)+' ('+esc(L.name)+')…</p>';
+    try{
+      const arr=await fetchTrans(ed,s.n);
+      const box=document.createElement("div");box.className="card";
+      let html=`<b style="font-size:16.5px">سورة ${esc(s.name)} — ${esc(L.name)}</b>`;
+      s.verses.forEach((v,vi)=>{html+=`<div class="tr-ayah"><p class="tr-ar">${esc(v)} <span class="anum" style="color:var(--green)">﴿${vi+1}﴾</span></p><p class="tr-tx" dir="${L.dir}" style="text-align:${L.dir==="rtl"?"right":"left"}">${esc(arr[vi]||"—")}</p></div>`});
+      box.innerHTML=html;host.innerHTML="";host.appendChild(box);
+    }catch(e){
+      host.innerHTML='<p class="note">تعذّر تحميل الترجمة الآن — الترجمات تُجلب من الإنترنت عند أول فتح ثم تُحفظ على جهازك. تحقق من الاتصال وحاول مجددًا.</p>';
+    }
+  };
+  card.querySelector("#trGo").addEventListener("click",load);
+  card.querySelector("#trLang").addEventListener("change",()=>{pro.transLang=card.querySelector("#trLang").value;proSave()});
+  if(presetIdx!==undefined&&presetIdx!==null)load();
+}
+function openTransSurah(idx){openDetail("ترجمة معاني سورة "+DB.surahs[idx].name,body=>buildTransHub(body,idx),null,{k:"transSurah",i:idx})}
+
+/* ============ ٦) وضع القراءة الليلي المريح + أداء أخف ============ */
+let wakeLock=null;
+const _openSurahOrig=openSurah;
+openSurah=function(idx,scrollAyah){
+  _openSurahOrig(idx,scrollAyah);
+  const body=$("#detailBody");if(!body)return;
+  const st=body.querySelector(".surah-text");if(!st)return;
+  const card=st.closest(".card");
+  const applyTheme=()=>{if(!card)return;card.classList.remove("read-warm","read-black");if(pro.readTheme==="warm")card.classList.add("read-warm");if(pro.readTheme==="black")card.classList.add("read-black")};
+  applyTheme();
+  const bar=document.createElement("div");bar.className="reader-tools";bar.style.marginTop="8px";
+  const themeName=()=>pro.readTheme==="warm"?"دافئ 🌙":(pro.readTheme==="black"?"أسود كامل 🌑":"مطابق للمظهر");
+  bar.innerHTML=`<button data-a="tr">🌐 ترجمة المعاني</button><button data-a="night">🌙 القراءة الليلية: ${themeName()}</button><button data-a="wake">💡 إبقاء الشاشة مضيئة</button>`;
+  const tools=body.querySelector(".reader-tools");
+  if(tools&&tools.parentNode)tools.parentNode.insertBefore(bar,tools.nextSibling);else body.insertBefore(bar,body.firstChild);
+  bar.querySelector('[data-a="tr"]').addEventListener("click",()=>openTransSurah(idx));
+  bar.querySelector('[data-a="night"]').addEventListener("click",e=>{
+    pro.readTheme=pro.readTheme==="off"?"warm":(pro.readTheme==="warm"?"black":"off");proSave();applyTheme();
+    e.target.textContent="🌙 القراءة الليلية: "+themeName();
+    showToast(pro.readTheme==="off"?"أُلغي وضع القراءة الليلي الخاص":(pro.readTheme==="warm"?"وضع القراءة الليلي الدافئ — مريح للعين في الظلام":"وضع القراءة الأسود الكامل — أوفر للبطارية وأهدأ ليلًا"));
+  });
+  bar.querySelector('[data-a="wake"]').addEventListener("click",async e=>{
+    try{
+      if(wakeLock){await wakeLock.release();wakeLock=null;e.target.textContent="💡 إبقاء الشاشة مضيئة";showToast("أُلغي إبقاء الشاشة مضيئة");return}
+      if(!navigator.wakeLock)throw new Error("no");
+      wakeLock=await navigator.wakeLock.request("screen");
+      e.target.textContent="💡 الشاشة مضيئة الآن ✓";
+      wakeLock.addEventListener("release",()=>{wakeLock=null});
+      showToast("ستبقى الشاشة مضيئة أثناء قراءتك");
+    }catch(_){showToast("إبقاء الشاشة مضيئة غير متاح على هذا الجهاز/المتصفح")}
+  });
+};
+
+
+/* ----- تسجيل الأدوات الجديدة + ربط الصفحات القائمة ----- */
+(function(){
+  const NEW_TOOLS=[
+    {ic:"🎤",col:"#8a6d1a",name:"البحث الصوتي",sub:"أوامر صوتية بالعربية",build:buildVoice},
+    {ic:"📗",col:"#0a6b32",name:"الختمة الذكية",sub:"خطة حسب وقتك اليومي",build:buildSmartKhatma},
+    {ic:"📊",col:"#00695c",name:"إحصائيات عبادتي",sub:"رسوم بيانية لآخر ١٤ يومًا",build:buildStats},
+    {ic:"🌐",col:"#33691e",name:"ترجمات المعاني",sub:"معاني القرآن بـ٨ لغات",build:body=>buildTransHub(body)},
+    {ic:"🎧",col:"#8a6d1a",name:"المكتبة الصوتية",sub:"٨ قرّاء وأذكار تُسمَع",build:buildAudioHub},
+    {ic:"🖼️",col:"#a67c00",name:"بطاقات المشاركة",sub:"٣ قوالب جاهزة للنشر",build:buildShareStudio}
+  ];
+  let at=TOOLS.findIndex(t=>t.name==="الإعدادات");if(at<0)at=TOOLS.length;
+  NEW_TOOLS.forEach((t,i)=>{if(!TOOLS.some(x=>x.name===t.name))TOOLS.splice(at+i,0,t)});
+  /* الختمة الأصلية: بطاقة تصلها بالذكية */
+  const kh=TOOLS.find(t=>t.name==="الختمة");
+  if(kh&&!kh._smartLinked){const prev=kh.build;kh._smartLinked=1;kh.build=function(body){prev(body);const b=document.createElement("button");b.className="primary";b.style.background="var(--gold)";b.style.color="#231d02";b.textContent="📗 جرّب «الختمة الذكية» — خطة محسوبة حسب دقائق قراءتك اليومية وسرعتك";b.addEventListener("click",()=>openToolByName("الختمة الذكية"));body.appendChild(b)}}
+  /* البحث: زر ميكروفون يملأ خانة البحث بالنطق */
+  const sr=TOOLS.find(t=>t.name==="بحث");
+  if(sr&&!sr._voiceLinked){const prev=sr.build;sr._voiceLinked=1;sr.build=function(body){prev(body);const inp=body.querySelector("input.searchbox");if(!inp)return;const b=document.createElement("button");b.className="primary";b.style.marginTop="10px";b.textContent="🎤 ابحث بصوتك";b.addEventListener("click",()=>startVoice(t=>{inp.value=t;inp.dispatchEvent(new Event("input",{bubbles:true}));showToast("🎤 نتائج بحث: "+t)}));body.insertBefore(b,inp.nextSibling)}}
+  /* الإعدادات: قسم المزايا العالمية */
+  const st=TOOLS.find(t=>t.name==="الإعدادات");
+  if(st&&!st._proLinked){const prev=st.build;st._proLinked=1;st.build=function(body){
+    prev(body);
+    const head=document.createElement("div");head.className="sec-title";head.textContent="🚀 المزايا العالمية الجديدة";body.appendChild(head);
+    const card=document.createElement("div");card.className="card";card.style.marginTop="10px";
+    card.innerHTML=`
+    <div class="field" style="margin-top:0"><label>وضع الأداء الخفيف — حركة أقل وتجربة أسرع على الأجهزة الضعيفة</label><select id="proLite"><option value="off" ${!pro.lite?"selected":""}>معطّل</option><option value="on" ${pro.lite?"selected":""}>مفعّل</option></select></div>
+    <div class="field"><label>وضع القراءة الليلي داخل المصحف</label><select id="proRead"><option value="off" ${pro.readTheme==="off"?"selected":""}>مطابق لمظهر التطبيق</option><option value="warm" ${pro.readTheme==="warm"?"selected":""}>ليلي دافئ — مريح للعين</option><option value="black" ${pro.readTheme==="black"?"selected":""}>أسود كامل — أوفر للبطارية</option></select></div>
+    <div class="field"><label>قالب بطاقات المشاركة الافتراضي</label><select id="proTpl"><option value="green" ${pro.shareTpl==="green"?"selected":""}>أخضر ملكي</option><option value="gold" ${pro.shareTpl==="gold"?"selected":""}>ذهبي ليلي</option><option value="midnight" ${pro.shareTpl==="midnight"?"selected":""}>سماوي</option></select></div>
+    <div class="field"><label>لغة ترجمة المعاني الافتراضية</label><select id="proTrans">${TRANS_LANGS.map(l=>`<option value="${l.id}" ${l.id===pro.transLang?"selected":""}>${esc(l.name)}</option>`).join("")}</select></div>
+    <p class="note">الأوامر الصوتية تعمل من زر الميكروفون العائم أو من الرئيسية أو من صفحة «البحث الصوتي» في الأدوات (تحتاج متصفحًا يدعم التعرّف على الصوت مثل كروم، وإذن الميكروفون).</p>
+    <div class="set-stack">
+      <button class="primary" id="proStats" style="margin-top:0">📊 افتح إحصائيات عبادتي</button>
+      <button class="reset-btn" id="proVoice">🎤 افتح البحث الصوتي</button>
+      <button class="reset-btn set-danger" id="proWipe">مسح سجلّ الإحصائيات من هذا الجهاز</button>
+    </div>`;
+    body.appendChild(card);
+    card.querySelector("#proLite").addEventListener("change",e=>{pro.lite=e.target.value==="on";proSave();document.documentElement.classList.toggle("lite",pro.lite);showToast(pro.lite?"تم تفعيل وضع الأداء الخفيف":"تم إيقاف وضع الأداء الخفيف")});
+    card.querySelector("#proRead").addEventListener("change",e=>{pro.readTheme=e.target.value;proSave();showToast("سيُطبَّق وضع القراءة الليلي عند فتح أي سورة")});
+    card.querySelector("#proTpl").addEventListener("change",e=>{pro.shareTpl=e.target.value;proSave();showToast("تم حفظ قالب البطاقات الافتراضي")});
+    card.querySelector("#proTrans").addEventListener("change",e=>{pro.transLang=e.target.value;proSave();showToast("تم حفظ لغة الترجمة الافتراضية")});
+    card.querySelector("#proStats").addEventListener("click",()=>openToolByName("إحصائيات عبادتي"));
+    card.querySelector("#proVoice").addEventListener("click",()=>openToolByName("البحث الصوتي"));
+    makeConfirm(card.querySelector("#proWipe"),()=>{pro.hist={};proSave();showToast("تم مسح سجلّ الإحصائيات من هذا الجهاز")});
+  }}
+  /* أزرار الرئيسية والزر العائم */
+  const qv=document.getElementById("qaVoice");if(qv)qv.addEventListener("click",()=>startVoice());
+  const qs=document.getElementById("qaStats");if(qs)qs.addEventListener("click",()=>openToolByName("إحصائيات عبادتي"));
+  const fab=document.getElementById("voiceFab");if(fab)fab.addEventListener("click",()=>startVoice());
+  if(pro.lite)document.documentElement.classList.add("lite");
+  syncHist();syncPrayers();paintVoiceFab();
+  try{renderHomeGrids()}catch(e){}
+})();
 
 /* ----- ربط كروت الرئيسية وتشغيل المحرك ----- */
 (function(){
