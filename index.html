@@ -1304,7 +1304,6 @@ function applyLanguage(){
 const navStack=[];
 let homeScroll=0;
 let histOK=false;   // device-back integration through the History API
-let navJump=null;   // pending multi-step history jump {target,after}
 let exitingApp=false; // exit confirmed: keep stepping back until the app is left
 function saveScroll(){
   const t=navStack[navStack.length-1];
@@ -1394,21 +1393,20 @@ function doRestoreNav(){
       if(homeScroll>0)setTimeout(()=>{if(!navStack.length)window.scrollTo(0,homeScroll)},60);
       return;
     }
-    let histPushed=0; // entries already re-pushed by open()-style routes
     for(const se of saved.stack){
       if(!se||!se.route)break;
       const d=resolveRoute(se.route);
       if(!d)break;
-      if(d.open){d.open();histPushed++}
+      if(d.open){d.open()}
       else navStack.push({title:d.title,build:d.build,favKey:d.favKey,route:se.route,scroll:se.scroll||0});
       const top=navStack[navStack.length-1];
       if(top)top.scroll=se.scroll||0;
     }
     if(!navStack.length){showHome();return}
-    /* rebuild the matching browser-history entries for the screens restored
-       directly, so the back button (device and in-app) keeps stepping back
-       through them after a refresh instead of dying or leaving the app */
-    if(histOK){while(histPushed<navStack.length){try{history.pushState({zad:histPushed+1},"")}catch(e){break}histPushed++}}
+    /* no history entries are rebuilt for restored screens: the single
+       always-armed trap entry (see armTrap below) catches every device
+       back press and steps the in-memory stack back one screen at a time,
+       however deep the restored stack is */
     renderDetail();
     const top=navStack[navStack.length-1];
     if(top&&top.scroll)setTimeout(()=>window.scrollTo(0,top.scroll||0),60);
@@ -1427,7 +1425,7 @@ function showHome(){
 function openDetail(title,build,favKey,route){
   saveScroll();
   navStack.push({title,build,favKey,route:route||null,scroll:0});
-  if(histOK){try{history.pushState({zad:navStack.length},"")}catch(e){histOK=false}}
+  armTrap();
   renderDetail();
 }
 function renderDetail(keepScroll){
@@ -1442,98 +1440,68 @@ function renderDetail(keepScroll){
   window.scrollTo(0,top.scroll||0);
   persistNav();
 }
-/* --- device back button: step back inside the app; on home, ask before exiting --- */
-function pushGuard(){
-  if(!histOK)return;
-  try{history.pushState({zad:0,guard:1},"")}catch(e){histOK=false}
+/* --- device back button ---------------------------------------------------
+   One always-armed trap entry. The app keeps exactly ONE pushed history
+   entry at all times. Each device back press consumes it (one popstate),
+   the app takes exactly one step — close an open sheet, pop one screen, or,
+   on the home screen, show the exit confirmation — and then re-arms the
+   trap so the next press is caught the same way. The previous design kept
+   one history entry per open screen and walked them with history.back()
+   chains; in WebViews/TWAs those steps can be coalesced or lost, the two
+   stacks drifted apart, and a back press then fell out of the app (or the
+   button looked dead). With a single trap there is nothing to drift: the
+   in-memory navStack is the only stack, and the in-app back button runs
+   the very same single step directly, without touching history at all. --- */
+let trapArmed=false;
+function armTrap(){
+  if(!histOK||trapArmed)return;
+  try{history.pushState({zad:"trap"},"");trapArmed=true}catch(e){histOK=false;trapArmed=false}
 }
 function openExitModal(){
   $("#exitModal").classList.add("on");
-  /* re-arm the guard the back press just consumed: pressing back again with
-     the dialog open then just closes it (via the sheet branch above), and
-     «البقاء» needs no extra push */
-  pushGuard();
+  /* re-arm the trap the back press just consumed: pressing back again with
+     the dialog open then just closes it (the sheet branch of stepBackInApp),
+     and «البقاء» needs no extra push */
+  armTrap();
 }
 function closeExitModal(){$("#exitModal").classList.remove("on")}
-function goBackLevels(target,after){
-  if(navStack.length<=target){if(after)after();return}
-  if(!histOK){
-    navStack.length=target;
-    if(target)renderDetail();else showHome();
-    if(after)after();return;
-  }
-  navJump={target:target,after:after||null};
-  try{history.back()}catch(e){
-    navJump=null;navStack.length=target;
-    if(target)renderDetail();else showHome();
-    if(after)after();
-  }
-}
-let popSeq=0;       // bumped on every popstate, to detect a lost history step
-let backFallbackT=0;
-function navBack(){
+/* one back step inside the app; returns false when already at the root */
+function stepBackInApp(){
   /* a sheet/dialog open above the screen closes first */
   const m=document.querySelector(".modal.on");
-  if(m){m.classList.remove("on");return}
-  if(!navStack.length)return;
-  if(histOK){
-    const before=navStack.length,topBefore=navStack[before-1],seq=popSeq;
-    try{history.back()}catch(e){histOK=false}
-    if(histOK){
-      /* if the history step never arrives as a popstate (history got out of
-         sync), step back manually so the button never looks dead */
-      clearTimeout(backFallbackT);
-      backFallbackT=setTimeout(()=>{
-        if(popSeq===seq&&navStack.length===before&&navStack[before-1]===topBefore){
-          navStack.pop();
-          if(navStack.length)renderDetail();else showHome();
-        }
-      },450);
-      return;
-    }
-  }
-  navStack.pop();
-  if(navStack.length)renderDetail();else showHome();
-}
-window.addEventListener("popstate",()=>{
-  if(!histOK)return;
-  popSeq++;
-  if(exitingApp){try{history.back()}catch(e){}return}
-  /* a sheet/dialog is open above the current screen: the back press closes
-     it and stays on the same screen — re-push the consumed history entry so
-     the next back press steps back normally */
-  if(!navJump){
-    const m=document.querySelector(".modal.on");
-    if(m){
-      m.classList.remove("on");
-      try{history.pushState({zad:navStack.length},"")}catch(e){}
-      return;
-    }
-  }
-  if(navJump){
-    if(navStack.length>navJump.target){
-      navStack.pop();
-      if(navStack.length>navJump.target){try{history.back()}catch(e){}return}
-    }
-    const after=navJump.after;navJump=null;
-    if(navStack.length)renderDetail();else showHome();
-    if(after)after();
-    return;
-  }
+  if(m){m.classList.remove("on");return true}
   if(navStack.length){
     navStack.pop();
     if(navStack.length)renderDetail();else showHome();
-    return;
+    return true;
   }
+  return false;
+}
+function navBack(){
+  if(stepBackInApp())return;
+  openExitModal();
+}
+function goBackLevels(target,after){
+  if(navStack.length>target){
+    navStack.length=target;
+    if(target)renderDetail();else showHome();
+  }
+  if(after)after();
+}
+window.addEventListener("popstate",()=>{
+  trapArmed=false; /* this press consumed the trap entry */
+  if(exitingApp){try{history.back()}catch(e){}return}
+  if(!histOK)return;
+  if(stepBackInApp()){armTrap();return}
   /* back pressed on the home screen: confirm before exiting */
   openExitModal();
 });
 try{
   history.replaceState({zad:0},"");
-  history.pushState({zad:0,guard:1},"");
   if("scrollRestoration" in history)history.scrollRestoration="manual";
   histOK=true;
 }catch(e){histOK=false}
+armTrap();
 $("#exitStayBtn").addEventListener("click",()=>{closeExitModal()});
 $("#exitYesBtn").addEventListener("click",()=>{
   closeExitModal();
@@ -1551,7 +1519,7 @@ $("#exitYesBtn").addEventListener("click",()=>{
   /* if nothing could close the app (plain browser tab), restore normal
      back-button behaviour — and re-arm the guard — so the app keeps
      working as before instead of leaving silently on the next back press */
-  setTimeout(()=>{if(exitingApp){exitingApp=false;if(!navStack.length)pushGuard()}},1500);
+  setTimeout(()=>{if(exitingApp){exitingApp=false;armTrap()}},1500);
 });
 $("#exitModal").addEventListener("click",e=>{if(e.target.id==="exitModal")closeExitModal()});
 $("#backBtn").addEventListener("click",navBack);
@@ -3161,7 +3129,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=26;
+const APP_VERSION=28;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
