@@ -1441,21 +1441,32 @@ function renderDetail(keepScroll){
   persistNav();
 }
 /* --- device back button ---------------------------------------------------
-   One always-armed trap entry. The app keeps exactly ONE pushed history
-   entry at all times. Each device back press consumes it (one popstate),
-   the app takes exactly one step — close an open sheet, pop one screen, or,
-   on the home screen, show the exit confirmation — and then re-arms the
-   trap so the next press is caught the same way. The previous design kept
-   one history entry per open screen and walked them with history.back()
-   chains; in WebViews/TWAs those steps can be coalesced or lost, the two
-   stacks drifted apart, and a back press then fell out of the app (or the
-   button looked dead). With a single trap there is nothing to drift: the
-   in-memory navStack is the only stack, and the in-app back button runs
-   the very same single step directly, without touching history at all. --- */
-let trapArmed=false;
+   A small stack of sentinel history entries sits above the app's base
+   entry at all times (see TRAP_TARGET below). Each device back press
+   consumes one sentinel (one popstate), the app takes exactly one step —
+   close an open sheet, pop one screen, or, on the home screen, show the
+   exit confirmation — and then refills the stack so the next press is
+   caught the same way. The in-memory navStack is the only navigation
+   stack, so nothing can drift apart, and the in-app back button runs the
+   very same single step directly, without touching history at all. --- */
+/* Sentinel depth: keep SEVERAL pushed entries above the app's base entry,
+   not one. A single pushState entry made at load — before any user gesture —
+   is exactly what Chrome's history-manipulation intervention and several
+   WebView/TWA shells skip or drop, so the first back press on the home
+   screen fell straight out of the app and the exit dialog never showed.
+   With a small stack of sentinels there is always at least one entry for a
+   back press to land on; every press fires popstate, the handler below
+   takes one in-app step and refills the stack. Refills also happen on the
+   user's own taps/keys, so at least some entries are user-activated and no
+   shell can treat them all as skippable. */
+const TRAP_TARGET=3;
+let trapDepth=0; /* sentinel entries currently sitting above the base entry */
 function armTrap(){
-  if(!histOK||trapArmed)return;
-  try{history.pushState({zad:"trap"},"");trapArmed=true}catch(e){histOK=false;trapArmed=false}
+  if(!histOK)return;
+  while(trapDepth<TRAP_TARGET){
+    try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++}
+    catch(e){histOK=false;break}
+  }
 }
 function openExitModal(){
   $("#exitModal").classList.add("on");
@@ -1489,7 +1500,7 @@ function goBackLevels(target,after){
   if(after)after();
 }
 window.addEventListener("popstate",()=>{
-  trapArmed=false; /* this press consumed the trap entry */
+  if(trapDepth>0)trapDepth--; /* this press consumed one sentinel entry */
   if(exitingApp){try{history.back()}catch(e){}return}
   if(!histOK)return;
   if(stepBackInApp()){armTrap();return}
@@ -1502,6 +1513,12 @@ try{
   histOK=true;
 }catch(e){histOK=false}
 armTrap();
+/* keep the sentinel stack topped up: refill on the user's own taps and
+   keys (user-activated entries are never skipped by the shell) and on
+   every return to the foreground */
+["pointerdown","keydown","touchstart","wheel","scroll"].forEach(ev=>window.addEventListener(ev,armTrap,{passive:true}));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)armTrap()});
+window.addEventListener("pageshow",armTrap);
 $("#exitStayBtn").addEventListener("click",()=>{closeExitModal()});
 $("#exitYesBtn").addEventListener("click",()=>{
   closeExitModal();
