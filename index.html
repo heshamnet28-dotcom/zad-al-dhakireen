@@ -33,7 +33,7 @@
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/IMG-20261121-WA9892.jpg" />
 <meta name="twitter:image:alt" content="زاد الذاكرين — صدقة جارية" />
-<meta name="app-version" content="28" />
+<meta name="app-version" content="29" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -371,6 +371,15 @@ body.has-player{padding-bottom:186px}
 .modal .ntxt{font-family:"Amiri",serif;font-size:20px;line-height:2}
 .modal .close{margin-top:16px;background:var(--green);color:#fff;border:none;border-radius:12px;padding:11px 34px;font-size:16px;font-weight:800}
 .modal .close.exit-danger{background:#b3261e}
+/* شاشة الخروج النهائية: تظهر فقط حين يرفض المتصفح إغلاق النافذة برمجيًا،
+   فتكون «خروج» قد حدثت فعلًا من أول ضغطة ولا يعود سؤال الخروج أبدًا */
+#byeScreen{display:none;position:fixed;inset:0;z-index:200;background:linear-gradient(170deg,var(--green-d),var(--green) 70%);color:#fff;align-items:center;justify-content:center;text-align:center;padding:28px 22px}
+#byeScreen.on{display:flex}
+#byeScreen .bye-box{max-width:400px}
+#byeScreen .bye-ic{font-size:54px;line-height:1.2}
+#byeScreen h3{margin:10px 0 6px;font-size:24px;font-weight:900;color:#ffe9a8}
+#byeScreen p{margin:0;font-size:15.5px;line-height:1.9;opacity:.92}
+#byeScreen button{margin-top:20px;background:var(--gold);color:#231d02;border:none;border-radius:12px;padding:13px 26px;font-size:16px;font-weight:900}
 .empty{padding:26px 10px;text-align:center;color:var(--ink-2);font-size:15.5px;line-height:1.9}
 .done-banner{background:var(--green);color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:800;font-size:16.5px;margin-top:12px}
 .small-link{color:var(--green);font-weight:700}
@@ -692,6 +701,16 @@ html.lite .card,html.lite .tile,html.lite .row-item,html.lite .stat-box{box-shad
       <button class="close" id="exitStayBtn">البقاء في التطبيق</button>
       <button class="close exit-danger" id="exitYesBtn">خروج</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== closed screen (shown only when the browser refuses to close the window) ===== -->
+<div id="byeScreen" role="alertdialog" aria-label="تم الخروج من التطبيق">
+  <div class="bye-box">
+    <div class="bye-ic" aria-hidden="true">🌙</div>
+    <h3>تم الخروج من التطبيق</h3>
+    <p>تقبّل الله منك. أغلق نافذة المتصفح الآن لإنهاء الجلسة، أو اضغط الزر بالأسفل إن أردت العودة إلى «زاد الذاكرين».</p>
+    <button id="byeReopenBtn" type="button">فتح التطبيق من جديد</button>
   </div>
 </div>
 
@@ -1462,6 +1481,7 @@ function renderDetail(keepScroll){
 const TRAP_TARGET=3;
 let trapDepth=0; /* sentinel entries currently sitting above the base entry */
 function armTrap(){
+  if(exitingApp)return; /* once exit is confirmed the guard is never re-armed */
   if(!histOK)return;
   while(trapDepth<TRAP_TARGET){
     try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++}
@@ -1469,6 +1489,7 @@ function armTrap(){
   }
 }
 function openExitModal(){
+  if(exitingApp)return;
   $("#exitModal").classList.add("on");
   /* re-arm the trap the back press just consumed: pressing back again with
      the dialog open then just closes it (the sheet branch of stepBackInApp),
@@ -1501,7 +1522,7 @@ function goBackLevels(target,after){
 }
 window.addEventListener("popstate",()=>{
   if(trapDepth>0)trapDepth--; /* this press consumed one sentinel entry */
-  if(exitingApp){try{history.back()}catch(e){}return}
+  if(exitingApp)return; /* leaving: ignore every history event, never re-ask */
   if(!histOK)return;
   if(stepBackInApp()){armTrap();return}
   /* back pressed on the home screen: confirm before exiting */
@@ -1521,23 +1542,34 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)armTrap()}
 window.addEventListener("pageshow",armTrap);
 $("#exitStayBtn").addEventListener("click",()=>{closeExitModal()});
 $("#exitYesBtn").addEventListener("click",()=>{
-  closeExitModal();
+  if(exitingApp)return;
+  /* الخروج نهائي من أول ضغطة: لا يُعاد تسليح حارس الرجوع أبدًا بعد التأكيد،
+     ولا تتعامل أي popstate لاحقة مع الأمر كضغطة رجوع جديدة — وهذا هو ما
+     كان يجعل نافذة «الخروج من التطبيق؟» تعود وتسأل من جديد: فالمؤقّت
+     القديم كان يلغي حالة الخروج بعد ١٫٥ ثانية ويعيد تسليح الحارس، فتصل
+     popstate متأخرة من سلسلة history.back() المتتابعة فتُفتح النافذة ثانية */
   exitingApp=true;
+  closeExitModal();
+  try{stopPlayer()}catch(e){}
   /* a confirmed exit starts the next launch at home, not mid-stack */
   try{sessionStorage.removeItem("zadNav")}catch(e){}
   try{localStorage.removeItem("zadNav")}catch(e){}
-  /* installed app (PWA/TWA/WebView): close the app window itself — one tap */
+  /* ١) جسور الأغلفة الأصلية إن وُجدت (تطبيقات WebView/TWA) */
+  try{if(window.AndroidBridge&&window.AndroidBridge.exitApp)window.AndroidBridge.exitApp()}catch(e){}
+  try{if(window.Android&&window.Android.exitApp)window.Android.exitApp()}catch(e){}
+  try{if(window.gonative&&window.gonative.close)window.gonative.close()}catch(e){}
+  try{if(window.median&&window.median.share&&window.median.close)window.median.close()}catch(e){}
+  /* ٢) النوافذ المفتوحة برمجيًا وبعض الأغلفة تقبل الإغلاق المباشر */
   try{window.close()}catch(e){}
-  /* browser tab: step back out; any same-document entries keep stepping
-     back via the exitingApp branch of the popstate handler */
-  try{history.back()}catch(e){}
-  /* if the window is still open a moment later, retry the close once */
-  setTimeout(()=>{if(exitingApp){try{window.close()}catch(e){}}},400);
-  /* if nothing could close the app (plain browser tab), restore normal
-     back-button behaviour — and re-arm the guard — so the app keeps
-     working as before instead of leaving silently on the next back press */
-  setTimeout(()=>{if(exitingApp){exitingApp=false;armTrap()}},1500);
+  /* ٣) قفزة واحدة للخلف فوق كل إدخالات الجلسة: يغادر المتصفح/الغلاف
+        التطبيقَ بخطوة واحدة، بدل سلسلة back() التي كانت كل خطوة منها
+        تُطلق popstate يمكن اعتراضها وإعادة السؤال بسببها */
+  try{history.go(-Math.max(1,history.length-1))}catch(e){}
+  /* ٤) ما زلنا هنا؟ المتصفح رفض الإغلاق (تبويب عادي): اعرض شاشة
+        «تم الخروج» — الخروج حدث فعلًا من أول ضغطة ولا سؤال بعده */
+  setTimeout(()=>{const b=$("#byeScreen");if(b&&exitingApp)b.classList.add("on")},650);
 });
+$("#byeReopenBtn").addEventListener("click",()=>{try{location.reload()}catch(e){}});
 $("#exitModal").addEventListener("click",e=>{if(e.target.id==="exitModal")closeExitModal()});
 $("#backBtn").addEventListener("click",navBack);
 $("#detailFav").addEventListener("click",()=>{
@@ -1665,7 +1697,7 @@ function rowItem(title,sub,fn,badge){
 function openAdhkarSection(sec){openD({k:"adhkar",id:sec.id,name:sec.name},"أذكار "+sec.name,body=>buildAdhkarSession(body,sec))}
 function buildAdhkarSession(body,sec){
   const info=document.createElement("div");info.className="card";info.style.marginTop="4px";
-  info.innerHTML=`<b style="font-size:16.5px">أذكار ${esc(sec.name)}</b><div class="note">اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.</div><div class="progress"><i style="width:0%"></i></div><div class="note" style="margin-top:0"><span class="pcount">0</span> من ${sec.items.length} ذكرًا اكتمل</div><div class="sheet-actions" style="margin-top:10px;justify-content:flex-start"><button type="button" id="secListen">🎧 استمع للأذكار بصوت القارئ</button><button type="button" id="secListenStop" style="display:none">⏹ إيقاف الاستماع</button></div><div class="note" style="margin-bottom:0">الآيات القرآنية داخل الأذكار تُتلى عليك بصوت ${esc(reciterObj().name)} — تسجيل حقيقي من تلاوة المصحف — وتتكرر بعدد مرات كل ذكر، أما الأدعية النبوية — إذ لا تسجيل لها بصوت قارئ — فيقف عندها التسلسل ويُظلَّل كارتُها لتقرأها بنفسك؛ فصوت الجهاز الآلي لا ينطق العربية نطقًا صحيحًا ولذلك أزلناه من التطبيق نهائيًا. الاستماع يحتاج إنترنت أول مرة.</div>`;
+  info.innerHTML=`<b style="font-size:16.5px">أذكار ${esc(sec.name)}</b><div class="note">اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.</div><div class="progress"><i style="width:0%"></i></div><div class="note" style="margin-top:0"><span class="pcount">0</span> من ${sec.items.length} ذكرًا اكتمل</div><div class="sheet-actions" style="margin-top:10px;justify-content:flex-start"><button type="button" id="secListen">🎧 استمع للأذكار بصوت القارئ</button><button type="button" id="secListenStop" style="display:none">⏹ إيقاف الاستماع</button></div><div class="note" style="margin-bottom:0">أذكار الصباح والمساء تُسمَع كاملة من تسجيل صوتي حقيقي عند الضغط على «استمع». وفي بقية الأقسام تُتلى الآيات القرآنية داخل الأذكار بصوت ${esc(reciterObj().name)} — تسجيل حقيقي من تلاوة المصحف — وتتكرر بعدد مرات كل ذكر، أما الأدعية التي لا تسجيل لها فيمرّ عليها التسلسل سريعًا وكارتُها مظلَّل لتقرأها بنفسك؛ فلا صوت آلي في التطبيق إطلاقًا. الاستماع يحتاج إنترنت أول مرة.</div>`;
   body.appendChild(info);
   const secListenBtn=info.querySelector("#secListen"),secListenStopBtn=info.querySelector("#secListenStop");
   if(secListenBtn)secListenBtn.addEventListener("click",()=>{if(typeof window.zadPlaySection==="function"){zadPlaySection(sec.id);secListenStopBtn.style.display="";}});
@@ -3146,7 +3178,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=28;
+const APP_VERSION=29;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
@@ -3761,7 +3793,7 @@ function buildAudioHub(body){
     <button id="auMorning">🎧 اسمع أذكار الصباح بصوت القارئ</button>
     <button id="auEvening">🎧 اسمع أذكار المساء بصوت القارئ</button>
     <button id="auStop">⏹ إيقاف الاستماع</button></div>
-  <p class="note" style="margin-bottom:0">يفتح لك صفحة الأذكار في وضع الاستماع: الآيات القرآنية فيها تُتلى بصوت ${esc(reciterObj().name)} (تسجيل حقيقي من تلاوة المصحف) وتتكرر بعدد مرات كل ذكر، والأدعية النبوية يقف عندها التسلسل مظلَّلةً لتقرأها بنفسك — فلا تسجيل لها بصوت قارئ، وصوت الجهاز الآلي لا ينطق العربية صحيحًا فأزلناه من التطبيق نهائيًا.</p>`;
+  <p class="note" style="margin-bottom:0">يفتح لك صفحة الأذكار في وضع الاستماع: أذكار الصباح والمساء تُسمَع كاملة من تسجيل صوتي حقيقي، والآيات القرآنية في بقية الأقسام تُتلى بصوت ${esc(reciterObj().name)} (تسجيل حقيقي من تلاوة المصحف) وتتكرر بعدد مرات كل ذكر، والأدعية التي لا تسجيل لها يمرّ عليها التسلسل سريعًا مظلَّلةً لتقرأها بنفسك — فلا صوت آلي في التطبيق إطلاقًا.</p>`;
   body.appendChild(tcard);
   const openSec=n=>{const s=DB.adhkar.find(x=>x.name===n);if(s)openAdhkarSection(s);else showToast("القسم غير متاح حاليًا")};
   tcard.querySelector("#auMorning").addEventListener("click",()=>openSec("الصباح"));
@@ -4851,10 +4883,46 @@ function zItemAyahs(item){
   })});
   return out;
 }
+/* ----- تسجيلات حقيقية كاملة لأذكار الصباح والمساء (ملفات صوتية منشورة
+   على أرشيف الإنترنت archive.org — تلاوة بشرية كاملة للأذكار، لا نطق
+   آلي): تُشغَّل كاملة عند طلب استماع القسم أو أي ذكر من أذكاره ----- */
+const ZADHKAR_FULL={"الصباح":"https://archive.org/download/Adhkar_201712/Adhkar%20Morning.mp3","المساء":"https://archive.org/download/Adhkar_201712/Adhkar%20Evening.mp3"};
+function zadPlayFullAdhkar(sec){
+  zqStop();
+  playTrack({key:"adhkar-full:"+sec.name,title:"أذكار "+sec.name+" كاملة — تسجيل صوتي حقيقي",url:ZADHKAR_FULL[sec.name]});
+  showToast("🎧 بدأ تسجيل أذكار "+sec.name+" كاملًا بصوت حقيقي — استمع وردّد");
+  const sb=document.querySelector("#secListenStop");if(sb)sb.style.display="";
+}
+/* ----- مقاطع قرآنية مشهورة داخل الأذكار حتى بلا أقواس {} في النص:
+   عبارات مميِّزة لا توجد إلا في آيات بعينها، فتُتلى بصوت القارئ ----- */
+const Z_KNOWN_AYAHS=[
+ ["اهدنا الصراط المستقيم",[[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]]],
+ ["الله لا اله الا هو الحي القيوم",[[1,254]]],
+ ["امن الرسول بما انزل اليه من ربه",[[1,284],[1,285]]],
+ ["لله ما في السماوات وما في الارض وان تبدوا ما في انفسكم",[[1,283]]],
+ ["يكاد البرق يخطف ابصارهم",[[1,19]]],
+ ["وان يكاد الذين كفروا ليزلقونك بابصارهم",[[67,50]]],
+ ["قل هو الله احد",[[111,0],[111,1],[111,2],[111,3]]],
+ ["قل اعوذ برب الفلق",[[112,0],[112,1],[112,2],[112,3],[112,4]]],
+ ["قل اعوذ برب الناس",[[113,0],[113,1],[113,2],[113,3],[113,4],[113,5]]],
+ ["قل يا ايها الكافرون",[[108,0],[108,1],[108,2],[108,3],[108,4],[108,5]]],
+ ["حسبي الله لا اله الا هو عليه توكلت وهو رب العرش العظيم",[[8,128]]]
+];
+function zKnownAyahs(item){
+  const t=normAr(String((item&&item.text)||"").replace(/[{}]/g," "));
+  if(!t)return[];
+  const hits=[];
+  Z_KNOWN_AYAHS.forEach(([phrase,range])=>{const pos=t.indexOf(phrase);if(pos>=0)hits.push([pos,range])});
+  hits.sort((a,b)=>a[0]-b[0]);
+  const out=[];const seen={};
+  hits.forEach(h=>h[1].forEach(a=>{const k=a[0]+":"+a[1];if(!seen[k]){seen[k]=1;out.push(a)}}));
+  return out;
+}
 function zSectionSteps(sec){
   const steps=[];
   sec.items.forEach((it,i)=>{
-    const ays=zItemAyahs(it);
+    let ays=zItemAyahs(it);
+    if(!ays.length)ays=zKnownAyahs(it);
     if(ays.length){const reps=Math.min(Math.max(1,+it.c||1),5);for(let r=0;r<reps;r++)ays.forEach(a=>steps.push({k:"ayah",si:a[0],ai:a[1],card:i,title:"أذكار "+sec.name+" — بصوت "+reciterObj().name}))}
     else steps.push({k:"read",text:String(it.text||"").replace(/[{}]/g," "),card:i,title:"أذكار "+sec.name});
   });
@@ -4884,9 +4952,12 @@ function zqNext(){
   else{const url=st.k==="ayah"?ayahAudioUrl(st.si,st.ai):st.url;playTrack({key:"zq:"+Date.now()+":"+ZQ.i,title:st.title||"استماع",url:url})}
 }
 function zqReadPause(st,tok){
-  /* ذكرٌ لا تسجيل له بصوت قارئ: لا نطق آلي إطلاقًا. يقف التسلسل على كارت الذكر مظلَّلًا وقتًا يكفي لقراءته بنفسك، ثم يتابع للذكر التالي */
+  /* ذكرٌ لا تسجيل له: لا نطق آلي إطلاقًا، لكن لا صمت طويل مضلِّل أيضًا —
+     وقفة قصيرة على الكارت المظلَّل ثم يتابع التسلسل للمقطع المسموع التالي.
+     الوقفة الطويلة القديمة (حتى ٦٠ ثانية لكل دعاء) هي ما جعل الاستماع
+     يبدو وكأنه «يشتغل من غير صوت» */
   const len=String((st&&st.text)||"").length;
-  const ms=Math.max(4000,Math.min(60000,2500+len*110));
+  const ms=Math.max(1500,Math.min(4500,1200+len*22));
   setTimeout(()=>{if(ZQ.active&&ZQ.tok===tok)zqNext()},ms);
 }
 audioEl.addEventListener("ended",()=>{if(ZQ.active){const st=ZQ.steps[ZQ.i];if(st&&st.k!=="read")setTimeout(()=>{if(ZQ.active)zqNext()},250)}});
@@ -4895,16 +4966,27 @@ audioEl.addEventListener("error",()=>{if(ZQ.active){const st=ZQ.steps[ZQ.i];if(s
 document.addEventListener("click",e=>{if(e.target&&e.target.id==="plClose"&&ZQ.active)zqStop()});
 window.zadPlaySection=function(secId){
   const sec=DB.adhkar.find(s=>s.id===secId);if(!sec){showToast("القسم غير متاح حاليًا");return}
+  /* الصباح والمساء: تسجيل حقيقي كامل للأذكار كلها يبدأ فورًا بصوت مسموع */
+  if(ZADHKAR_FULL[sec.name]){zadPlayFullAdhkar(sec);return}
+  const steps=zSectionSteps(sec);
+  /* قسم بلا أي مقطع مسموع: لا تشغيل صامت متظاهِر بالعمل — رسالة واضحة */
+  if(!steps.some(s=>s.k!=="read")){showToast("أذكار "+sec.name+" أدعية مكتوبة لا تسجيل صوتيًّا لها — تُقرأ من الشاشة");return}
   const cards=Array.prototype.slice.call(document.querySelectorAll("#detailBody .dhikr"));
-  zqPlay(zSectionSteps(sec),{label:"أذكار "+sec.name+" بصوت "+reciterObj().name,cards:cards,onDone:()=>showToast("انتهت أذكار "+sec.name+" — تقبّل الله منك 🤲")});
+  zqPlay(steps,{label:"أذكار "+sec.name+" بصوت "+reciterObj().name,cards:cards,onDone:()=>showToast("انتهت أذكار "+sec.name+" — تقبّل الله منك 🤲")});
 };
 window.zadPlayItem=function(secId,idx){
   const sec=DB.adhkar.find(s=>s.id===secId);if(!sec||!sec.items[idx])return;
   const cards=Array.prototype.slice.call(document.querySelectorAll("#detailBody .dhikr"));
   const steps=zSectionSteps({name:sec.name,items:[sec.items[idx]]});
   steps.forEach(s=>s.card=idx);
-  if(!steps.length){showToast("لا صوت متاحًا لهذا الذكر");return}
-  zqPlay(steps,{label:"ذكر من أذكار "+sec.name,cards:cards,onDone:()=>showToast("انتهى الذكر — تقبّل الله")});
+  const audible=steps.filter(s=>s.k!=="read");
+  if(!audible.length){
+    /* ذكر بلا مقطع قرآني: في الصباح/المساء شغّل التسجيل الكامل الحقيقي،
+       وفي غيرهما لا صوت صامت — أخبر المستخدم بوضوح */
+    if(ZADHKAR_FULL[sec.name]){zadPlayFullAdhkar(sec);return}
+    showToast("هذا الذكر دعاء مكتوب لا تسجيل صوتيًّا له — اقرأه من الشاشة");return;
+  }
+  zqPlay(audible,{label:"ذكر من أذكار "+sec.name,cards:cards,onDone:()=>showToast("انتهى الذكر — تقبّل الله")});
 };
 window.zadStopListen=function(){zqStop();showToast("تم إيقاف الاستماع")};
 
