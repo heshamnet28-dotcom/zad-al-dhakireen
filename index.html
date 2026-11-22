@@ -1666,7 +1666,7 @@ function openSurah(idx,scrollAyah){
     tafAll.textContent="📖 تفسير السورة كاملة — اختر التفسير";
     tafAll.addEventListener("click",()=>{openD({k:"tafsirPick",i:idx},"تفسير سورة "+s.name,tb2=>{const l=document.createElement("div");l.className="list";TAFSIR_SOURCES.forEach(src=>l.appendChild(rowItem(src.name,src.author,()=>openTafsirSurah(src,idx))));tb2.appendChild(l)})});
     body.appendChild(tafAll);
-    const note=document.createElement("p");note.className="note";note.textContent="النص كامل داخل التطبيق ويعمل بدون إنترنت. بجانب كل آية زر «📖 تفسير» يعرض تفسيرها مباشرة من عدة تفاسير (ابن كثير، السعدي، الميسّر، وغيرها). واضغط أي آية لفتح قائمتها: تشغيل الآية، حفظها علامة، أو مشاركتها بطاقة صورة.";
+    const note=document.createElement("p");note.className="note";note.textContent="النص كامل داخل التطبيق ويعمل بدون إنترنت. اضغط أي آية لفتح قائمتها: تفسير الآية من عدة تفاسير (ابن كثير، السعدي، الميسّر، وغيرها)، تشغيل الآية، حفظها علامة، أو مشاركتها بطاقة صورة.";
     body.appendChild(note);
     if(idx!==0){const b=document.createElement("div");b.className="basmala";b.textContent="بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";body.appendChild(b)}
     const card=document.createElement("div");card.className="card";
@@ -1678,9 +1678,6 @@ function openSurah(idx,scrollAyah){
       span.innerHTML=esc(v)+' <span class="anum">﴿'+(vi+1)+'﴾</span> ';
       span.addEventListener("click",()=>openAyahMenu(idx,vi));
       p.appendChild(span);
-      const tb=document.createElement("button");tb.className="taf-chip";tb.textContent="📖 تفسير";tb.title="تفسير الآية "+(vi+1);
-      tb.addEventListener("click",ev=>{ev.stopPropagation();openAyahTafsir(idx,vi)});
-      p.appendChild(tb);
     });
     card.appendChild(p);body.appendChild(card);
     if(scrollAyah!==undefined&&scrollAyah!==null){setTimeout(()=>{const el=card.querySelector(`.ayah[data-a="${scrollAyah}"]`);if(el)el.scrollIntoView({block:"center",behavior:"smooth"})},80)}
