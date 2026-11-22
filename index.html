@@ -1313,9 +1313,16 @@ function saveScroll(){
 /* --- keep the visitor's place across a page refresh: the open stack is saved
        as reopenable routes in sessionStorage and rebuilt on load, so a refresh
        (or the update banner's reload) returns to the same screen, not home --- */
+let navRestoring=false; // true while a saved stack is being rebuilt (persist is paused)
 function persistNav(){
+  if(navRestoring)return;
   try{
-    sessionStorage.setItem("zadNav",JSON.stringify({home:homeScroll||0,stack:navStack.map(e=>({route:e.route||null,scroll:e.scroll||0}))}));
+    const data={home:homeScroll||0,stack:navStack.map(e=>({route:e.route||null,scroll:e.scroll||0}))};
+    const s=JSON.stringify(data);
+    try{sessionStorage.setItem("zadNav",s)}catch(e){}
+    /* mirror in localStorage with a timestamp: if the app process is killed
+       and reopened (session storage lost), the place is still restored */
+    try{localStorage.setItem("zadNav",JSON.stringify({ts:Date.now(),data:data}))}catch(e){}
   }catch(e){}
 }
 let navSaveT=0;
@@ -1350,37 +1357,65 @@ function resolveRoute(r){
       case "tafsirSurah":{const src=TAFSIR_SOURCES.find(x=>x.id===r.src);const s=DB.surahs[r.i];return(src&&s)?{open:()=>openTafsirSurah(src,r.i)}:null}
       case "tafsirPick":{const s=DB.surahs[r.i];if(!s)return null;return{title:"تفسير سورة "+s.name,build:body=>{const l=document.createElement("div");l.className="list";TAFSIR_SOURCES.forEach(src=>l.appendChild(rowItem(src.name,src.author,()=>openTafsirSurah(src,r.i))));body.appendChild(l)}}}
       case "surah":{const s=DB.surahs[r.i];return s?{open:()=>openSurah(r.i,r.a)}:null}
+      case "transSurah":{const s=DB.surahs[r.i];return s?{title:"ترجمة معاني سورة "+s.name,build:body=>buildTransHub(body,r.i)}:null}
       case "libSection":{const groups=DB.library.filter(g=>g.sec===r.sec);if(!groups.length)return null;if(groups.length===1)return libGroupDesc(groups[0]);return{title:r.sec,build:body=>{const list=document.createElement("div");list.className="list";groups.forEach(g=>{list.appendChild(folderItem(g.group,g.items.length+" مادة",()=>openLibraryGroup(g)))});body.appendChild(list)}}}
       case "libGroup":{const g=DB.library[r.gi];return g?libGroupDesc(g):null}
       case "libItem":{const g=DB.library[r.gi];const it=g&&g.items[r.ii];if(!it)return null;return{title:it.title,favKey:"l:"+r.gi+":"+r.ii,build:body=>{const card=document.createElement("div");card.className="card";card.style.marginTop="4px";card.innerHTML=`<div class="reader-text">${esc(it.text)}</div>`;card.appendChild(readerTools());body.appendChild(card)}}}
     }
   }catch(e){}
+  /* screens registered by later expansion scripts (kids world, seasons,
+     hifz plan…) resolve through their own hook */
+  if(window.zadResolveRoute){try{const d=window.zadResolveRoute(r);if(d)return d}catch(e){}}
+  return null;
+}
+function readSavedNav(){
+  try{const s=JSON.parse(sessionStorage.getItem("zadNav")||"null");if(s&&Array.isArray(s.stack))return s}catch(e){}
+  try{const l=JSON.parse(localStorage.getItem("zadNav")||"null");
+    if(l&&l.data&&Array.isArray(l.data.stack)&&Date.now()-(l.ts||0)<6*3600*1000)return l.data;
+  }catch(e){}
   return null;
 }
 function restoreNav(){
-  let saved=null;
-  try{saved=JSON.parse(sessionStorage.getItem("zadNav")||"null")}catch(e){}
+  /* defer the rebuild until every script has run: screens and tools added by
+     the expansion scripts (kids world, seasons, hifz plan, their library
+     content) only exist after they load, and restoring earlier dropped the
+     visitor at home whenever the open screen was one of theirs */
+  if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",()=>doRestoreNav(),{once:true});return}
+  doRestoreNav();
+}
+function doRestoreNav(){
+  if(navStack.length)return;
+  const saved=readSavedNav();
   if(!saved)return;
-  homeScroll=saved.home||0;
-  if(!Array.isArray(saved.stack)||!saved.stack.length){
-    if(homeScroll>0)setTimeout(()=>{if(!navStack.length)window.scrollTo(0,homeScroll)},60);
-    return;
-  }
-  let built=false;
-  for(const se of saved.stack){
-    if(!se||!se.route)break;
-    const d=resolveRoute(se.route);
-    if(!d)break;
-    if(d.open)d.open();
-    else navStack.push({title:d.title,build:d.build,favKey:d.favKey,route:se.route,scroll:se.scroll||0});
+  navRestoring=true;
+  try{
+    homeScroll=saved.home||0;
+    if(!Array.isArray(saved.stack)||!saved.stack.length){
+      if(homeScroll>0)setTimeout(()=>{if(!navStack.length)window.scrollTo(0,homeScroll)},60);
+      return;
+    }
+    let histPushed=0; // entries already re-pushed by open()-style routes
+    for(const se of saved.stack){
+      if(!se||!se.route)break;
+      const d=resolveRoute(se.route);
+      if(!d)break;
+      if(d.open){d.open();histPushed++}
+      else navStack.push({title:d.title,build:d.build,favKey:d.favKey,route:se.route,scroll:se.scroll||0});
+      const top=navStack[navStack.length-1];
+      if(top)top.scroll=se.scroll||0;
+    }
+    if(!navStack.length){showHome();return}
+    /* rebuild the matching browser-history entries for the screens restored
+       directly, so the back button (device and in-app) keeps stepping back
+       through them after a refresh instead of dying or leaving the app */
+    if(histOK){while(histPushed<navStack.length){try{history.pushState({zad:histPushed+1},"")}catch(e){break}histPushed++}}
+    renderDetail();
     const top=navStack[navStack.length-1];
-    if(top)top.scroll=se.scroll||0;
-    built=true;
+    if(top&&top.scroll)setTimeout(()=>window.scrollTo(0,top.scroll||0),60);
+  }finally{
+    navRestoring=false;
+    if(navStack.length)persistNav();
   }
-  if(!built||!navStack.length){navStack.length=0;showHome();return}
-  renderDetail();
-  const top=navStack[navStack.length-1];
-  if(top&&top.scroll)setTimeout(()=>window.scrollTo(0,top.scroll||0),60);
 }
 function showHome(){
   navStack.length=0;
@@ -1412,7 +1447,13 @@ function pushGuard(){
   if(!histOK)return;
   try{history.pushState({zad:0,guard:1},"")}catch(e){histOK=false}
 }
-function openExitModal(){$("#exitModal").classList.add("on")}
+function openExitModal(){
+  $("#exitModal").classList.add("on");
+  /* re-arm the guard the back press just consumed: pressing back again with
+     the dialog open then just closes it (via the sheet branch above), and
+     «البقاء» needs no extra push */
+  pushGuard();
+}
 function closeExitModal(){$("#exitModal").classList.remove("on")}
 function goBackLevels(target,after){
   if(navStack.length<=target){if(after)after();return}
@@ -1428,15 +1469,47 @@ function goBackLevels(target,after){
     if(after)after();
   }
 }
+let popSeq=0;       // bumped on every popstate, to detect a lost history step
+let backFallbackT=0;
 function navBack(){
+  /* a sheet/dialog open above the screen closes first */
+  const m=document.querySelector(".modal.on");
+  if(m){m.classList.remove("on");return}
   if(!navStack.length)return;
-  if(histOK){try{history.back();return}catch(e){histOK=false}}
+  if(histOK){
+    const before=navStack.length,topBefore=navStack[before-1],seq=popSeq;
+    try{history.back()}catch(e){histOK=false}
+    if(histOK){
+      /* if the history step never arrives as a popstate (history got out of
+         sync), step back manually so the button never looks dead */
+      clearTimeout(backFallbackT);
+      backFallbackT=setTimeout(()=>{
+        if(popSeq===seq&&navStack.length===before&&navStack[before-1]===topBefore){
+          navStack.pop();
+          if(navStack.length)renderDetail();else showHome();
+        }
+      },450);
+      return;
+    }
+  }
   navStack.pop();
   if(navStack.length)renderDetail();else showHome();
 }
 window.addEventListener("popstate",()=>{
   if(!histOK)return;
+  popSeq++;
   if(exitingApp){try{history.back()}catch(e){}return}
+  /* a sheet/dialog is open above the current screen: the back press closes
+     it and stays on the same screen — re-push the consumed history entry so
+     the next back press steps back normally */
+  if(!navJump){
+    const m=document.querySelector(".modal.on");
+    if(m){
+      m.classList.remove("on");
+      try{history.pushState({zad:navStack.length},"")}catch(e){}
+      return;
+    }
+  }
   if(navJump){
     if(navStack.length>navJump.target){
       navStack.pop();
@@ -1452,12 +1525,7 @@ window.addEventListener("popstate",()=>{
     if(navStack.length)renderDetail();else showHome();
     return;
   }
-  /* back pressed on the home screen: close any open sheet first, else confirm exit */
-  const m=document.querySelector(".modal.on");
-  if(m){
-    m.classList.remove("on");
-    pushGuard();return;
-  }
+  /* back pressed on the home screen: confirm before exiting */
   openExitModal();
 });
 try{
@@ -1466,10 +1534,13 @@ try{
   if("scrollRestoration" in history)history.scrollRestoration="manual";
   histOK=true;
 }catch(e){histOK=false}
-$("#exitStayBtn").addEventListener("click",()=>{closeExitModal();pushGuard()});
+$("#exitStayBtn").addEventListener("click",()=>{closeExitModal()});
 $("#exitYesBtn").addEventListener("click",()=>{
   closeExitModal();
   exitingApp=true;
+  /* a confirmed exit starts the next launch at home, not mid-stack */
+  try{sessionStorage.removeItem("zadNav")}catch(e){}
+  try{localStorage.removeItem("zadNav")}catch(e){}
   /* installed app (PWA/TWA/WebView): close the app window itself — one tap */
   try{window.close()}catch(e){}
   /* browser tab: step back out; any same-document entries keep stepping
@@ -1478,10 +1549,11 @@ $("#exitYesBtn").addEventListener("click",()=>{
   /* if the window is still open a moment later, retry the close once */
   setTimeout(()=>{if(exitingApp){try{window.close()}catch(e){}}},400);
   /* if nothing could close the app (plain browser tab), restore normal
-     back-button behaviour so the app keeps working as before */
-  setTimeout(()=>{exitingApp=false},1500);
+     back-button behaviour — and re-arm the guard — so the app keeps
+     working as before instead of leaving silently on the next back press */
+  setTimeout(()=>{if(exitingApp){exitingApp=false;if(!navStack.length)pushGuard()}},1500);
 });
-$("#exitModal").addEventListener("click",e=>{if(e.target.id==="exitModal"){closeExitModal();pushGuard()}});
+$("#exitModal").addEventListener("click",e=>{if(e.target.id==="exitModal")closeExitModal()});
 $("#backBtn").addEventListener("click",navBack);
 $("#detailFav").addEventListener("click",()=>{
   const top=navStack[navStack.length-1];if(!top||!top.favKey)return;
@@ -3963,7 +4035,7 @@ function buildSeasonPage(body){
   const list=document.createElement("div");list.className="list";
   SEASONS.forEach(s=>{
     list.appendChild(rowItem(s.icon+" "+s.title,s.sub,()=>{
-      openDetail(s.title,b=>{const c=document.createElement("div");c.className="card";c.style.marginTop="4px";c.innerHTML=seasonCardHTML(s);b.appendChild(c)});
+      openD({k:"season",id:s.id},s.title,b=>{const c=document.createElement("div");c.className="card";c.style.marginTop="4px";c.innerHTML=seasonCardHTML(s);b.appendChild(c)});
     },cur&&cur.id===s.id?"الموسم الحالي":null));
   });
   body.appendChild(list);
@@ -4364,22 +4436,22 @@ function buildKidsHub(body){
   body.appendChild(hero);
   const grid=document.createElement("div");grid.className="kid-grid";
   const entries=[
-    {ic:"🎮",t:"ساحة الألعاب",s:"مسابقة أسئلة + ترتيب الوضوء",c:"#0a6b32",fn:b=>buildKidsGames(b)},
-    {ic:"🕌",t:"رتّب أركان الإسلام",s:"لعبة ترتيب سريعة وممتعة",c:"#00695c",fn:buildPillarsGame},
-    {ic:"🔗",t:"وصّل النبي بقصته",s:"لعبة ذاكرة عن الأنبياء",c:"#8a6d1a",fn:buildMatchGame},
-    {ic:"📖",t:"كمّل الآية",s:"أكمل الكلمة الناقصة من الآية",c:"#33691e",fn:buildAyahGame},
-    {ic:"⏱️",t:"سباق الأذكار",s:"كم مرة تقول الذكر في ٣٠ ثانية؟",c:"#b8860b",fn:buildRaceGame},
-    {ic:"🎬",t:"فيديوهات تعليمية",s:"وضوء وصلاة وقصص وأناشيد",c:"#c62828",fn:buildKidsVideos},
-    {ic:"🎧",t:"حفظ جزء عمّ",s:"اسمع وكرّر واختبر نفسك",c:"#064420",fn:buildMemoIndex},
-    {ic:"🎨",t:"لوّن وارسم",s:"مسجد وكعبة وهلال بألوانك",c:"#6a1b9a",fn:buildColorIndex},
-    {ic:"📚",t:"قصصي وأدعيتي",s:"قصص الأنبياء وأدعية صديقي الصغير",c:"#a67c00",fn:buildKidsStories},
-    {ic:"🎧",t:"قصص الأنبياء",s:"اقرأ قصص الأنبياء واجمع النجوم",c:"#00695c",fn:b=>{if(typeof buildKidsAudioStories==="function")buildKidsAudioStories(b);else buildKidsStories(b)}},
-    {ic:"⭐",t:"نجومي وشاراتي",s:"تقدّمي ومكافآتي ولوحة الأبطال",c:"#e65100",fn:buildKidsStars}
+    {id:"games",ic:"🎮",t:"ساحة الألعاب",s:"مسابقة أسئلة + ترتيب الوضوء",c:"#0a6b32",fn:b=>buildKidsGames(b)},
+    {id:"pillars",ic:"🕌",t:"رتّب أركان الإسلام",s:"لعبة ترتيب سريعة وممتعة",c:"#00695c",fn:buildPillarsGame},
+    {id:"match",ic:"🔗",t:"وصّل النبي بقصته",s:"لعبة ذاكرة عن الأنبياء",c:"#8a6d1a",fn:buildMatchGame},
+    {id:"ayah",ic:"📖",t:"كمّل الآية",s:"أكمل الكلمة الناقصة من الآية",c:"#33691e",fn:buildAyahGame},
+    {id:"race",ic:"⏱️",t:"سباق الأذكار",s:"كم مرة تقول الذكر في ٣٠ ثانية؟",c:"#b8860b",fn:buildRaceGame},
+    {id:"videos",ic:"🎬",t:"فيديوهات تعليمية",s:"وضوء وصلاة وقصص وأناشيد",c:"#c62828",fn:buildKidsVideos},
+    {id:"memo",ic:"🎧",t:"حفظ جزء عمّ",s:"اسمع وكرّر واختبر نفسك",c:"#064420",fn:buildMemoIndex},
+    {id:"color",ic:"🎨",t:"لوّن وارسم",s:"مسجد وكعبة وهلال بألوانك",c:"#6a1b9a",fn:buildColorIndex},
+    {id:"stories",ic:"📚",t:"قصصي وأدعيتي",s:"قصص الأنبياء وأدعية صديقي الصغير",c:"#a67c00",fn:buildKidsStories},
+    {id:"audioStories",ic:"🎧",t:"قصص الأنبياء",s:"اقرأ قصص الأنبياء واجمع النجوم",c:"#00695c",fn:b=>{if(typeof buildKidsAudioStories==="function")buildKidsAudioStories(b);else buildKidsStories(b)}},
+    {id:"stars",ic:"⭐",t:"نجومي وشاراتي",s:"تقدّمي ومكافآتي ولوحة الأبطال",c:"#e65100",fn:buildKidsStars}
   ];
   entries.forEach(e=>{
     const b=document.createElement("button");b.className="kid-tile";b.type="button";
     b.innerHTML='<span class="ki" style="background:'+e.c+'">'+e.ic+'</span><b>'+e.t+'</b><small>'+e.s+'</small>';
-    b.addEventListener("click",()=>openDetail(e.t,e.fn));
+    b.addEventListener("click",()=>openD({k:"kid",id:e.id},e.t,e.fn));
     grid.appendChild(b);
   });
   body.appendChild(grid);
@@ -4391,12 +4463,13 @@ function buildKidsStories(body){
   const groups=(DB.library||[]).filter(g=>g.sec==="ركن الأطفال");
   if(!groups.length){body.innerHTML='<div class="empty">قصص الأطفال ستظهر هنا قريبًا</div>';return}
   groups.forEach(g=>{
+    const gi=DB.library.indexOf(g);
     const h=document.createElement("div");h.className="sec-title";h.textContent=g.group;body.appendChild(h);
     const list=document.createElement("div");list.className="list";
-    g.items.forEach(it=>{
+    g.items.forEach((it,ii)=>{
       const b=document.createElement("button");b.className="row-item";b.type="button";
       b.innerHTML='<span class="fi">📖</span><span class="tt"><b>'+esc(it.title)+'</b><small>اضغط للقراءة مع بابا وماما</small></span><span class="arr">‹</span>';
-      b.addEventListener("click",()=>openDetail(it.title,bd=>{
+      b.addEventListener("click",()=>openD({k:"kidLib",gi:gi,ii:ii},it.title,bd=>{
         const card=document.createElement("div");card.className="card";card.style.marginTop="4px";
         card.innerHTML='<div class="reader-text">'+esc(it.text)+'</div>';
         bd.appendChild(card);
@@ -4633,7 +4706,7 @@ function buildMemoIndex(body){
     const isDone=!!k.memo[s.n];
     const b=document.createElement("button");b.className="row-item";b.type="button";
     b.innerHTML='<span class="fi">'+(isDone?"⭐":"🎧")+'</span><span class="tt"><b>سورة '+esc(s.name)+'</b><small>'+arDigits(s.ayahs)+' آية'+(s.ayahs<=10?" — قصيرة وسهلة للبداية":"")+'</small></span><span class="badge">'+(isDone?"محفوظة ✔":"ابدأ الحفظ")+'</span>';
-    b.addEventListener("click",()=>openDetail("حفظ سورة "+s.name,bd=>buildMemoSurah(bd,s)));
+    b.addEventListener("click",()=>openD({k:"memoSurah",n:s.n},"حفظ سورة "+s.name,bd=>buildMemoSurah(bd,s)));
     list.appendChild(b);
   });
   body.appendChild(list);
@@ -4698,7 +4771,7 @@ function buildColorIndex(body){
     const filled=Object.keys(saved).length;
     const b=document.createElement("button");b.className="row-item";b.type="button";
     b.innerHTML='<span class="fi">🎨</span><span class="tt"><b>'+pg.t+'</b><small>لوّنت '+arDigits(filled)+' من '+arDigits(total)+' أجزاء</small></span><span class="badge">'+(filled>=total?"مكتملة ⭐":"ابدأ التلوين")+'</span>';
-    b.addEventListener("click",()=>openDetail("لوّن: "+pg.t,bd=>buildColorPage(bd,pg)));
+    b.addEventListener("click",()=>openD({k:"colorPage",id:pg.id},"لوّن: "+pg.t,bd=>buildColorPage(bd,pg)));
     list.appendChild(b);
   });
   body.appendChild(list);
@@ -4885,6 +4958,22 @@ function hfzAdvance(h){
   if(s&&ai>=s.verses.length){si++;ai=0}
   h.si=si;h.ai=ai;plusSave();
 }
+function buildHifzSurahDetail(body,s){
+  const h=hfzStore();const today=zdk();
+  const si=DB.surahs.indexOf(s);const isDone=!!h.done[s.n];
+  const c=document.createElement("div");c.className="card";c.style.marginTop="4px";
+  c.innerHTML='<b style="font-size:16.5px">سورة '+esc(s.name)+' — '+arDigits(s.verses.length)+' آية</b>'
+    +'<p class="note">استمع للسورة كاملة آيةً آية بصوت '+esc(reciterObj().name)+' وردّد معه، أو شغّل آية بعينها من المصحف. وحين تتمّ حفظها علّمها هنا.</p>'
+    +'<div class="sheet-actions" style="justify-content:flex-start"><button type="button" id="hsPlay">🎧 استمع للسورة كاملة</button><button type="button" id="hsToggle">'+(isDone?"إلغاء علامة الحفظ":"✓ حفظت هذه السورة")+'</button></div>';
+  c.querySelector("#hsPlay").addEventListener("click",()=>{const steps=s.verses.map((_,ai)=>({k:"ayah",si:si,ai:ai,title:"حفظ — سورة "+s.name+" • الآية "+(ai+1)}));zqPlay(steps,{label:"سورة "+s.name+" بصوت "+reciterObj().name})});
+  c.querySelector("#hsToggle").addEventListener("click",()=>{
+    if(h.done[s.n])delete h.done[s.n];
+    else{h.done[s.n]=today;if(si===h.si){h.si=si+1;h.ai=0}}
+    plusSave();showToast(h.done[s.n]?"تم تعليم سورة "+s.name+" محفوظة ✓":"أُلغيت علامة الحفظ");
+    body.innerHTML="";buildHifzSurahDetail(body,s);
+  });
+  body.appendChild(c);
+}
 function buildHifzPlan(body){
   const h=hfzStore();const today=zdk();
   const head=document.createElement("div");head.className="card";head.style.marginTop="4px";
@@ -4940,20 +5029,7 @@ function buildHifzPlan(body){
     const si=DB.surahs.indexOf(s);const isDone=!!h.done[s.n];const isCur=si===h.si&&!isDone;
     const b=document.createElement("button");b.className="row-item";b.type="button";
     b.innerHTML='<span class="tt"><b>'+(isDone?"✓ ":"")+esc(s.name)+'</b><small>'+arDigits(s.verses.length)+' آية — '+(isDone?("حُفظت "+h.done[s.n]):isCur?"قيد الحفظ الآن":"لم تبدأ بعد")+'</small></span><span class="badge">'+(isDone?"محفوظة":"استمع")+'</span>';
-    b.addEventListener("click",()=>openDetail("حفظ سورة "+s.name,bd=>{
-      const c=document.createElement("div");c.className="card";c.style.marginTop="4px";
-      c.innerHTML='<b style="font-size:16.5px">سورة '+esc(s.name)+' — '+arDigits(s.verses.length)+' آية</b>'
-        +'<p class="note">استمع للسورة كاملة آيةً آية بصوت '+esc(reciterObj().name)+' وردّد معه، أو شغّل آية بعينها من المصحف. وحين تتمّ حفظها علّمها هنا.</p>'
-        +'<div class="sheet-actions" style="justify-content:flex-start"><button type="button" id="hsPlay">🎧 استمع للسورة كاملة</button><button type="button" id="hsToggle">'+(isDone?"إلغاء علامة الحفظ":"✓ حفظت هذه السورة")+'</button></div>';
-      c.querySelector("#hsPlay").addEventListener("click",()=>{const steps=s.verses.map((_,ai)=>({k:"ayah",si:si,ai:ai,title:"حفظ — سورة "+s.name+" • الآية "+(ai+1)}));zqPlay(steps,{label:"سورة "+s.name+" بصوت "+reciterObj().name})});
-      c.querySelector("#hsToggle").addEventListener("click",()=>{
-        if(h.done[s.n])delete h.done[s.n];
-        else{h.done[s.n]=today;if(si===h.si){h.si=si+1;h.ai=0}}
-        plusSave();showToast(h.done[s.n]?"تم تعليم سورة "+s.name+" محفوظة ✓":"أُلغيت علامة الحفظ");
-        body.innerHTML="";buildHifzPlan(body);
-      });
-      bd.appendChild(c);
-    }));
+    b.addEventListener("click",()=>openD({k:"hifzSurah",n:s.n},"حفظ سورة "+s.name,bd=>buildHifzSurahDetail(bd,s)));
     list.appendChild(b);
   });
   body.appendChild(list);
@@ -5085,7 +5161,7 @@ function buildKidsAudioStories(body){
     const heard=!!kidStore().flags["story:"+idx];
     const b=document.createElement("button");b.className="row-item";b.type="button";
     b.innerHTML='<span class="fi">📖</span><span class="tt"><b>'+esc(it.title)+'</b><small>'+(heard?"قرأتها من قبل ✓ — اقرأها من جديد":"اضغط للقراءة — ٥ نجوم عند أول مرة")+'</small></span><span class="arr">‹</span>';
-    b.addEventListener("click",()=>{kidAward(5,null,"story:"+idx);openDetail(it.title,bd=>{
+    b.addEventListener("click",()=>{kidAward(5,null,"story:"+idx);openD({k:"kidStory",idx:idx},it.title,bd=>{
       const c=document.createElement("div");c.className="card";c.style.marginTop="4px";
       c.innerHTML='<div style="text-align:center">'+NOOR_SVG+'</div><b style="font-size:16.5px">'+esc(it.title)+'</b><div class="reader-text" style="margin-top:8px">'+esc(it.text)+'</div>';
       bd.appendChild(c);
@@ -5098,6 +5174,45 @@ function buildKidsAudioStories(body){
 TOOLS.push({ic:"📗",col:"#00695c",name:"خطة الحفظ للكبار",sub:"جزء عمّ وتبارك والكهف — ورد ومراجعة",build:buildHifzPlan});
 TOOLS.push({ic:"🏆",col:"#b8860b",name:"المسابقة الأسبوعية",sub:"٧ أسئلة كل أسبوع وجوائز نجوم",build:buildWeeklyQuiz});
 TOOLS.push({ic:"🌙",col:"#004d40",name:"وضع قبل النوم",sub:"أذكار النوم وسورة الملك بمؤقّت",build:buildSleepMode});
+
+/* ============ مسارات قابلة لإعادة الفتح بعد التحديث (ريفريش) ============
+   يستدعيها resolveRoute في السكربت الرئيسي عبر window.zadResolveRoute حتى
+   ترجع شاشات هذه التوسعة بعد الريفريش لنفس المكان بدل الرئيسية */
+window.zadResolveRoute=function(r){
+  if(!r||!r.k)return null;
+  try{
+    switch(r.k){
+      case "season":{const s=SEASONS.find(x=>x.id===r.id);return s?{title:s.title,build:body=>{const c=document.createElement("div");c.className="card";c.style.marginTop="4px";c.innerHTML=seasonCardHTML(s);body.appendChild(c)}}:null}
+      case "kid":{
+        const map={
+          games:["ساحة الألعاب",buildKidsGames],
+          pillars:["رتّب أركان الإسلام",buildPillarsGame],
+          match:["وصّل النبي بقصته",buildMatchGame],
+          ayah:["كمّل الآية",buildAyahGame],
+          race:["سباق الأذكار",buildRaceGame],
+          videos:["فيديوهات تعليمية",buildKidsVideos],
+          memo:["حفظ جزء عمّ",buildMemoIndex],
+          color:["لوّن وارسم",buildColorIndex],
+          stories:["قصصي وأدعيتي",buildKidsStories],
+          audioStories:["قصص الأنبياء",body=>{if(typeof buildKidsAudioStories==="function")buildKidsAudioStories(body);else buildKidsStories(body)}],
+          stars:["نجومي وشاراتي",buildKidsStars]
+        };
+        const e=map[r.id];return e?{title:e[0],build:e[1]}:null;
+      }
+      case "kidLib":{const g=DB.library[r.gi];const it=g&&g.items[r.ii];if(!it)return null;return{title:it.title,build:body=>{const card=document.createElement("div");card.className="card";card.style.marginTop="4px";card.innerHTML='<div class="reader-text">'+esc(it.text)+'</div>';body.appendChild(card)}}}
+      case "kidStory":{
+        const groups=(DB.library||[]).filter(g=>g.sec==="ركن الأطفال");
+        let stories=[];groups.forEach(g=>{if(g.group.indexOf("قصص")>=0)g.items.forEach(it=>stories.push(it))});
+        const it=stories[r.idx];if(!it)return null;
+        return{title:it.title,build:body=>{const c=document.createElement("div");c.className="card";c.style.marginTop="4px";c.innerHTML='<div style="text-align:center">'+NOOR_SVG+'</div><b style="font-size:16.5px">'+esc(it.title)+'</b><div class="reader-text" style="margin-top:8px">'+esc(it.text)+'</div>';body.appendChild(c)}};
+      }
+      case "memoSurah":{const s=(DB.surahs||[]).find(x=>x.n===r.n);return s?{title:"حفظ سورة "+s.name,build:body=>buildMemoSurah(body,s)}:null}
+      case "colorPage":{const pg=COLOR_PAGES.find(p=>p.id===r.id);return pg?{title:"لوّن: "+pg.t,build:body=>buildColorPage(body,pg)}:null}
+      case "hifzSurah":{const s=(DB.surahs||[]).find(x=>x.n===r.n);return s?{title:"حفظ سورة "+s.name,build:body=>buildHifzSurahDetail(body,s)}:null}
+    }
+  }catch(e){}
+  return null;
+};
 
 /* ================= تسجيل الأدوات الجديدة ================= */
 TOOLS.push({ic:"🌙",col:"#33691e",name:"المواسم والعبادات الموسمية",sub:"محتوى يظهر تلقائيًا في وقته",build:buildSeasonPage});
