@@ -137,7 +137,7 @@ button{font-family:inherit;cursor:pointer}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-top:14px}
 .sadaqa{border:1px solid #e8c96b;border-top:3px solid var(--gold);background:linear-gradient(160deg,#fff8e6 0%,#fffdf5 55%,#fdf6dd 100%);border-radius:14px;padding:7px 11px 6px;box-shadow:0 3px 14px rgba(180,140,20,.14)}
 .sadaqa-head{display:flex;align-items:center;gap:9px;text-align:right}
-.sadaqa-ic{width:27px;height:27px;flex:0 0 auto;border-radius:50%;background:rgba(212,175,55,.18);border:1px solid #e8c96b;display:flex;align-items:center;justify-content:center;font-size:13px;color:#c62828}
+.sadaqa-ic{width:27px;height:27px;flex:0 0 auto;border-radius:50%;background:rgba(212,175,55,.18);border:1px solid #e8c96b;display:flex;align-items:center;justify-content:center;font-size:13px;color:#b8860b}
 .sadaqa h2{margin:0;font-size:12.5px;color:var(--green);font-weight:900;letter-spacing:.2px}
 .sadaqa .dua{font-size:11.2px;line-height:1.5;margin:0;color:#3d4a40}
 .sadaqa .aya{font-family:"Amiri",serif;font-size:13px;line-height:1.55;color:#7a6012;background:rgba(212,175,55,.12);border-radius:8px;padding:3px 8px;text-align:center;margin:5px 0 1px}
@@ -339,10 +339,24 @@ body.has-player{padding-bottom:186px}
 .toast{position:fixed;bottom:132px;left:50%;transform:translateX(-50%);background:#26332a;color:#fff;border-radius:12px;padding:11px 18px;font-size:14.5px;font-weight:700;z-index:70;display:none;max-width:92%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .toast.on{display:block}
 .bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(640px,100%);background:var(--card);border-top:1px solid var(--line);display:flex;z-index:41;padding-bottom:env(safe-area-inset-bottom)}
-.bottomnav button{flex:1;background:none;border:none;color:var(--ink-2);font-size:12.5px;font-weight:700;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px}
-.bottomnav button .ni{font-size:21px}
-.bottomnav button.on{color:var(--green)}
-[data-theme="dark"] .bottomnav button.on{color:#7ed79b}
+.bottomnav button{flex:1;background:none;border:none;color:var(--ink-2);font-size:12.5px;font-weight:700;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px;position:relative;transition:background .18s ease,color .18s ease}
+.bottomnav button .ni{font-size:21px;line-height:1.15;transition:transform .18s ease}
+.bottomnav button.on{color:var(--green);font-weight:900;background:linear-gradient(180deg,rgba(212,175,55,.22),rgba(212,175,55,.05) 80%)}
+.bottomnav button.on::before{content:"";position:absolute;top:0;inset-inline-start:24%;inset-inline-end:24%;height:3.5px;border-radius:0 0 6px 6px;background:var(--gold);box-shadow:0 1px 7px rgba(212,175,55,.6)}
+.bottomnav button.on .ni{transform:scale(1.16)}
+[data-theme="dark"] .bottomnav button.on{color:#8fe3ab}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bottomnav button.on{color:#8fe3ab}}
+/* زر تفسير واضح بجانب كل آية + شبكة التنقّل بالأجزاء */
+.taf-chip{display:inline-block;vertical-align:middle;min-height:25px;margin:0 3px;padding:0 10px;border-radius:999px;border:1px solid var(--gold);background:var(--gold-soft);color:#6b5510;font-family:"Tajawal","Segoe UI",sans-serif;font-size:12.5px;font-weight:800;line-height:1.8;box-shadow:0 1px 4px rgba(180,140,20,.18)}
+[data-theme="dark"] .taf-chip{color:#ffe9a8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .taf-chip{color:#ffe9a8}}
+.juz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:7px;margin-top:10px}
+.juz-btn{background:var(--bg);border:1.5px solid var(--line);border-radius:11px;padding:7px 6px;text-align:center;color:var(--ink);min-height:52px}
+.juz-btn b{display:block;font-size:13.5px;color:var(--green)}
+.juz-btn small{display:block;font-size:10.8px;color:var(--ink-2);margin-top:1px;line-height:1.45}
+.juz-btn:active{border-color:var(--gold);background:var(--gold-soft)}
+[data-theme="dark"] .juz-btn b{color:#8fe3ab}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .juz-btn b{color:#8fe3ab}}
 /* nafha modal */
 .modal{position:fixed;inset:0;background:rgba(10,30,16,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
 .modal.on{display:flex}
@@ -1077,6 +1091,7 @@ function openTafsirSurah(src,idx){
     fetchTafsirSurah(src,s.n).then(render).catch(fail);
   });
 }
+function openAyahTafsir(si,ai){openAyahMenu(si,ai);pickTafsirSource(si,ai,$("#ayahModalBody"))}
 function openAyahMenu(si,ai){
   const s=DB.surahs[si], verse=s.verses[ai];
   $("#ayahModalTitle").textContent="سورة "+s.name+" — الآية "+(ai+1);
@@ -1303,8 +1318,8 @@ setInterval(tick,1000);
 })();
 
 /* ============ home grids ============ */
-const ADHKAR_ICONS={"الصباح":["🌅","#e8a13a"],"المساء":["🌆","#5b6abf"],"النوم":["🌙","#37474f"],"الاستيقاظ":["⏰","#00897b"],"الصلاة":["🕌","#0a6b32"],"بعد الصلاة":["🤲","#2e7d32"],"الرقية":["🛡️","#6a1b9a"],"المسجد":["🕌","#00695c"],"المنزل":["🏠","#795548"],"الطعام والشراب":["🍽️","#d84315"],"الوضوء والخلاء":["💧","#0277bd"],"اللباس":["👔","#5e35b1"],"السفر والركوب":["✈️","#00838f"],"الأذان":["📢","#33691e"],"الاستخارة والكرب":["🗝️","#6d4c41"],"المطر والهلال":["🌧️","#455a64"],"المريض والميت":["🏥","#ad1457"],"المجلس والسوق":["🛒","#8e24aa"]};
-const LIB_ICONS={"الأنبياء":["🌟","#b8860b"],"أحاديث":["📜","#5d4037"],"السيرة":["🕋","#0a6b32"],"الصحابة":["⭐","#00695c"],"أدعية الأنبياء":["🤲","#00695c"],"المكتبة":["📚","#37474f"],"فتاوى":["⚖️","#4e342e"],"العقيدة":["☝️","#37474f"],"قصص قرآن":["📖","#1565c0"],"فضائل":["💎","#00838f"],"وصايا":["🧭","#6a1b9a"],"تفسير":["🔍","#2e7d32"],"التاريخ الإسلامي":["🏛️","#795548"]};
+const ADHKAR_ICONS={"الصباح":["🌅","#e8a13a"],"المساء":["🌆","#064420"],"النوم":["🌙","#33691e"],"الاستيقاظ":["⏰","#00897b"],"الصلاة":["🕌","#0a6b32"],"بعد الصلاة":["🤲","#2e7d32"],"الرقية":["🛡️","#8a6d1a"],"المسجد":["🕌","#00695c"],"المنزل":["🏠","#a67c00"],"الطعام والشراب":["🍽️","#b8860b"],"الوضوء والخلاء":["💧","#00695c"],"اللباس":["👔","#064420"],"السفر والركوب":["✈️","#00838f"],"الأذان":["📢","#33691e"],"الاستخارة والكرب":["🗝️","#8a6d1a"],"المطر والهلال":["🌧️","#33691e"],"المريض والميت":["🏥","#b8860b"],"المجلس والسوق":["🛒","#0a6b32"]};
+const LIB_ICONS={"الأنبياء":["🌟","#b8860b"],"أحاديث":["📜","#8a6d1a"],"السيرة":["🕋","#0a6b32"],"الصحابة":["⭐","#00695c"],"أدعية الأنبياء":["🤲","#00695c"],"المكتبة":["📚","#33691e"],"فتاوى":["⚖️","#33691e"],"العقيدة":["☝️","#33691e"],"قصص قرآن":["📖","#00695c"],"فضائل":["💎","#00838f"],"وصايا":["🧭","#8a6d1a"],"تفسير":["🔍","#2e7d32"],"التاريخ الإسلامي":["🏛️","#a67c00"]};
 function tile(icon,color,title,sub,fn){
   const b=document.createElement("button");b.className="tile";
   b.innerHTML=`<span class="ic" style="background:${color}">${icon}</span><b>${esc(title)}</b>${sub?`<small>${esc(sub)}</small>`:""}`;
@@ -1318,7 +1333,7 @@ function renderHomeGrids(){
   lg.appendChild(tile("🔍","#2e7d32","تفسير القرآن","٩ تفاسير — ١١٤ سورة",()=>openDetail("تفسير القرآن الكريم",buildTafsirIndex)));
   [...new Set(DB.library.map(g=>g.sec))].forEach(secName=>{
     const groups=DB.library.filter(g=>g.sec===secName);const total=groups.reduce((a,g)=>a+g.items.length,0);
-    const[ic,col]=LIB_ICONS[secName]||["📚","#37474f"];
+    const[ic,col]=LIB_ICONS[secName]||["📚","#33691e"];
     lg.appendChild(tile(ic,col,secName,total+" مادة",()=>openLibrarySection(secName,groups)))});
   const tg=$("#toolsGrid");tg.innerHTML="";
   TOOLS.forEach(t=>tg.appendChild(tile(t.ic,t.col,t.name,t.sub,()=>openDetail(t.name,t.build))));
@@ -1326,22 +1341,22 @@ function renderHomeGrids(){
 const TOOLS=[
  {ic:"📿",col:"#0a6b32",name:"السبحة الإلكترونية",sub:"عداد تسبيح",build:buildTasbeeh},
  {ic:"✨",col:"#b8860b",name:"أسماء الله الحسنى",sub:"٩٩ اسمًا ومعانيها",build:buildNames},
- {ic:"🕐",col:"#1565c0",name:"مواقيت الصلاة",sub:"حساب محلي دقيق",build:buildPrayerPage},
+ {ic:"🕐",col:"#00695c",name:"مواقيت الصلاة",sub:"حساب محلي دقيق",build:buildPrayerPage},
  {ic:"✅",col:"#2e7d32",name:"متابعة الصلاة",sub:"سجلّ صلوات اليوم",build:buildTracker},
- {ic:"🧭",col:"#6a1b9a",name:"القبلة",sub:"اتجاه الكعبة",build:buildQibla},
+ {ic:"🧭",col:"#8a6d1a",name:"القبلة",sub:"اتجاه الكعبة",build:buildQibla},
  {ic:"📗",col:"#00695c",name:"الختمة",sub:"متابعة وخطط ختم القرآن والتحديات",build:buildKhatma},
- {ic:"🌙",col:"#37474f",name:"رمضان",sub:"العد التنازلي",build:buildRamadan},
- {ic:"📅",col:"#795548",name:"التقويم والتحويل",sub:"هجري ⇄ ميلادي",build:buildCalendar},
- {ic:"🌙",col:"#5e35b1",name:"المناسبات الإسلامية",sub:"عدّاد للمواسم والأعياد والأيام البيض",build:buildOccasions},
+ {ic:"🌙",col:"#33691e",name:"رمضان",sub:"العد التنازلي",build:buildRamadan},
+ {ic:"📅",col:"#a67c00",name:"التقويم والتحويل",sub:"هجري ⇄ ميلادي",build:buildCalendar},
+ {ic:"🌙",col:"#064420",name:"المناسبات الإسلامية",sub:"عدّاد للمواسم والأعياد والأيام البيض",build:buildOccasions},
  {ic:"💰",col:"#b8860b",name:"حاسبة الزكاة",sub:"نقد وذهب وفضة وتجارة",build:buildZakat},
  {ic:"⭐",col:"#c9a227",name:"المفضلة",sub:"أذكارك وموادك",build:buildFavorites},
- {ic:"🔍",col:"#455a64",name:"بحث",sub:"في كل المحتوى",build:buildSearch},
+ {ic:"🔍",col:"#33691e",name:"بحث",sub:"في كل المحتوى",build:buildSearch},
  {ic:"🎧",col:"#00695c",name:"نوادر القراءات",sub:"٨ تلاوات نادرة",build:buildNawader},
- {ic:"📻",col:"#b3261e",name:"الإذاعة",sub:"٦ محطات مباشرة",build:buildRadio},
+ {ic:"📻",col:"#0a6b32",name:"الإذاعة",sub:"٦ محطات مباشرة",build:buildRadio},
  {ic:"🕌",col:"#2e7d32",name:"المساجد والمصليات",sub:"حولك — خرائط",build:buildMosques},
- {ic:"⬇️",col:"#455a64",name:"تحميلات الصوت",sub:"استمع بدون نت",build:buildDownloads},
- {ic:"⚙️",col:"#546e7a",name:"الإعدادات",sub:"الموقع والمظهر والصوت واللغة",build:buildSettings},
- {ic:"🔐",col:"#37474f",name:"لوحة التحكم",sub:"إدارة المحتوى",build:buildAdminGate},
+ {ic:"⬇️",col:"#33691e",name:"تحميلات الصوت",sub:"استمع بدون نت",build:buildDownloads},
+ {ic:"⚙️",col:"#33691e",name:"الإعدادات",sub:"الموقع والمظهر والصوت واللغة",build:buildSettings},
+ {ic:"🔐",col:"#33691e",name:"لوحة التحكم",sub:"إدارة المحتوى",build:buildAdminGate},
 ];
 
 function buildToolsIndex(body){
@@ -1376,7 +1391,7 @@ function buildAdhkarSession(body,sec){
     card.innerHTML=`<div class="txt">${esc(it.text)}</div><div class="meta"><button class="tap-btn">سبّح</button><button class="reset-btn">إعادة</button><button class="fav-btn" aria-label="مفضلة">${state.favorites.has("a:"+key)?"★":"☆"}</button><span class="remain"></span></div>`;
     const remain=card.querySelector(".remain"),tap=card.querySelector(".tap-btn");
     const paint=()=>{const r=state.dhikrProgress[key];remain.textContent=r>0?("المتبقي: "+r+" / "+it.c):"✓ اكتمل";card.classList.toggle("done",r<=0);tap.disabled=r<=0;tap.textContent=r<=0?"تم بحمد الله":"سبّح"};
-    const doTap=()=>{if(state.dhikrProgress[key]<=0)return;state.dhikrProgress[key]--;state.todayCount++;touchStreak();$("#todayCount").textContent=state.todayCount;if(navigator.vibrate)navigator.vibrate(12);paint();updateBar();persist()};
+    const doTap=()=>{if(state.dhikrProgress[key]<=0)return;state.dhikrProgress[key]--;state.todayCount++;touchStreak();$("#todayCount").textContent=state.todayCount;if(navigator.vibrate)navigator.vibrate(state.dhikrProgress[key]<=0?[45,35,60]:12);paint();updateBar();persist()};
     tap.addEventListener("click",e=>{e.stopPropagation();doTap()});
     card.querySelector(".txt").addEventListener("click",doTap);
     card.querySelector(".reset-btn").addEventListener("click",e=>{e.stopPropagation();state.dhikrProgress[key]=it.c;paint();updateBar();persist()});
@@ -1434,8 +1449,21 @@ function readerTools(){
 }
 
 /* ============ mushaf ============ */
+const JUZ_POINTS=[[1,1],[2,142],[2,253],[3,93],[4,24],[4,148],[5,82],[6,111],[7,88],[8,41],[9,93],[11,6],[12,53],[15,1],[17,1],[18,75],[21,1],[23,1],[25,21],[27,56],[29,46],[33,31],[36,28],[39,32],[41,47],[46,1],[51,31],[58,1],[67,1],[78,1]];
+const JUZ_TITLES=["الم","سيقول","تلك الرسل","لن تنالوا","والمحصنات","لا يحب الله","وإذا سمعوا","ولو أننا","قال الملأ","واعلموا","يعتذرون","وما من دابة","وما أبرئ","ربما","سبحان الذي","قال ألم","اقترب","قد أفلح","وقال الذين","أمن خلق","اتل ما أوحي","ومن يقنت","وما لي","فمن أظلم","إليه يرد","حم","قال فما خطبكم","قد سمع الله","تبارك الذي","عمّ"];
 function buildMushafIndex(body){
   const inp=document.createElement("input");inp.className="searchbox";inp.placeholder="ابحث باسم السورة أو رقمها…";body.appendChild(inp);
+  const juzCard=document.createElement("div");juzCard.className="card";juzCard.style.marginTop="10px";juzCard.style.padding="12px";
+  juzCard.innerHTML='<b style="font-size:15.5px;color:var(--green)">🧭 التنقّل بالأجزاء</b><div class="note" style="margin:2px 0 0">اضغط أي جزء للانتقال إلى بدايته مباشرة.</div>';
+  const jg=document.createElement("div");jg.className="juz-grid";
+  JUZ_POINTS.forEach((jz,i)=>{
+    const sn=DB.surahs[jz[0]-1];
+    const b=document.createElement("button");b.className="juz-btn";
+    b.innerHTML="<b>الجزء "+(i+1)+"</b><small>«"+JUZ_TITLES[i]+"» — "+esc(sn.name)+" "+jz[1]+"</small>";
+    b.addEventListener("click",()=>openSurah(jz[0]-1,jz[1]-1));
+    jg.appendChild(b);
+  });
+  juzCard.appendChild(jg);body.appendChild(juzCard);
   if(state.bookmark){
     const bm=DB.surahs[state.bookmark.surah];
     const btn=document.createElement("button");btn.className="primary";btn.style.background="var(--gold)";btn.style.color="#231d02";
@@ -1480,7 +1508,11 @@ function openSurah(idx,scrollAyah){
       else playAyahAudio(idx,0);
     });
     body.appendChild(seq);
-    const note=document.createElement("p");note.className="note";note.textContent="النص كامل داخل التطبيق ويعمل بدون إنترنت. اضغط أي آية لفتح قائمتها: تشغيل الآية، تفسيرها من عدة تفاسير (ابن كثير، السعدي، الميسّر، وغيرها)، حفظها علامة، أو مشاركتها بطاقة صورة.";
+    const tafAll=document.createElement("button");tafAll.className="primary";tafAll.style.background="var(--green)";tafAll.style.marginTop="8px";
+    tafAll.textContent="📖 تفسير السورة كاملة — اختر التفسير";
+    tafAll.addEventListener("click",()=>{openDetail("تفسير سورة "+s.name,tb2=>{const l=document.createElement("div");l.className="list";TAFSIR_SOURCES.forEach(src=>l.appendChild(rowItem(src.name,src.author,()=>openTafsirSurah(src,idx))));tb2.appendChild(l)})});
+    body.appendChild(tafAll);
+    const note=document.createElement("p");note.className="note";note.textContent="النص كامل داخل التطبيق ويعمل بدون إنترنت. بجانب كل آية زر «📖 تفسير» يعرض تفسيرها مباشرة من عدة تفاسير (ابن كثير، السعدي، الميسّر، وغيرها). واضغط أي آية لفتح قائمتها: تشغيل الآية، حفظها علامة، أو مشاركتها بطاقة صورة.";
     body.appendChild(note);
     if(idx!==0){const b=document.createElement("div");b.className="basmala";b.textContent="بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";body.appendChild(b)}
     const card=document.createElement("div");card.className="card";
@@ -1492,6 +1524,9 @@ function openSurah(idx,scrollAyah){
       span.innerHTML=esc(v)+' <span class="anum">﴿'+(vi+1)+'﴾</span> ';
       span.addEventListener("click",()=>openAyahMenu(idx,vi));
       p.appendChild(span);
+      const tb=document.createElement("button");tb.className="taf-chip";tb.textContent="📖 تفسير";tb.title="تفسير الآية "+(vi+1);
+      tb.addEventListener("click",ev=>{ev.stopPropagation();openAyahTafsir(idx,vi)});
+      p.appendChild(tb);
     });
     card.appendChild(p);body.appendChild(card);
     if(scrollAyah!==undefined&&scrollAyah!==null){setTimeout(()=>{const el=card.querySelector(`.ayah[data-a="${scrollAyah}"]`);if(el)el.scrollIntoView({block:"center",behavior:"smooth"})},80)}
@@ -2926,7 +2961,7 @@ function buildSalawat(body){
   w.querySelector("#swGoal").addEventListener("change",e=>{state.salawat.goal=+e.target.value||100;persist();paintAll();paintSalawatCard();showToast("وردك اليومي: "+state.salawat.goal+" مرة")});
   paintAll();body.appendChild(w);
 }
-TOOLS.splice(1,0,{ic:"🌹",col:"#ad1457",name:"الصلاة على النبي ﷺ",sub:"عدّاد وفضل وورد يومي",build:buildSalawat});
+TOOLS.splice(1,0,{ic:"🌹",col:"#b8860b",name:"الصلاة على النبي ﷺ",sub:"عدّاد وفضل وورد يومي",build:buildSalawat});
 try{renderHomeGrids()}catch(e){}
 
 /* ----- آية اليوم: مراجع موثّقة، والنص يُسحب من مصحف التطبيق نفسه ----- */
