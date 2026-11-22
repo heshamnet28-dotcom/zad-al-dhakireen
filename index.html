@@ -33,7 +33,7 @@
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/IMG-20261121-WA9892.jpg" />
 <meta name="twitter:image:alt" content="زاد الذاكرين — صدقة جارية" />
-<meta name="app-version" content="25" />
+<meta name="app-version" content="26" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -1312,7 +1312,7 @@ function tick(){
   let diff=Math.max(0,next-now);
   const hh=Math.floor(diff/3600000),mm=Math.floor(diff%3600000/60000),ss=Math.floor(diff%60000/1000);
   $("#nextCount").textContent=String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0")+":"+String(ss).padStart(2,"0");
-  try{adhanCheck();remindCheck()}catch(e){}
+  try{adhanCheck();remindCheck();smartSuggestion()}catch(e){}
 }
 setInterval(tick,1000);
 /* ask for the visitor's own location so times follow where they actually are */
@@ -2789,14 +2789,28 @@ function nafhaForToday(){
   if(!pool.length)return "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ";
   return pool[doy%pool.length];
 }
+let smartPeriod=null;
 function smartSuggestion(){
-  const h=new Date().getHours();
-  const morning=h>=4&&h<17;
+  /* morning/evening follows the visitor's own prayer times:
+     morning adhkar from Fajr until Asr, evening adhkar from Asr until Fajr */
+  const now=new Date();
+  let morning;
+  try{
+    const pt=prayerTimes(now);
+    const nowH=now.getHours()+now.getMinutes()/60+now.getSeconds()/3600;
+    morning=nowH>=pt.fajr&&nowH<pt.asr;
+  }catch(e){
+    const h=now.getHours();
+    morning=h>=4&&h<17;
+  }
   const sec=DB.adhkar.find(s=>s.name===(morning?"الصباح":"المساء"))||DB.adhkar[0];
   if(!sec)return;
+  $("#smartBtn").onclick=()=>openAdhkarSection(sec);
+  const period=morning?"am":"pm";
+  if(period===smartPeriod)return;
+  smartPeriod=period;
   $("#smartTitle").textContent="أذكار "+sec.name;
   $("#smartSub").textContent=morning?"هذا وقتها — ابدأ يومك بذكر الله":"هذا وقتها — اختم يومك بذكر الله";
-  $("#smartBtn").onclick=()=>openAdhkarSection(sec);
 }
 $("#nafhaClose").addEventListener("click",()=>$("#nafhaModal").classList.remove("on"));
 let sqTaps=0,sqTimer=null;
@@ -2805,7 +2819,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=25;
+const APP_VERSION=26;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
