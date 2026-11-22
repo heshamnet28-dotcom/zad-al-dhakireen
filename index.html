@@ -1608,8 +1608,11 @@ function rowItem(title,sub,fn,badge){
 function openAdhkarSection(sec){openD({k:"adhkar",id:sec.id,name:sec.name},"أذكار "+sec.name,body=>buildAdhkarSession(body,sec))}
 function buildAdhkarSession(body,sec){
   const info=document.createElement("div");info.className="card";info.style.marginTop="4px";
-  info.innerHTML=`<b style="font-size:16.5px">أذكار ${esc(sec.name)}</b><div class="note">اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.</div><div class="progress"><i style="width:0%"></i></div><div class="note" style="margin-top:0"><span class="pcount">0</span> من ${sec.items.length} ذكرًا اكتمل</div>`;
+  info.innerHTML=`<b style="font-size:16.5px">أذكار ${esc(sec.name)}</b><div class="note">اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.</div><div class="progress"><i style="width:0%"></i></div><div class="note" style="margin-top:0"><span class="pcount">0</span> من ${sec.items.length} ذكرًا اكتمل</div><div class="sheet-actions" style="margin-top:10px;justify-content:flex-start"><button type="button" id="secListen">🎧 استمع للأذكار بصوت القارئ</button><button type="button" id="secListenStop" style="display:none">⏹ إيقاف الاستماع</button></div><div class="note" style="margin-bottom:0">الآيات القرآنية داخل الأذكار تُتلى عليك بصوت ${esc(reciterObj().name)} — تسجيل حقيقي من تلاوة المصحف — وتتكرر بعدد مرات كل ذكر، أما الأدعية النبوية فتُقرأ بصوت الجهاز إذ لا تسجيل لها بصوت قارئ. الاستماع يحتاج إنترنت أول مرة.</div>`;
   body.appendChild(info);
+  const secListenBtn=info.querySelector("#secListen"),secListenStopBtn=info.querySelector("#secListenStop");
+  if(secListenBtn)secListenBtn.addEventListener("click",()=>{if(typeof window.zadPlaySection==="function"){zadPlaySection(sec.id);secListenStopBtn.style.display="";}});
+  if(secListenStopBtn)secListenStopBtn.addEventListener("click",()=>{if(typeof window.zadStopListen==="function")zadStopListen();secListenStopBtn.style.display="none";});
   const bar=info.querySelector(".progress i"),pcount=info.querySelector(".pcount");
   const updateBar=()=>{const done=sec.items.filter((it,i)=> (state.dhikrProgress[sec.id+":"+i]??it.c)<=0).length;bar.style.width=(done/sec.items.length*100)+"%";pcount.textContent=done;
     if(done===sec.items.length&&!info.querySelector(".done-banner")){const d=document.createElement("div");d.className="done-banner";d.textContent="تقبّل الله منك — أتممت أذكار "+sec.name+" كاملة 🎉";info.appendChild(d)}};
@@ -1617,14 +1620,15 @@ function buildAdhkarSession(body,sec){
     const key=sec.id+":"+i;
     if(state.dhikrProgress[key]===undefined)state.dhikrProgress[key]=it.c;
     const card=document.createElement("div");card.className="dhikr";
-    card.innerHTML=`<div class="txt">${esc(it.text)}</div><div class="meta"><button class="tap-btn">سبّح</button><button class="reset-btn">إعادة</button><button class="fav-btn" aria-label="مفضلة">${state.favorites.has("a:"+key)?"★":"☆"}</button><span class="remain"></span></div>`;
+    card.innerHTML=`<div class="txt">${esc(it.text)}</div><div class="meta"><button class="tap-btn">سبّح</button><button class="reset-btn">إعادة</button><button class="fav-btn listen-btn" aria-label="استمع لهذا الذكر">🔊</button><button class="fav-btn" aria-label="مفضلة">${state.favorites.has("a:"+key)?"★":"☆"}</button><span class="remain"></span></div>`;
     const remain=card.querySelector(".remain"),tap=card.querySelector(".tap-btn");
     const paint=()=>{const r=state.dhikrProgress[key];remain.textContent=r>0?("المتبقي: "+r+" / "+it.c):"✓ اكتمل";card.classList.toggle("done",r<=0);tap.disabled=r<=0;tap.textContent=r<=0?"تم بحمد الله":"سبّح"};
     const doTap=()=>{if(state.dhikrProgress[key]<=0)return;state.dhikrProgress[key]--;state.todayCount++;touchStreak();$("#todayCount").textContent=state.todayCount;if(navigator.vibrate)navigator.vibrate(state.dhikrProgress[key]<=0?[45,35,60]:12);paint();updateBar();persist()};
     tap.addEventListener("click",e=>{e.stopPropagation();doTap()});
     card.querySelector(".txt").addEventListener("click",doTap);
     card.querySelector(".reset-btn").addEventListener("click",e=>{e.stopPropagation();state.dhikrProgress[key]=it.c;paint();updateBar();persist()});
-    card.querySelector(".fav-btn").addEventListener("click",e=>{e.stopPropagation();const fk="a:"+key;if(state.favorites.has(fk)){state.favorites.delete(fk);e.target.textContent="☆"}else{state.favorites.add(fk);e.target.textContent="★"}persist()});
+    card.querySelector(".fav-btn:not(.listen-btn)").addEventListener("click",e=>{e.stopPropagation();const fk="a:"+key;if(state.favorites.has(fk)){state.favorites.delete(fk);e.target.textContent="☆"}else{state.favorites.add(fk);e.target.textContent="★"}persist()});
+    card.querySelector(".listen-btn").addEventListener("click",e=>{e.stopPropagation();if(typeof window.zadPlayItem==="function")zadPlayItem(sec.id,i);else showToast("الاستماع غير متاح حاليًا")});
     paint();body.appendChild(card);
   });
   updateBar();
@@ -2305,7 +2309,7 @@ function adhanCheck(){
         state.adhanFired=fk;persist();
         if(navigator.vibrate)navigator.vibrate([120,60,120]);
         sendNotif("حان الآن وقت صلاة "+n,"زاد الذاكرين — تقبّل الله منّا ومنكم","adhan-"+k);
-        playTrack({key:"adhan:"+k,title:"الأذان — حان وقت صلاة "+n,url:ADHAN_URL});
+        playTrack({key:"adhan:"+k,title:"الأذان — حان وقت صلاة "+n,url:(typeof window.zadAdhanUrl==="function"?window.zadAdhanUrl(k):ADHAN_URL)});
       }
     }
   });
@@ -2383,13 +2387,20 @@ function buildSettings(body){
   body.appendChild(card);
   const acard=document.createElement("div");acard.className="card";
   acard.innerHTML=`<div class="field" style="margin-top:0"><label>تنبيه الأذان الصوتي</label><select id="adhanSel"><option value="off" ${!state.adhanOn?"selected":""}>معطّل</option><option value="on" ${state.adhanOn?"selected":""}>مفعّل — يُرفع الأذان عند دخول وقت كل صلاة</option></select></div>
-  <p class="note" style="margin-bottom:0">يعمل التنبيه أثناء بقاء التطبيق مفتوحًا على الجهاز، بصوت الأذان وإشعار عند دخول الوقت. فعّله ثم اسمح بالإشعارات إن طلبها المتصفح.</p>`;
+  <div class="field"><label>صوت المؤذن — يُرفع الأذان كاملًا عند دخول الوقت</label><select id="mzSelB">${typeof window.zadAdhanOptions==="function"?zadAdhanOptions("voice"):""}</select></div>
+  <div class="field"><label>صوت مؤذن الفجر</label><select id="mzFajrB">${typeof window.zadAdhanOptions==="function"?zadAdhanOptions("fajr"):""}</select></div>
+  <button type="button" class="reset-btn" id="mzPrevB" style="width:100%">▶ استمع إلى الأذان كاملًا الآن بهذا الصوت</button>
+  <p class="note" style="margin-bottom:0">يعمل التنبيه أثناء بقاء التطبيق مفتوحًا على الجهاز، بصوت الأذان وإشعار عند دخول الوقت. فعّله ثم اسمح بالإشعارات إن طلبها المتصفح. عشرة تسجيلات كاملة للأذان بأصوات مؤذنين مختلفين — جرّبها واختر ما يريح قلبك.</p>`;
   acard.querySelector("#adhanSel").addEventListener("change",async e=>{
     state.adhanOn=e.target.value==="on";state.adhanFired="";persist();
     if(state.adhanOn){showToast("تم تفعيل تنبيه الأذان — سيُرفع عند دخول الوقت ما دام التطبيق مفتوحًا");
       try{if("Notification" in window&&Notification.permission==="default")await Notification.requestPermission()}catch(_){}}
     else showToast("تم إيقاف تنبيه الأذان");
   });
+  const mzB=acard.querySelector("#mzSelB"),mzfB=acard.querySelector("#mzFajrB"),mzpB=acard.querySelector("#mzPrevB");
+  if(mzB)mzB.addEventListener("change",e=>{if(typeof window.zadAdhanSet==="function"){zadAdhanSet({voice:+e.target.value});showToast("تم اختيار صوت المؤذن — جرّبه من زر الاستماع")}});
+  if(mzfB)mzfB.addEventListener("change",e=>{if(typeof window.zadAdhanSet==="function"){zadAdhanSet({fajr:+e.target.value});showToast("تم ضبط صوت مؤذن الفجر")}});
+  if(mzpB)mzpB.addEventListener("click",()=>{if(typeof window.zadAdhanPreview==="function")zadAdhanPreview()});
   body.appendChild(acard);
   const dlOpen=document.createElement("button");dlOpen.className="reset-btn";dlOpen.style.cssText="margin-top:14px;width:100%";dlOpen.textContent="⬇️ إدارة تحميلات الصوت — عرض المساحة وحذف سورة";
   dlOpen.addEventListener("click",()=>openDetail("تحميلات الصوت",buildDownloads,null,{k:"downloads"}));
@@ -2872,7 +2883,10 @@ buildSettings=function(body){
   <div class="field" style="margin-top:0"><label>القارئ الافتراضي لتلاوة السور والآيات</label><select id="recSel">${RECITERS.map(r=>`<option value="${r.id}" ${r.id===state.reciter?"selected":""}>${esc(r.name)}</option>`).join("")}</select></div>
   <div class="field"><label>سرعة تشغيل الصوت الافتراضية</label><select id="spdSel">${[0.5,0.75,1,1.25,1.5,1.75,2].map(v=>`<option value="${v}" ${state.speed===v?"selected":""}>${v}×</option>`).join("")}</select></div>
   <div class="field"><label>تنبيه الأذان الصوتي</label><select id="adhanSel"><option value="off" ${!state.adhanOn?"selected":""}>معطّل</option><option value="on" ${state.adhanOn?"selected":""}>مفعّل — يُرفع الأذان عند دخول وقت كل صلاة</option></select></div>
-  <p class="note" style="margin-bottom:0">يعمل تنبيه الأذان أثناء بقاء التطبيق مفتوحًا على الجهاز، بصوت الأذان وإشعار عند دخول الوقت. فعّله ثم اسمح بالإشعارات إن طلبها المتصفح. وبقية التذكيرات — قبل الصلاة وأذكار الصباح والمساء وبعد الصلاة والصلاة على النبي والآيات والحكم — تُدار كلها من قسم «الإشعارات والتذكيرات» التالي.</p>`;
+  <div class="field"><label>صوت المؤذن — يُرفع الأذان كاملًا عند دخول الوقت</label><select id="mzSel">${typeof window.zadAdhanOptions==="function"?zadAdhanOptions("voice"):""}</select></div>
+  <div class="field"><label>صوت مؤذن الفجر</label><select id="mzFajrSel">${typeof window.zadAdhanOptions==="function"?zadAdhanOptions("fajr"):""}</select></div>
+  <button type="button" class="reset-btn" id="mzPrev" style="width:100%">▶ استمع إلى الأذان كاملًا الآن بهذا الصوت</button>
+  <p class="note" style="margin-bottom:0">يعمل تنبيه الأذان أثناء بقاء التطبيق مفتوحًا على الجهاز، بصوت الأذان وإشعار عند دخول الوقت. فعّله ثم اسمح بالإشعارات إن طلبها المتصفح. عشرة تسجيلات كاملة للأذان بأصوات مؤذنين مختلفين — جرّبها واختر ما يريح قلبك، ويمكنك جعل صوت الفجر مختلفًا عن بقية الصلوات. وبقية التذكيرات — قبل الصلاة وأذكار الصباح والمساء وبعد الصلاة والصلاة على النبي والآيات والحكم — تُدار كلها من قسم «الإشعارات والتذكيرات» التالي.</p>`;
   so.querySelector("#recSel").addEventListener("change",e=>{state.reciter=e.target.value;persist();try{stopAyahSeq()}catch(_){} showToast("القارئ الافتراضي: "+reciterObj().name)});
   so.querySelector("#spdSel").addEventListener("change",e=>{state.speed=parseFloat(e.target.value)||1;audioEl.playbackRate=state.speed;const sp=$("#plSpeed");if(sp)sp.value=String(state.speed);persist()});
   so.querySelector("#adhanSel").addEventListener("change",async e=>{
@@ -2881,6 +2895,10 @@ buildSettings=function(body){
       try{if("Notification" in window&&Notification.permission==="default")await Notification.requestPermission()}catch(_){}}
     else showToast("تم إيقاف تنبيه الأذان");
   });
+  const mzS=so.querySelector("#mzSel"),mzfS=so.querySelector("#mzFajrSel"),mzpS=so.querySelector("#mzPrev");
+  if(mzS)mzS.addEventListener("change",e=>{if(typeof window.zadAdhanSet==="function"){zadAdhanSet({voice:+e.target.value});showToast("تم اختيار صوت المؤذن — جرّبه من زر الاستماع")}});
+  if(mzfS)mzfS.addEventListener("change",e=>{if(typeof window.zadAdhanSet==="function"){zadAdhanSet({fajr:+e.target.value});showToast("تم ضبط صوت مؤذن الفجر")}});
+  if(mzpS)mzpS.addEventListener("click",()=>{if(typeof window.zadAdhanPreview==="function")zadAdhanPreview()});
   /* ٤) الإشعارات والتذكيرات — منظومة شاملة، كل نوع مستقل بتشغيله ووقته */
   head("🔔 الإشعارات والتذكيرات");
   const nc=newCard();
@@ -3689,23 +3707,23 @@ function stopSpeak(){try{if("speechSynthesis" in window)speechSynthesis.cancel()
 function buildAudioHub(body){
   const intro=document.createElement("div");intro.className="card";intro.style.marginTop="4px";
   intro.innerHTML=`<b style="font-size:17px">🎧 المكتبة الصوتية</b>
-  <p class="note" style="margin-bottom:0">المصحف المرتل كاملًا بثمانية قرّاء، وأذكار ومواد تُقرأ عليك صوتيًا بصوت جهازك، وروابط سريعة للإذاعات والتلاوات النادرة. التشغيل والتحميل للاستماع بدون إنترنت متاحان من كل صف.</p>`;
+  <p class="note" style="margin-bottom:0">المصحف المرتل كاملًا بثمانية قرّاء، والآيات القرآنية داخل الأذكار تُتلى عليك بصوت القارئ الذي اخترته — تسجيلات حقيقية — وروابط سريعة للإذاعات والتلاوات النادرة. التشغيل والتحميل للاستماع بدون إنترنت متاحان من كل صف.</p>`;
   body.appendChild(intro);
   const h1=document.createElement("div");h1.className="sec-title";h1.textContent="المصحف المرتل — سورة الفاتحة بكل قارئ";body.appendChild(h1);
   const note1=document.createElement("p");note1.className="note";note1.textContent="لأي سورة أخرى: افتح المصحف واختر القارئ من صفحة السورة — القرّاء الثمانية متاحون لكل السور الـ١١٤.";body.appendChild(note1);
   RECITERS.forEach(r=>body.appendChild(audRow(surahKey(1,r.id),"سورة الفاتحة — "+r.name,"المصحف المرتل كاملًا بهذا الصوت في قسم المصحف",surahUrlFor(1,r.id),false)));
-  const h2=document.createElement("div");h2.className="sec-title";h2.textContent="أذكار ومواد تُسمَع بصوت الجهاز";body.appendChild(h2);
+  const h2=document.createElement("div");h2.className="sec-title";h2.textContent="أذكار تُسمَع بصوت القارئ";body.appendChild(h2);
   const tcard=document.createElement("div");tcard.className="card";tcard.style.marginTop="8px";
   tcard.innerHTML=`<div class="sheet-actions" style="margin-top:0;justify-content:flex-start">
-    <button id="auMorning">🔊 اسمع أذكار الصباح</button>
-    <button id="auEvening">🔊 اسمع أذكار المساء</button>
+    <button id="auMorning">🎧 اسمع أذكار الصباح بصوت القارئ</button>
+    <button id="auEvening">🎧 اسمع أذكار المساء بصوت القارئ</button>
     <button id="auHikma">🔊 اسمع حديث اليوم</button>
     <button id="auStop">⏹ إيقاف القراءة</button></div>
-  <p class="note" style="margin-bottom:0">القراءة الصوتية هنا تتم بصوت جهازك نفسه (تقنية النطق المدمجة) فتعمل بدون إنترنت، وجودة الصوت حسب أصوات جهازك.</p>`;
+  <p class="note" style="margin-bottom:0">يفتح لك صفحة الأذكار في وضع الاستماع: الآيات القرآنية فيها تُتلى بصوت ${esc(reciterObj().name)} (تسجيل حقيقي من تلاوة المصحف) وتتكرر بعدد مرات كل ذكر، والأدعية النبوية تُقرأ بصوت الجهاز إذ لا تسجيل لها بصوت قارئ. حديث اليوم يُقرأ بصوت جهازك (تقنية النطق المدمجة) فيعمل بدون إنترنت.</p>`;
   body.appendChild(tcard);
-  const secText=n=>{const s=DB.adhkar.find(x=>x.name===n);return s?s.items.map(it=>it.text.replace(/[{}]/g,"")).join(". "):""};
-  tcard.querySelector("#auMorning").addEventListener("click",()=>speakText(secText("الصباح")));
-  tcard.querySelector("#auEvening").addEventListener("click",()=>speakText(secText("المساء")));
+  const openSec=n=>{const s=DB.adhkar.find(x=>x.name===n);if(s)openAdhkarSection(s);else showToast("القسم غير متاح حاليًا")};
+  tcard.querySelector("#auMorning").addEventListener("click",()=>openSec("الصباح"));
+  tcard.querySelector("#auEvening").addEventListener("click",()=>openSec("المساء"));
   tcard.querySelector("#auHikma").addEventListener("click",()=>{const h=hikmaForToday();speakText("قال رسول الله صلى الله عليه وسلم: "+h[0]+". "+h[1])});
   tcard.querySelector("#auStop").addEventListener("click",stopSpeak);
   const h3=document.createElement("div");h3.className="sec-title";h3.textContent="بث مباشر وتلاوات نادرة";body.appendChild(h3);
@@ -4376,6 +4394,7 @@ function buildKidsHub(body){
     {ic:"🎧",t:"حفظ جزء عمّ",s:"اسمع وكرّر واختبر نفسك",c:"#064420",fn:buildMemoIndex},
     {ic:"🎨",t:"لوّن وارسم",s:"مسجد وكعبة وهلال بألوانك",c:"#6a1b9a",fn:buildColorIndex},
     {ic:"📚",t:"قصصي وأدعيتي",s:"قصص الأنبياء وأدعية صديقي الصغير",c:"#a67c00",fn:buildKidsStories},
+    {ic:"🎧",t:"قصص مسموعة",s:"اسمع قصص الأنبياء واجمع النجوم",c:"#00695c",fn:b=>{if(typeof buildKidsAudioStories==="function")buildKidsAudioStories(b);else buildKidsStories(b)}},
     {ic:"⭐",t:"نجومي وشاراتي",s:"تقدّمي ومكافآتي ولوحة الأبطال",c:"#e65100",fn:buildKidsStars}
   ];
   entries.forEach(e=>{
@@ -4765,6 +4784,353 @@ function buildKidsStars(body){
   note.innerHTML='<b style="font-size:15.5px">👨‍👩‍👧 للأب والأم</b><p class="note" style="font-size:14.5px;color:var(--ink);margin-bottom:0">نجوم طفلك وشاراته وسوره المحفوظة محفوظة على هذا الجهاز داخل التطبيق، وتُحسب من لعبه وحفظه الفعلي هنا. شجّعوه بكلمة طيبة مع كل شارة جديدة — فالتشجيع أبقى من أي مكافأة.</p>';
   body.appendChild(note);
 }
+
+/* ================= التوسعة الجديدة: أذكار بصوت القارئ + أذان كامل بأصوات مؤذنين + خطة حفظ للكبار + مسابقة أسبوعية + وضع قبل النوم + قصص مسموعة ================= */
+try{const _stl=document.createElement("style");_stl.textContent=".dhikr.listening{outline:2px solid #c9a227;outline-offset:-2px}.quiz-opt{display:block;width:100%;text-align:right;margin-top:8px;padding:13px 14px;border-radius:12px;border:1.5px solid #cfc9ae;background:var(--card,#fff);font-size:16px;font-weight:700;color:var(--ink);cursor:pointer}.quiz-opt.ok{border-color:#2e7d32;background:rgba(46,125,50,.14)}.quiz-opt.bad{border-color:#c62828;background:rgba(198,40,40,.13)}.hifz-ayah{padding:9px 2px;border-bottom:1px dashed #cfc9ae;font-size:19px;line-height:2}.sleep-moon{font-size:54px;text-align:center;line-height:1.1}";document.head.appendChild(_stl)}catch(e){}
+const zdk=d=>{d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const zDays=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/86400000);
+
+/* ----- أصوات المؤذنين: عشرة تسجيلات كاملة للأذان من مكتبة أذان موثّقة (نفس مصدر الأذان الأصلي في التطبيق) ----- */
+const ZADHAN_KEY="zadAdhan1";
+function zadAdhanGet(){try{const g=JSON.parse(localStorage.getItem(ZADHAN_KEY)||"null");if(g&&+g.voice>=1&&+g.voice<=10)return{voice:+g.voice,fajr:(+g.fajr>=0&&+g.fajr<=10)?+g.fajr:0}}catch(e){}return{voice:1,fajr:0}}
+window.zadAdhanGet=zadAdhanGet;
+window.zadAdhanSet=function(p){const g=zadAdhanGet();if(p.voice)g.voice=p.voice;if(p.fajr!=null)g.fajr=p.fajr;try{localStorage.setItem(ZADHAN_KEY,JSON.stringify(g))}catch(e){}};
+window.zadAdhanUrl=function(prayer){const g=zadAdhanGet();const v=(prayer==="fajr"&&g.fajr)?g.fajr:g.voice;return "https://cdn.aladhan.com/audio/adhans/a"+v+".mp3"};
+window.zadAdhanOptions=function(kind){const g=zadAdhanGet();let h="";if(kind==="fajr")h+='<option value="0" '+(g.fajr===0?"selected":"")+'>نفس صوت بقية الصلوات</option>';for(let n=1;n<=10;n++){const sel=(kind==="fajr"?g.fajr:g.voice)===n;h+='<option value="'+n+'" '+(sel?"selected":"")+'>الأذان كاملًا — تسجيل '+arDigits(n)+'</option>'}return h};
+window.zadAdhanPreview=function(){playTrack({key:"adhan:preview",title:"الأذان كاملًا — معاينة صوت المؤذن",url:window.zadAdhanUrl("dhuhr")});showToast("استمع إلى الأذان كاملًا واختر ما يريح قلبك")};
+
+/* ----- مطابقة آيات الأذكار مع المصحف: النصوص القرآنية داخل الأذكار موسومة بأقواس {} فيُعرف موضع كل آية وتُتلى بصوت القارئ ----- */
+let _zAyahIdx=null;
+function zAyahIndex(){if(_zAyahIdx)return _zAyahIdx;const m=new Map();DB.surahs.forEach((s,si)=>{s.verses.forEach((v,ai)=>{const k=normAr(v);if(k&&!m.has(k))m.set(k,[si,ai])})});_zAyahIdx=m;return m}
+function zItemAyahs(item){
+  const t=String(item.text||"");const segs=[];const re=/\{([^}]*)\}/g;let mm;
+  while((mm=re.exec(t)))segs.push(mm[1]);
+  if(!segs.length)return[];
+  const idx=zAyahIndex();const out=[];const seen={};
+  const push=hit=>{const key=hit[0]+":"+hit[1];if(!seen[key]){seen[key]=1;out.push(hit)}};
+  segs.forEach(seg=>{seg.split(/[*۝۞]/).forEach(part=>{
+    const k=normAr(part);if(!k||k.length<4)return;
+    const hit=idx.get(k);if(hit){push(hit);return}
+    if(k.length>14){for(const e of idx){if(e[0].indexOf(k)>=0){push(e[1]);return}}}
+    const found=[];for(const e of idx){if(e[0].length>10){const pos=k.indexOf(e[0]);if(pos>=0)found.push([pos,e[1]])}}
+    found.sort((a,b)=>a[0]-b[0]);found.forEach(f=>push(f[1]));
+  })});
+  return out;
+}
+function zSectionSteps(sec){
+  const steps=[];
+  sec.items.forEach((it,i)=>{
+    const ays=zItemAyahs(it);
+    if(ays.length){const reps=Math.min(Math.max(1,+it.c||1),5);for(let r=0;r<reps;r++)ays.forEach(a=>steps.push({k:"ayah",si:a[0],ai:a[1],card:i,title:"أذكار "+sec.name+" — بصوت "+reciterObj().name}))}
+    else steps.push({k:"tts",text:String(it.text||"").replace(/[{}]/g," "),card:i,title:"أذكار "+sec.name});
+  });
+  return steps;
+}
+
+/* ----- محرك تشغيل تسلسلي واحد: آيات بصوت القارئ + مقاطع كاملة + أدعية بصوت الجهاز، مع تظليل الكارت الجاري ومؤقّت اختياري ----- */
+const ZQ={steps:[],i:-1,active:false,tok:0,timer:null,cards:null,onDone:null,errs:0};
+function zqPaintCards(idx){if(!ZQ.cards)return;ZQ.cards.forEach((el,j)=>{if(el)el.classList.toggle("listening",j===idx)});if(idx>=0&&ZQ.cards[idx]){try{ZQ.cards[idx].scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}}}
+function zqStop(){ZQ.active=false;ZQ.tok++;ZQ.steps=[];ZQ.i=-1;if(ZQ.timer){clearTimeout(ZQ.timer);ZQ.timer=null}try{stopSpeak()}catch(e){}try{stopPlayer()}catch(e){}zqPaintCards(-1);const sb=document.querySelector("#secListenStop");if(sb)sb.style.display="none"}
+function zqPlay(steps,opts){
+  opts=opts||{};zqStop();
+  if(!steps||!steps.length){showToast("لا يوجد ما يُشغَّل هنا");return}
+  ZQ.steps=steps;ZQ.i=-1;ZQ.active=true;ZQ.errs=0;ZQ.cards=opts.cards||null;ZQ.onDone=opts.onDone||null;
+  if(opts.timerMin)ZQ.timer=setTimeout(()=>{zqStop();showToast("⏰ انتهى مؤقّت النوم — تصبح على خير 🌙")},opts.timerMin*60000);
+  if(opts.label)showToast("🎧 بدأ التشغيل — "+opts.label);
+  zqNext();
+}
+function zqNext(){
+  if(!ZQ.active)return;
+  ZQ.i++;
+  if(ZQ.i>=ZQ.steps.length){const cb=ZQ.onDone;ZQ.active=false;zqPaintCards(-1);const sb=document.querySelector("#secListenStop");if(sb)sb.style.display="none";if(cb)cb();return}
+  const st=ZQ.steps[ZQ.i];
+  if(st.card!=null)zqPaintCards(st.card);
+  const tok=++ZQ.tok;
+  if(st.k==="tts")zqSpeak(st.text,tok);
+  else{const url=st.k==="ayah"?ayahAudioUrl(st.si,st.ai):st.url;playTrack({key:"zq:"+Date.now()+":"+ZQ.i,title:st.title||"استماع",url:url})}
+}
+function zqSpeak(text,tok){
+  try{
+    if(!("speechSynthesis" in window)){setTimeout(()=>{if(ZQ.active&&ZQ.tok===tok)zqNext()},400);return}
+    const u=new SpeechSynthesisUtterance(String(text||"").slice(0,900));
+    u.lang="ar-SA";const v=(speechSynthesis.getVoices()||[]).find(x=>/^ar/.test(x.lang));if(v)u.voice=v;u.rate=0.95;
+    let adv=false;const go=()=>{if(!adv){adv=true;if(ZQ.active&&ZQ.tok===tok)setTimeout(zqNext,300)}};
+    u.onend=go;u.onerror=go;speechSynthesis.speak(u);
+    setTimeout(go,Math.min(90000,5000+String(text||"").length*100));
+  }catch(e){if(ZQ.active&&ZQ.tok===tok)setTimeout(zqNext,300)}
+}
+audioEl.addEventListener("ended",()=>{if(ZQ.active){const st=ZQ.steps[ZQ.i];if(st&&st.k!=="tts")setTimeout(()=>{if(ZQ.active)zqNext()},250)}});
+audioEl.addEventListener("playing",()=>{ZQ.errs=0});
+audioEl.addEventListener("error",()=>{if(ZQ.active){const st=ZQ.steps[ZQ.i];if(st&&st.k!=="tts"){ZQ.errs++;if(ZQ.errs>4){zqStop();showToast("تعذّر تشغيل الصوت — تحقق من اتصال الإنترنت");return}setTimeout(()=>{if(ZQ.active)zqNext()},900)}}});
+document.addEventListener("click",e=>{if(e.target&&e.target.id==="plClose"&&ZQ.active)zqStop()});
+window.zadPlaySection=function(secId){
+  const sec=DB.adhkar.find(s=>s.id===secId);if(!sec){showToast("القسم غير متاح حاليًا");return}
+  const cards=Array.prototype.slice.call(document.querySelectorAll("#detailBody .dhikr"));
+  zqPlay(zSectionSteps(sec),{label:"أذكار "+sec.name+" بصوت "+reciterObj().name,cards:cards,onDone:()=>showToast("انتهت أذكار "+sec.name+" — تقبّل الله منك 🤲")});
+};
+window.zadPlayItem=function(secId,idx){
+  const sec=DB.adhkar.find(s=>s.id===secId);if(!sec||!sec.items[idx])return;
+  const cards=Array.prototype.slice.call(document.querySelectorAll("#detailBody .dhikr"));
+  const steps=zSectionSteps({name:sec.name,items:[sec.items[idx]]});
+  steps.forEach(s=>s.card=idx);
+  if(!steps.length){showToast("لا صوت متاحًا لهذا الذكر");return}
+  zqPlay(steps,{label:"ذكر من أذكار "+sec.name,cards:cards,onDone:()=>showToast("انتهى الذكر — تقبّل الله")});
+};
+window.zadStopListen=function(){zqStop();showToast("تم إيقاف الاستماع")};
+
+/* ----- خطة الحفظ للكبار: جزء عمّ وتبارك وسورة الكهف — ورد يومي ومراجعة مجدولة بصوت القارئ ----- */
+const HFZ_TARGETS={amma:{name:"جزء عمّ",from:78,to:114},tabarak:{name:"جزء تبارك",from:67,to:77},kahf:{name:"سورة الكهف",from:18,to:18}};
+function hfzSurahs(key){const t=HFZ_TARGETS[key];return DB.surahs.filter(s=>s.n>=t.from&&s.n<=t.to)}
+function hfzStore(){
+  if(!plus.hifz||typeof plus.hifz!=="object")plus.hifz={target:"amma",perDay:5,si:-1,ai:0,done:{},rev:{}};
+  const h=plus.hifz;
+  if(!HFZ_TARGETS[h.target])h.target="amma";
+  if(!h.done)h.done={};if(!h.rev)h.rev={};
+  if(typeof h.perDay!=="number"||h.perDay<1)h.perDay=5;
+  if(h.si<0||h.si>=DB.surahs.length){const f=hfzSurahs(h.target)[0];h.si=DB.surahs.indexOf(f);h.ai=0}
+  return h;
+}
+function hfzProgress(h){
+  const list=hfzSurahs(h.target);let total=0,doneCount=0;
+  list.forEach(s=>{total+=s.verses.length;const si=DB.surahs.indexOf(s);
+    if(h.done[s.n])doneCount+=s.verses.length;
+    else if(si<h.si)doneCount+=s.verses.length;
+    else if(si===h.si)doneCount+=Math.min(h.ai,s.verses.length)});
+  return{total:total,doneCount:doneCount,pct:total?Math.round(doneCount/total*100):0};
+}
+function hfzWird(h){
+  const out=[];const list=hfzSurahs(h.target);if(!list.length)return out;
+  const lastN=list[list.length-1].n;let si=h.si,ai=h.ai,left=h.perDay;
+  while(left>0){const s=DB.surahs[si];if(!s||s.n>lastN||s.n<list[0].n)break;
+    out.push({si:si,ai:ai,sn:s.n,name:s.name,text:s.verses[ai]});
+    ai++;left--;if(ai>=s.verses.length){si++;ai=0}}
+  return out;
+}
+function hfzAdvance(h){
+  const w=hfzWird(h);if(!w.length)return;
+  w.forEach(step=>{const s=DB.surahs[step.si];if(step.ai===s.verses.length-1)h.done[s.n]=zdk()});
+  const last=w[w.length-1];let si=last.si,ai=last.ai+1;const s=DB.surahs[si];
+  if(s&&ai>=s.verses.length){si++;ai=0}
+  h.si=si;h.ai=ai;plusSave();
+}
+function buildHifzPlan(body){
+  const h=hfzStore();const today=zdk();
+  const head=document.createElement("div");head.className="card";head.style.marginTop="4px";
+  const pr=hfzProgress(h);
+  head.innerHTML='<b style="font-size:17px">📗 خطة الحفظ للكبار</b>'
+    +'<p class="note" style="font-size:14.5px;color:var(--ink)">احفظ على مهل وبثبات: ورد صغير كل يوم، تلاوة بصوت '+esc(reciterObj().name)+' (أو القارئ الذي اخترته من المصحف)، ومراجعة مجدولة لما حفظته حتى لا يفلت. تقدّمك محفوظ على جهازك.</p>'
+    +'<div class="field"><label>هدف الحفظ</label><select id="hfzTarget">'+Object.keys(HFZ_TARGETS).map(k=>'<option value="'+k+'" '+(h.target===k?"selected":"")+'>'+HFZ_TARGETS[k].name+' ('+arDigits(hfzSurahs(k).reduce((a,s)=>a+s.verses.length,0))+' آية)</option>').join("")+'</select></div>'
+    +'<div class="field"><label>ورد الحفظ اليومي</label><select id="hfzPerDay">'+[3,5,10,15,20].map(n=>'<option value="'+n+'" '+(h.perDay===n?"selected":"")+'>'+arDigits(n)+' آيات في اليوم</option>').join("")+'</select></div>'
+    +'<div class="note" style="margin-top:10px">تقدّمك في '+HFZ_TARGETS[h.target].name+': '+arDigits(pr.doneCount)+' من '+arDigits(pr.total)+' آية</div>'
+    +'<div class="progress"><i style="width:'+pr.pct+'%"></i></div><div style="font-weight:800">'+arDigits(pr.pct)+'٪</div>';
+  body.appendChild(head);
+  head.querySelector("#hfzTarget").addEventListener("change",e=>{h.target=e.target.value;const f=hfzSurahs(h.target)[0];h.si=DB.surahs.indexOf(f);h.ai=0;plusSave();body.innerHTML="";buildHifzPlan(body)});
+  head.querySelector("#hfzPerDay").addEventListener("change",e=>{h.perDay=+e.target.value;plusSave();body.innerHTML="";buildHifzPlan(body)});
+  /* ورد اليوم */
+  const wird=hfzWird(h);
+  const wcard=document.createElement("div");wcard.className="card";
+  if(!wird.length){
+    wcard.innerHTML='<b style="font-size:16.5px">🎉 أتممت هدف الحفظ كاملًا</b><p class="note" style="margin-bottom:0">ما شاء الله! أتممت '+HFZ_TARGETS[h.target].name+' حفظًا. واظب على المراجعة من القائمة بالأسفل، أو اختر هدفًا جديدًا من الأعلى.</p>';
+  }else{
+    let rep=1;
+    wcard.innerHTML='<b style="font-size:16.5px">🎧 ورد الحفظ اليوم — '+arDigits(wird.length)+' آيات</b>'
+      +'<p class="note">من سورة '+esc(wird[0].name)+' — الآية '+arDigits(wird[0].ai+1)+'. استمع وردّد بصوتك، ثم علّم الورد منجزًا.</p>'
+      +wird.map(w=>'<div class="hifz-ayah"><span class="badge">'+esc(w.name)+' • '+arDigits(w.ai+1)+'</span> '+esc(w.text)+'</div>').join("")
+      +'<div class="sheet-actions" style="justify-content:flex-start"><button type="button" id="hfzPlay">🎧 استمع للورد بصوت القارئ</button><button type="button" id="hfzRep">التكرار: مرة واحدة</button></div>'
+      +'<button class="primary" id="hfzDone" style="margin-top:10px">✓ أتممت ورد اليوم — انتقل للورد التالي</button>';
+    wcard.querySelector("#hfzRep").addEventListener("click",e=>{rep=rep===1?3:1;e.target.textContent=rep===1?"التكرار: مرة واحدة":"التكرار: ٣ مرات لكل آية"});
+    wcard.querySelector("#hfzPlay").addEventListener("click",()=>{
+      const steps=[];wird.forEach(w=>{for(let r=0;r<rep;r++)steps.push({k:"ayah",si:w.si,ai:w.ai,title:"ورد الحفظ — سورة "+w.name+" • الآية "+(w.ai+1)})});
+      zqPlay(steps,{label:"ورد الحفظ اليوم بصوت "+reciterObj().name,onDone:()=>showToast("انتهى ورد الحفظ — ردّده بصوتك ثم علّمه منجزًا")});
+    });
+    wcard.querySelector("#hfzDone").addEventListener("click",()=>{hfzAdvance(h);showToast("بارك الله فيك — تقدّمت في الحفظ، ورد الغد بانتظارك 📗");body.innerHTML="";buildHifzPlan(body)});
+  }
+  body.appendChild(wcard);
+  /* مراجعة اليوم */
+  const due=Object.keys(h.done).map(n=>({n:+n,d:h.done[n]})).filter(x=>zDays(x.d,today)>=3&&h.rev[x.n]!==today).sort((a,b)=>a.d<b.d?-1:1).slice(0,3);
+  if(due.length){
+    const rc=document.createElement("div");rc.className="card";
+    rc.innerHTML='<b style="font-size:16.5px">🔁 مراجعة اليوم</b><p class="note">سور حفظتها منذ ٣ أيام أو أكثر — راجعها اليوم تثبيتًا للحفظ.</p>';
+    due.forEach(x=>{
+      const s=DB.surahs.find(y=>y.n===x.n);if(!s)return;const si=DB.surahs.indexOf(s);
+      const row=document.createElement("div");row.className="sheet-actions";row.style.justifyContent="space-between";
+      row.innerHTML='<b>سورة '+esc(s.name)+'</b><span><button type="button" class="rvPlay">🎧 استمع</button> <button type="button" class="rvDone">✓ راجعتها</button></span>';
+      row.querySelector(".rvPlay").addEventListener("click",()=>{const steps=s.verses.map((_,ai)=>({k:"ayah",si:si,ai:ai,title:"مراجعة — سورة "+s.name+" • الآية "+(ai+1)}));zqPlay(steps,{label:"مراجعة سورة "+s.name})});
+      row.querySelector(".rvDone").addEventListener("click",()=>{h.rev[x.n]=today;plusSave();showToast("أحسنت — ثبّت الله حفظك");body.innerHTML="";buildHifzPlan(body)});
+      rc.appendChild(row);
+    });
+    body.appendChild(rc);
+  }
+  /* قائمة السور */
+  const lh=document.createElement("div");lh.className="sec-title";lh.textContent="سور "+HFZ_TARGETS[h.target]+" — اضغط أي سورة للاستماع أو التعليم";body.appendChild(lh);
+  const list=document.createElement("div");list.className="list";
+  hfzSurahs(h.target).forEach(s=>{
+    const si=DB.surahs.indexOf(s);const isDone=!!h.done[s.n];const isCur=si===h.si&&!isDone;
+    const b=document.createElement("button");b.className="row-item";b.type="button";
+    b.innerHTML='<span class="tt"><b>'+(isDone?"✓ ":"")+esc(s.name)+'</b><small>'+arDigits(s.verses.length)+' آية — '+(isDone?("حُفظت "+h.done[s.n]):isCur?"قيد الحفظ الآن":"لم تبدأ بعد")+'</small></span><span class="badge">'+(isDone?"محفوظة":"استمع")+'</span>';
+    b.addEventListener("click",()=>openDetail("حفظ سورة "+s.name,bd=>{
+      const c=document.createElement("div");c.className="card";c.style.marginTop="4px";
+      c.innerHTML='<b style="font-size:16.5px">سورة '+esc(s.name)+' — '+arDigits(s.verses.length)+' آية</b>'
+        +'<p class="note">استمع للسورة كاملة آيةً آية بصوت '+esc(reciterObj().name)+' وردّد معه، أو شغّل آية بعينها من المصحف. وحين تتمّ حفظها علّمها هنا.</p>'
+        +'<div class="sheet-actions" style="justify-content:flex-start"><button type="button" id="hsPlay">🎧 استمع للسورة كاملة</button><button type="button" id="hsToggle">'+(isDone?"إلغاء علامة الحفظ":"✓ حفظت هذه السورة")+'</button></div>';
+      c.querySelector("#hsPlay").addEventListener("click",()=>{const steps=s.verses.map((_,ai)=>({k:"ayah",si:si,ai:ai,title:"حفظ — سورة "+s.name+" • الآية "+(ai+1)}));zqPlay(steps,{label:"سورة "+s.name+" بصوت "+reciterObj().name})});
+      c.querySelector("#hsToggle").addEventListener("click",()=>{
+        if(h.done[s.n])delete h.done[s.n];
+        else{h.done[s.n]=today;if(si===h.si){h.si=si+1;h.ai=0}}
+        plusSave();showToast(h.done[s.n]?"تم تعليم سورة "+s.name+" محفوظة ✓":"أُلغيت علامة الحفظ");
+        body.innerHTML="";buildHifzPlan(body);
+      });
+      bd.appendChild(c);
+    }));
+    list.appendChild(b);
+  });
+  body.appendChild(list);
+}
+
+/* ----- المسابقة الأسبوعية: ٧ أسئلة جديدة كل أسبوع من بنك ٢٨ سؤالًا موثّقًا، وجوائز نجوم ----- */
+const WQ_BANK=[
+{q:"ما أول سورة نزلت من القرآن الكريم؟",o:["سورة الفاتحة","سورة العلق","سورة المدثر"],a:1},
+{q:"ما أطول سورة في القرآن الكريم؟",o:["سورة البقرة","سورة آل عمران","سورة النساء"],a:0},
+{q:"ما السورة التي لا تبدأ بالبسملة؟",o:["سورة الأنفال","سورة التوبة","سورة يوسف"],a:1},
+{q:"كم عدد أجزاء القرآن الكريم؟",o:["٢٠ جزءًا","٣٠ جزءًا","٤٠ جزءًا"],a:1},
+{q:"في أي شهر نزل القرآن الكريم؟",o:["شعبان","رمضان","ذو الحجة"],a:1},
+{q:"من هو أول الخلفاء الراشدين؟",o:["عمر بن الخطاب","عثمان بن عفان","أبو بكر الصديق"],a:2},
+{q:"كم عدد سور القرآن الكريم؟",o:["١١٠ سور","١١٤ سورة","١٢٠ سورة"],a:1},
+{q:"ما السورة المشهورة بأنها قلب القرآن؟",o:["سورة يس","سورة الكهف","سورة الرحمن"],a:0},
+{q:"من النبي الملقّب بكليم الله؟",o:["سيدنا إبراهيم","سيدنا موسى","سيدنا عيسى"],a:1},
+{q:"من النبي الذي صنع السفينة بأمر الله؟",o:["سيدنا نوح","سيدنا هود","سيدنا صالح"],a:0},
+{q:"في أي عام هجري وقعت غزوة بدر الكبرى؟",o:["١ هـ","٢ هـ","٥ هـ"],a:1},
+{q:"كم عدد أركان الإسلام؟",o:["أربعة","خمسة","ستة"],a:1},
+{q:"كم عدد أركان الإيمان؟",o:["خمسة","ستة","سبعة"],a:1},
+{q:"ما أول مسجد أُسّس على التقوى؟",o:["المسجد النبوي","مسجد قباء","المسجد الأقصى"],a:1},
+{q:"من هو الصحابي الملقّب بأمين الأمة؟",o:["أبو عبيدة بن الجراح","طلحة بن عبيد الله","الزبير بن العوام"],a:0},
+{q:"كم لبث أهل الكهف نائمين كما ذكر القرآن؟",o:["١٠٠ سنة","٣٠٠ سنة","٣٠٩ سنوات"],a:2},
+{q:"في أي سورة وردت البسملة داخل آية منها؟",o:["سورة النمل","سورة هود","سورة يوسف"],a:0},
+{q:"من الصحابي الذي اهتز عرش الرحمن لموته؟",o:["حمزة بن عبد المطلب","سعد بن معاذ","مصعب بن عمير"],a:1},
+{q:"كم عدد أبواب الجنة؟",o:["سبعة","ثمانية","عشرة"],a:1},
+{q:"من النبي الذي ابتلعه الحوت؟",o:["سيدنا يونس","سيدنا أيوب","سيدنا يعقوب"],a:0},
+{q:"من أول زوجات النبي ﷺ؟",o:["عائشة بنت أبي بكر","حفصة بنت عمر","خديجة بنت خويلد"],a:2},
+{q:"أين نزل الوحي على النبي ﷺ أول مرة؟",o:["غار ثور","غار حراء","جبل عرفات"],a:1},
+{q:"ما السورة التي تعدل ثلث القرآن؟",o:["سورة الإخلاص","سورة الفلق","سورة الكافرون"],a:0},
+{q:"ما أقصر سورة في القرآن الكريم؟",o:["سورة العصر","سورة النصر","سورة الكوثر"],a:2},
+{q:"من هو النبي الملقّب بخليل الله؟",o:["سيدنا إسماعيل","سيدنا إبراهيم","سيدنا إسحاق"],a:1},
+{q:"ما الليلة التي هي خير من ألف شهر؟",o:["ليلة النصف من شعبان","ليلة القدر","ليلة الجمعة"],a:1},
+{q:"من أول من رمى بسهم في سبيل الله؟",o:["سعد بن أبي وقاص","خالد بن الوليد","علي بن أبي طالب"],a:0},
+{q:"كم عدد أسماء الله الحسنى في الحديث المشهور؟",o:["٤٠ اسمًا","٩٩ اسمًا","٣٠٠ اسم"],a:1}
+];
+function buildWeeklyQuiz(body){
+  const dayIdx=Math.floor(Date.now()/86400000),wkIdx=Math.floor(dayIdx/7),daysLeft=7-(dayIdx%7);
+  const qs=WQ_BANK.slice((wkIdx%4)*7,(wkIdx%4)*7+7);
+  if(!plus.wquiz||typeof plus.wquiz!=="object")plus.wquiz={week:-1,score:0,best:0};
+  if(typeof plus.qstars!=="number")plus.qstars=0;
+  let firstRun=plus.wquiz.week!==wkIdx;
+  const intro=document.createElement("div");intro.className="card";intro.style.marginTop="4px";
+  intro.innerHTML='<b style="font-size:17px">🏆 المسابقة الأسبوعية</b>'
+    +'<p class="note" style="font-size:14.5px;color:var(--ink)">سبعة أسئلة دينية جديدة كل أسبوع من بنك أسئلة موثّقة في القرآن والسيرة والعبادات. كل إجابة صحيحة في أول محاولة أسبوعية = ١٠ نجوم تُضاف إلى رصيدك.</p>'
+    +'<div class="stat-grid"><div class="stat-box"><div class="n">⭐ '+arDigits(plus.qstars)+'</div><div class="l">رصيد نجومي</div></div><div class="stat-box"><div class="n">'+arDigits(daysLeft)+'</div><div class="l">يومًا لمسابقة الأسبوع الجديد</div></div></div>'
+    +(firstRun?'<p class="note" style="margin-bottom:0">مسابقة هذا الأسبوع لم تُلعب بعد — نجومها بانتظارك.</p>':'<p class="note" style="margin-bottom:0">أنهيت مسابقة هذا الأسبوع بنتيجة '+arDigits(plus.wquiz.score||0)+' من ٧ وحصدت نجومها — العب الآن للتدريب والمراجعة بلا نجوم إضافية.</p>');
+  body.appendChild(intro);
+  const area=document.createElement("div");body.appendChild(area);
+  let qi=0,score=0,lock=false;
+  function paintQ(){
+    area.innerHTML="";
+    if(qi>=qs.length){finish();return}
+    const q=qs[qi];
+    const card=document.createElement("div");card.className="card";
+    card.innerHTML='<div class="note" style="margin-top:0">السؤال '+arDigits(qi+1)+' من '+arDigits(qs.length)+' — نتيجتك حتى الآن: '+arDigits(score)+'</div>'
+      +'<div class="progress"><i style="width:'+Math.round(qi/qs.length*100)+'%"></i></div>'
+      +'<b style="font-size:17.5px;line-height:1.9">'+esc(q.q)+'</b>';
+    q.o.forEach((op,oi)=>{
+      const b=document.createElement("button");b.className="quiz-opt";b.type="button";b.textContent=op;
+      b.addEventListener("click",()=>{
+        if(lock)return;lock=true;
+        const btns=card.querySelectorAll(".quiz-opt");
+        btns.forEach((x,xi)=>{x.disabled=true;if(xi===q.a)x.classList.add("ok")});
+        if(oi===q.a)score++;else b.classList.add("bad");
+        setTimeout(()=>{qi++;lock=false;paintQ()},950);
+      });
+      card.appendChild(b);
+    });
+    area.appendChild(card);
+  }
+  function finish(){
+    const card=document.createElement("div");card.className="card";card.style.textAlign="center";
+    let starsMsg="";
+    if(firstRun){
+      const stars=score*10;plus.qstars+=stars;plus.wquiz={week:wkIdx,score:score,best:score};plusSave();firstRun=false;
+      starsMsg='<div class="result-box" style="margin-top:10px">⭐ حصلت على '+arDigits(stars)+' نجمة هذا الأسبوع — رصيدك الآن '+arDigits(plus.qstars)+' نجمة</div>';
+    }else{
+      plus.wquiz.best=Math.max(plus.wquiz.best||0,score);plusSave();
+      starsMsg='<div class="note" style="margin-top:10px">هذه جولة تدريبية — نجوم هذا الأسبوع حُصدت من قبل، والمسابقة الجديدة بعد '+arDigits(daysLeft)+' يوم.</div>';
+    }
+    card.innerHTML='<div style="font-size:40px">'+(score>=6?"🏆":score>=4?"🌟":"🌱")+'</div>'
+      +'<b style="font-size:18px">نتيجتك: '+arDigits(score)+' من '+arDigits(qs.length)+'</b>'
+      +'<p class="note" style="font-size:14.5px;color:var(--ink)">'+(score>=6?"ممتاز! ثقافتك الدينية قوية — واصل.":score>=4?"أحسنت! راجع ما فاتك من المكتبة وستتقنها.":"بداية طيبة — أعد اللعب للتدريب واقرأ من المكتبة، وستتحسن نتيجتك.")+'</p>'
+      +starsMsg+'<button class="primary" id="wqAgain" style="margin-top:12px">العب من جديد (تدريب)</button>';
+    area.appendChild(card);
+    card.querySelector("#wqAgain").addEventListener("click",()=>{qi=0;score=0;lock=false;paintQ()});
+    try{intro.querySelector(".stat-box .n").textContent="⭐ "+arDigits(plus.qstars)}catch(e){}
+  }
+  const start=document.createElement("button");start.className="primary";start.textContent=firstRun?"ابدأ مسابقة هذا الأسبوع":"العب جولة تدريبية";
+  start.addEventListener("click",()=>{start.remove();paintQ()});
+  area.appendChild(start);
+}
+
+/* ----- وضع قبل النوم: أذكار النوم ثم سورة الملك كاملة بصوت القارئ، مع مؤقّت إيقاف تلقائي ----- */
+function buildSleepMode(body){
+  const card=document.createElement("div");card.className="card";card.style.marginTop="4px";card.style.textAlign="center";
+  card.innerHTML='<div class="sleep-moon">🌙</div>'
+    +'<b style="font-size:18px">وضع قبل النوم</b>'
+    +'<p class="note" style="font-size:14.5px;color:var(--ink);text-align:right">تسلسل هادئ يختم به يومك: أذكار النوم أولًا — آياتها بصوت '+esc(reciterObj().name)+' وأدعيتها بصوت الجهاز — ثم سورة الملك كاملة بصوت القارئ، فهي شفيعة لصاحبها حتى يغفر له. اختر مؤقّتًا إن أردت أن يتوقف التشغيل وحده وأنت نائم.</p>'
+    +'<div class="field" style="text-align:right"><label>مؤقّت الإيقاف التلقائي</label><select id="slpTimer"><option value="0">بدون مؤقّت — ينتهي بانتهاء الأذكار والسورة</option><option value="15">بعد ١٥ دقيقة</option><option value="30">بعد ٣٠ دقيقة</option><option value="45">بعد ٤٥ دقيقة</option><option value="60">بعد ٦٠ دقيقة</option></select></div>'
+    +'<button class="primary" id="slpStart">🌙 ابدأ وضع قبل النوم</button>'
+    +'<button class="reset-btn" id="slpStop" style="width:100%;margin-top:10px">⏹ إيقاف</button>'
+    +'<p class="note" style="margin-bottom:0">التشغيل بثٌّ من الإنترنت. قال النبي ﷺ عن سورة الملك: «سورة من القرآن ثلاثون آية شفعت لرجل حتى غُفر له» — رواه الترمذي.</p>';
+  body.appendChild(card);
+  const openBtn=document.createElement("button");openBtn.className="reset-btn";openBtn.style.cssText="width:100%;margin-top:12px";openBtn.textContent="📖 افتح أذكار النوم للقراءة والعدّ";
+  openBtn.addEventListener("click",()=>{const s=DB.adhkar.find(x=>x.name==="النوم");if(s)openAdhkarSection(s)});
+  body.appendChild(openBtn);
+  card.querySelector("#slpStart").addEventListener("click",()=>{
+    const sec=DB.adhkar.find(x=>x.name==="النوم");
+    const steps=sec?zSectionSteps(sec):[];
+    steps.push({k:"track",url:surahUrlFor(67,state.reciter),title:"سورة الملك كاملة — "+reciterObj().name});
+    const mins=+card.querySelector("#slpTimer").value||0;
+    zqPlay(steps,{label:"وضع قبل النوم — أذكار النوم ثم سورة الملك",timerMin:mins,onDone:()=>showToast("انتهى وضع قبل النوم — تصبح على خير 🌙")});
+  });
+  card.querySelector("#slpStop").addEventListener("click",()=>{zqStop();showToast("تم إيقاف وضع قبل النوم")});
+}
+
+/* ----- قصص مسموعة للأطفال: قصص الأنبياء المكتوبة للأطفال تُروى صوتيًا مع نجوم تشجيع ----- */
+function buildKidsAudioStories(body){
+  const groups=(DB.library||[]).filter(g=>g.sec==="ركن الأطفال");
+  let stories=[];groups.forEach(g=>{if(g.group.indexOf("قصص")>=0)g.items.forEach(it=>stories.push(it))});
+  const intro=document.createElement("div");intro.className="card kid-hero";intro.style.marginTop="4px";
+  intro.innerHTML='<div style="display:flex;gap:12px;align-items:center"><div style="flex:0 0 auto">'+NOOR_SVG+'</div><div style="flex:1;min-width:0"><b style="font-size:17px">🎧 وقت القصة مع نور</b><p class="note" style="margin:4px 0 0;font-size:14.5px;color:var(--ink)">اختر قصة من قصص الأنبياء واسمعها كاملة قبل النوم أو في أي وقت، واجمع ٥ نجوم عند أول استماع لكل قصة. ملحوظة لبابا وماما: تُروى القصص هنا بصوت الجهاز لعدم توفّر تسجيل لها بصوت راوٍ داخل التطبيق، وقصص الفيديو بصوت راوٍ حقيقي موجودة في «فيديوهات تعليمية».</p></div></div>';
+  body.appendChild(intro);
+  if(!stories.length){body.innerHTML+='<div class="empty">القصص المسموعة ستظهر هنا قريبًا</div>';return}
+  const list=document.createElement("div");list.className="list";
+  stories.forEach((it,idx)=>{
+    const heard=!!kidStore().flags["story:"+idx];
+    const b=document.createElement("button");b.className="row-item";b.type="button";
+    b.innerHTML='<span class="fi">🎧</span><span class="tt"><b>'+esc(it.title)+'</b><small>'+(heard?"سمعتها من قبل ✓ — اسمعها من جديد":"اضغط للاستماع — ٥ نجوم عند أول مرة")+'</small></span><span class="arr">‹</span>';
+    b.addEventListener("click",()=>openDetail(it.title,bd=>{
+      const c=document.createElement("div");c.className="card";c.style.marginTop="4px";
+      c.innerHTML='<div style="text-align:center">'+NOOR_SVG+'</div><b style="font-size:16.5px">'+esc(it.title)+'</b><div class="reader-text" style="margin-top:8px">'+esc(it.text)+'</div>';
+      const tools=document.createElement("div");tools.className="reader-tools";
+      const pb=document.createElement("button");pb.type="button";pb.textContent="🎧 اسمع القصة";
+      pb.addEventListener("click",()=>{kidAward(5,null,"story:"+idx);kidSpeak(it.text)});
+      const sb=document.createElement("button");sb.type="button";sb.textContent="⏹ إيقاف";
+      sb.addEventListener("click",stopSpeak);
+      tools.appendChild(pb);tools.appendChild(sb);c.appendChild(tools);bd.appendChild(c);
+    }));
+    list.appendChild(b);
+  });
+  body.appendChild(list);
+}
+
+TOOLS.push({ic:"📗",col:"#00695c",name:"خطة الحفظ للكبار",sub:"جزء عمّ وتبارك والكهف — ورد ومراجعة",build:buildHifzPlan});
+TOOLS.push({ic:"🏆",col:"#b8860b",name:"المسابقة الأسبوعية",sub:"٧ أسئلة كل أسبوع وجوائز نجوم",build:buildWeeklyQuiz});
+TOOLS.push({ic:"🌙",col:"#004d40",name:"وضع قبل النوم",sub:"أذكار النوم وسورة الملك بمؤقّت",build:buildSleepMode});
 
 /* ================= تسجيل الأدوات الجديدة ================= */
 TOOLS.push({ic:"🌙",col:"#33691e",name:"المواسم والعبادات الموسمية",sub:"محتوى يظهر تلقائيًا في وقته",build:buildSeasonPage});
