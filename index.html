@@ -42,7 +42,7 @@
   --green:#064420; --green-2:#0a6b32; --green-d:#04331a; --gold:#d4af37; --gold-soft:#f7ecd0;
   --bg:#f4f7f6; --card:#ffffff; --ink:#1c2a20; --ink-2:#4c5d51; --line:#dde7de;
   --shadow:0 2px 10px rgba(10,80,40,.08);
-  --quran-size:29px; --text-size:21px;
+  --quran-size:31px; --text-size:23px;
   color-scheme:light;
 }
 [data-theme="dark"]{
@@ -145,7 +145,7 @@ button{font-family:inherit;cursor:pointer}
 .sadaqa .names li{font-family:"Amiri",serif;font-size:12.5px;line-height:1.35;padding:1px 0;color:var(--green);display:flex;align-items:center;gap:6px}
 .sadaqa .names li::before{content:"☾";color:var(--gold);font-size:12px;flex:0 0 auto}
 @media (max-width:360px){.sadaqa .names{grid-template-columns:1fr}}
-.sadaqa .duas{margin-top:5px;border-top:1px dashed #e3cf8a;padding-top:4px}
+.sadaqa .duas{margin-top:5px;padding-top:4px}
 .sadaqa .duas-title{font-size:11px;font-weight:900;color:#8a6d1a;margin:0 0 2px;display:flex;align-items:center;gap:6px}
 .sadaqa .duas-title::after{content:"";flex:1;height:1px;background:#eee0ae}
 .sadaqa .duas ul{list-style:none;margin:0;padding:0}
@@ -157,7 +157,7 @@ button{font-family:inherit;cursor:pointer}
 [data-theme="dark"] .sadaqa .dua{color:var(--ink-2)}
 [data-theme="dark"] .sadaqa .aya{color:#ecd97e}
 [data-theme="dark"] .sadaqa .names li{color:#8fdca6}
-[data-theme="dark"] .sadaqa .duas{border-top-color:#5a4d1e}
+[data-theme="dark"] .sadaqa .duas{border-top:none}
 [data-theme="dark"] .sadaqa .duas-title{color:#ecd97e}
 [data-theme="dark"] .sadaqa .duas-title::after{background:#5a4d1e}
 [data-theme="dark"] .sadaqa .duas li{color:var(--ink-2)}
@@ -167,7 +167,7 @@ button{font-family:inherit;cursor:pointer}
   :root:not([data-theme="light"]) .sadaqa .dua{color:var(--ink-2)}
   :root:not([data-theme="light"]) .sadaqa .aya{color:#ecd97e}
   :root:not([data-theme="light"]) .sadaqa .names li{color:#8fdca6}
-  :root:not([data-theme="light"]) .sadaqa .duas{border-top-color:#5a4d1e}
+  :root:not([data-theme="light"]) .sadaqa .duas{border-top:none}
   :root:not([data-theme="light"]) .sadaqa .duas-title{color:#ecd97e}
   :root:not([data-theme="light"]) .sadaqa .duas-title::after{background:#5a4d1e}
   :root:not([data-theme="light"]) .sadaqa .duas li{color:var(--ink-2)}
@@ -475,6 +475,7 @@ html.big .dhikr .txt{line-height:2.2}
         <li>زينب عبد الفتاح فراج الخرادلى</li>
         <li>محمد عبد المعطى محمد</li>
         <li>أحمد عبد المعطى محمد</li>
+        <li>عايدة عبد الفتاح فراج الخرادلى</li>
       </ul>
       <div class="duas">
         <p class="duas-title">أدعية لهم بالرحمة والمغفرة</p>
@@ -645,7 +646,7 @@ const state={
   dhikrProgress:{}, // "secId:itemIdx" -> remaining
   tasbeeh:{cur:"سُبْحَانَ اللَّهِ",session:0,total:0},
   bookmark:null, // {surah, ayah}
-  quranFont:29, textFont:21,
+  quranFont:31, textFont:23,
   favorites:new Set(), // keys: "a:sec:idx" | "l:gi:ii"
   prayerStatus:{}, // name -> 'done'|'missed'
   khatma:{page:1, goal:10},
@@ -2556,7 +2557,7 @@ buildSettings=function(body){
   card.querySelector("#bigSel").addEventListener("change",e=>{
     state.bigMode=e.target.value==="on";
     document.documentElement.classList.toggle("big",state.bigMode);
-    if(state.bigMode){state.textFont=Math.max(state.textFont,23);state.quranFont=Math.max(state.quranFont,30);
+    if(state.bigMode){state.textFont=Math.max(state.textFont,25);state.quranFont=Math.max(state.quranFont,32);
       document.documentElement.style.setProperty("--text-size",state.textFont+"px");
       document.documentElement.style.setProperty("--quran-size",state.quranFont+"px")}
     persist();showToast(state.bigMode?"تم تفعيل وضع كبار السن":"تم إيقاف وضع كبار السن");
@@ -2611,8 +2612,8 @@ buildSettings=function(body){
   ap.querySelector("#bigSel").addEventListener("change",e=>{
     state.bigMode=e.target.value==="on";
     document.documentElement.classList.toggle("big",state.bigMode);
-    if(state.bigMode){state.textFont=Math.max(state.textFont,23);state.quranFont=Math.max(state.quranFont,30)}
-    else{state.textFont=21;state.quranFont=29}
+    if(state.bigMode){state.textFont=Math.max(state.textFont,25);state.quranFont=Math.max(state.quranFont,32)}
+    else{state.textFont=23;state.quranFont=31}
     document.documentElement.style.setProperty("--text-size",state.textFont+"px");
     document.documentElement.style.setProperty("--quran-size",state.quranFont+"px");
     persist();paintFontVals();showToast(state.bigMode?"تم تفعيل وضع كبار السن":"تم إيقاف وضع كبار السن ورجعت الخطوط لحجمها الافتراضي");
