@@ -33,7 +33,7 @@
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/IMG-20261121-WA9892.jpg" />
 <meta name="twitter:image:alt" content="زاد الذاكرين — صدقة جارية" />
-<meta name="app-version" content="27" />
+<meta name="app-version" content="28" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -4331,6 +4331,30 @@ function kidSpeak(text){
     throw 0;
   }catch(e){showToast("القراءة الصوتية غير متاحة على هذا الجهاز")}
 }
+/* --- تحفيظ جزء عمّ بصوت حقيقي: تلاوة مرتلة مسجّلة لقارئ حقيقي من نفس مصادر التلاوة المستخدمة في المصحف داخل التطبيق — ليست نطقًا آليًا ولا صوت جهاز --- */
+function memoReciterName(){
+  try{
+    const ed=AYAH_EDITIONS[state.reciter]||"ar.alafasy";
+    if(ed==="ar.husary")return "محمود خليل الحصري";
+    if(ed==="ar.minshawi")return "محمد صديق المنشاوي";
+    if(ed==="ar.abdulbasitmurattal")return "عبد الباسط عبد الصمد";
+  }catch(e){}
+  return "مشاري راشد العفاسي";
+}
+function playMemoAyah(s,i){
+  try{stopSpeak()}catch(e){}
+  try{stopAyahSeq()}catch(e){}
+  const si=(DB.surahs||[]).findIndex(x=>x.n===s.n);
+  if(si<0){showToast("تعذّرت تلاوة هذه الآية الآن");return}
+  playTrack({key:"memo:"+s.n+":"+(i+1),title:"تحفيظ جزء عمّ — سورة "+s.name+" • الآية "+(i+1)+" • بصوت "+memoReciterName(),url:ayahAudioUrl(si,i)});
+}
+function playMemoSurah(s){
+  try{stopSpeak()}catch(e){}
+  const si=(DB.surahs||[]).findIndex(x=>x.n===s.n);
+  if(si<0){showToast("تعذّرت تلاوة هذه السورة الآن");return}
+  playAyahAudio(si,0);
+  showToast("🎧 تلاوة حقيقية بصوت "+memoReciterName()+" — استمع وردّد آية آية");
+}
 function buildKidsHub(body){
   const k=kidStore();
   const hero=document.createElement("div");hero.className="card kid-hero";hero.style.marginTop="4px";
@@ -4607,7 +4631,7 @@ function buildMemoIndex(body){
   const surahs=(DB.surahs||[]).slice(77);
   const done=surahs.filter(s=>k.memo[s.n]).length;
   const intro=document.createElement("div");intro.className="card";intro.style.marginTop="4px";
-  intro.innerHTML='<b style="font-size:16.5px">🎧 حفظ جزء عمّ — سورة سورة</b><p class="note" style="font-size:14.5px;color:var(--ink)">اختر سورة: استمع إليها آية آية بصوت الجهاز، كرّر كل آية، ثم اختبر نفسك بإخفاء الكلمات. حين تحفظها اضغط «حفظت هذه السورة» واجمع النجوم والشارات.</p><div class="result-box">حفظت حتى الآن: <b>'+arDigits(done)+'</b> من '+arDigits(surahs.length)+' سورة في جزء عمّ</div><div class="progress"><i style="width:'+(surahs.length?Math.round(done/surahs.length*100):0)+'%"></i></div>';
+  intro.innerHTML='<b style="font-size:16.5px">🎧 حفظ جزء عمّ — سورة سورة</b><p class="note" style="font-size:14.5px;color:var(--ink)">اختر سورة: استمع إليها آية آية بتلاوة حقيقية مسجّلة بصوت قارئ حقيقي — لا صوت ذكاء اصطناعي ولا صوت جهاز — كرّر كل آية بصوتك، ثم اختبر نفسك بإخفاء الكلمات. الاستماع يحتاج إنترنت. حين تحفظها اضغط «حفظت هذه السورة» واجمع النجوم والشارات.</p><div class="result-box">حفظت حتى الآن: <b>'+arDigits(done)+'</b> من '+arDigits(surahs.length)+' سورة في جزء عمّ</div><div class="progress"><i style="width:'+(surahs.length?Math.round(done/surahs.length*100):0)+'%"></i></div>';
   body.appendChild(intro);
   const list=document.createElement("div");list.className="list";
   surahs.forEach(s=>{
@@ -4623,7 +4647,7 @@ function buildMemoSurah(body,s){
   const k=kidStore();
   let testMode=false;
   const head=document.createElement("div");head.className="card";head.style.marginTop="4px";
-  head.innerHTML='<b style="font-size:17px">سورة '+esc(s.name)+' — '+arDigits(s.ayahs)+' آية</b><p class="note">استمع للسورة كاملة، أو اضغط 🔊 بجانب أي آية لسماعها وحدها، وكرّرها بالعدّاد حتى تثبت في قلبك.</p><div class="sheet-actions" style="justify-content:flex-start;margin-top:8px"><button type="button" id="mmAll">🔊 استمع للسورة كاملة</button><button type="button" id="mmTest">🙈 وضع الاختبار: إخفاء الكلمات</button></div><div class="note" id="mmTestNote" style="display:none">وضع الاختبار مفعّل: الكلمات مخفية — حاول تذكّر الآية ثم اضغطها لتظهر وتتأكد.</div>';
+  head.innerHTML='<b style="font-size:17px">سورة '+esc(s.name)+' — '+arDigits(s.ayahs)+' آية</b><p class="note">التلاوة هنا صوت حقيقي مسجّل لقارئ حقيقي — ليست صوت ذكاء اصطناعي ولا صوت جهاز. استمع للسورة كاملة آيةً آيةً من المشغّل بالأسفل، أو اضغط 🔊 بجانب أي آية لسماعها وحدها، وكرّرها بصوتك بالعدّاد حتى تثبت في قلبك. الاستماع يحتاج إنترنت.</p><div class="sheet-actions" style="justify-content:flex-start;margin-top:8px"><button type="button" id="mmAll">🎧 استمع للسورة كاملة بصوت حقيقي</button><button type="button" id="mmTest">🙈 وضع الاختبار: إخفاء الكلمات</button></div><div class="note" id="mmTestNote" style="display:none">وضع الاختبار مفعّل: الكلمات مخفية — حاول تذكّر الآية ثم اضغطها لتظهر وتتأكد.</div>';
   body.appendChild(head);
   const verses=s.verses||[];
   const list=document.createElement("div");
@@ -4632,7 +4656,7 @@ function buildMemoSurah(body,s){
     card.innerHTML='<div class="txt mm-ayah" style="cursor:pointer">'+esc(v)+' <span class="anum">﴿'+arDigits(i+1)+'﴾</span></div><div class="meta"><button class="tap-btn mm-listen" type="button">🔊 استمع</button><button class="reset-btn mm-rep" type="button">🔁 كرّرت: ٠</button><span class="remain mm-done" style="display:none">✔ أتقنتها</span></div>';
     const txt=card.querySelector(".mm-ayah");
     txt.addEventListener("click",()=>{if(testMode)txt.classList.toggle("ayah-hide")});
-    card.querySelector(".mm-listen").addEventListener("click",()=>kidSpeak(v));
+    card.querySelector(".mm-listen").addEventListener("click",()=>playMemoAyah(s,i));
     let reps=0;
     card.querySelector(".mm-rep").addEventListener("click",e=>{
       reps++;e.target.textContent="🔁 كرّرت: "+arDigits(reps);
@@ -4641,7 +4665,7 @@ function buildMemoSurah(body,s){
     list.appendChild(card);
   });
   body.appendChild(list);
-  head.querySelector("#mmAll").addEventListener("click",()=>kidSpeak(verses.join(" ")));
+  head.querySelector("#mmAll").addEventListener("click",()=>playMemoSurah(s));
   head.querySelector("#mmTest").addEventListener("click",e=>{
     testMode=!testMode;
     head.querySelector("#mmTestNote").style.display=testMode?"":"none";
