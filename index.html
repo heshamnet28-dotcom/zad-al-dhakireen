@@ -1025,7 +1025,7 @@ function buildTafsirIndex(body){
   });
   body.appendChild(list);
 }
-function openTafsirSource(src){openDetail(src.name,body=>buildTafsirSurahs(body,src))}
+function openTafsirSource(src){openD({k:"tafsirSource",src:src.id},src.name,body=>buildTafsirSurahs(body,src))}
 function buildTafsirSurahs(body,src){
   const info=document.createElement("div");info.className="card";info.style.marginTop="4px";
   info.innerHTML='<b style="font-size:16.5px">'+esc(src.name)+'</b><div class="note">'+esc(src.author)+'<br>'+esc(src.desc)+'</div>';
@@ -1047,7 +1047,7 @@ function ksuLink(src,surahNo){
 }
 function openTafsirSurah(src,idx){
   const s=DB.surahs[idx];
-  openDetail(src.name+" — سورة "+s.name,body=>{
+  openD({k:"tafsirSurah",src:src.id,i:idx},src.name+" — سورة "+s.name,body=>{
     body.appendChild(readerTools());
     const status=document.createElement("p");status.className="note";
     status.textContent="جارٍ تحميل تفسير سورة "+s.name+" من "+src.name+"… يُحفظ على جهازك بعد أول تحميل.";
@@ -1179,15 +1179,88 @@ function saveScroll(){
   const t=navStack[navStack.length-1];
   if(t)t.scroll=window.scrollY||0;else homeScroll=window.scrollY||0;
 }
+/* --- keep the visitor's place across a page refresh: the open stack is saved
+       as reopenable routes in sessionStorage and rebuilt on load, so a refresh
+       (or the update banner's reload) returns to the same screen, not home --- */
+function persistNav(){
+  try{
+    sessionStorage.setItem("zadNav",JSON.stringify({home:homeScroll||0,stack:navStack.map(e=>({route:e.route||null,scroll:e.scroll||0}))}));
+  }catch(e){}
+}
+let navSaveT=0;
+window.addEventListener("scroll",()=>{const n=Date.now();if(n-navSaveT<350)return;navSaveT=n;saveScroll();persistNav()},{passive:true});
+window.addEventListener("pagehide",()=>{saveScroll();persistNav()});
+function openD(route,title,build,favKey){openDetail(title,build,favKey||null,route)}
+function libGroupDesc(g){
+  return{title:g.group,build:body=>{
+    const list=document.createElement("div");list.className="list";
+    if(!g.items.length)list.innerHTML='<div class="empty">هذا المجلد فارغ حاليًا</div>';
+    g.items.forEach((it,ii)=>{list.appendChild(rowItem(it.title,it.text.replace(/\s+/g," ").slice(0,80)+"…",()=>openLibraryItem(g,it,ii)))});
+    body.appendChild(list);
+  }};
+}
+function resolveRoute(r){
+  if(!r||!r.k)return null;
+  try{
+    switch(r.k){
+      case "adhkarIndex":return{title:"الأذكار",build:buildAdhkarIndex};
+      case "mushafIndex":return{title:"المصحف الشريف",build:buildMushafIndex};
+      case "libraryIndex":return{title:"الموسوعة والمكتبة",build:buildLibraryIndex};
+      case "toolsIndex":return{title:"أدوات وخدمات",build:buildToolsIndex};
+      case "tafsirIndex":return{title:"تفسير القرآن الكريم",build:buildTafsirIndex};
+      case "names":return{title:"أسماء الله الحسنى",build:buildNames};
+      case "downloads":return{title:"تحميلات الصوت",build:buildDownloads};
+      case "admin":return{title:"لوحة التحكم",build:buildAdminGate};
+      case "salawat":return{title:"الصلاة على النبي ﷺ",build:buildSalawat};
+      case "favorites":return{title:"المفضلة",build:buildFavorites};
+      case "tool":{const t=TOOLS.find(x=>x.name===r.name);return t?{title:t.name,build:t.build}:null}
+      case "adhkar":{const sec=DB.adhkar.find(s=>String(s.id)===String(r.id))||DB.adhkar.find(s=>s.name===r.name);return sec?{title:"أذكار "+sec.name,build:body=>buildAdhkarSession(body,sec)}:null}
+      case "tafsirSource":{const src=TAFSIR_SOURCES.find(x=>x.id===r.src);return src?{title:src.name,build:body=>buildTafsirSurahs(body,src)}:null}
+      case "tafsirSurah":{const src=TAFSIR_SOURCES.find(x=>x.id===r.src);const s=DB.surahs[r.i];return(src&&s)?{open:()=>openTafsirSurah(src,r.i)}:null}
+      case "tafsirPick":{const s=DB.surahs[r.i];if(!s)return null;return{title:"تفسير سورة "+s.name,build:body=>{const l=document.createElement("div");l.className="list";TAFSIR_SOURCES.forEach(src=>l.appendChild(rowItem(src.name,src.author,()=>openTafsirSurah(src,r.i))));body.appendChild(l)}}}
+      case "surah":{const s=DB.surahs[r.i];return s?{open:()=>openSurah(r.i,r.a)}:null}
+      case "libSection":{const groups=DB.library.filter(g=>g.sec===r.sec);if(!groups.length)return null;if(groups.length===1)return libGroupDesc(groups[0]);return{title:r.sec,build:body=>{const list=document.createElement("div");list.className="list";groups.forEach(g=>{list.appendChild(folderItem(g.group,g.items.length+" مادة",()=>openLibraryGroup(g)))});body.appendChild(list)}}}
+      case "libGroup":{const g=DB.library[r.gi];return g?libGroupDesc(g):null}
+      case "libItem":{const g=DB.library[r.gi];const it=g&&g.items[r.ii];if(!it)return null;return{title:it.title,favKey:"l:"+r.gi+":"+r.ii,build:body=>{const card=document.createElement("div");card.className="card";card.style.marginTop="4px";card.innerHTML=`<div class="reader-text">${esc(it.text)}</div>`;card.appendChild(readerTools());body.appendChild(card)}}}
+    }
+  }catch(e){}
+  return null;
+}
+function restoreNav(){
+  let saved=null;
+  try{saved=JSON.parse(sessionStorage.getItem("zadNav")||"null")}catch(e){}
+  if(!saved)return;
+  homeScroll=saved.home||0;
+  if(!Array.isArray(saved.stack)||!saved.stack.length){
+    if(homeScroll>0)setTimeout(()=>{if(!navStack.length)window.scrollTo(0,homeScroll)},60);
+    return;
+  }
+  let built=false;
+  for(const se of saved.stack){
+    if(!se||!se.route)break;
+    const d=resolveRoute(se.route);
+    if(!d)break;
+    if(d.open)d.open();
+    else navStack.push({title:d.title,build:d.build,favKey:d.favKey,route:se.route,scroll:se.scroll||0});
+    const top=navStack[navStack.length-1];
+    if(top)top.scroll=se.scroll||0;
+    built=true;
+  }
+  if(!built||!navStack.length){navStack.length=0;showHome();return}
+  renderDetail();
+  const top=navStack[navStack.length-1];
+  if(top&&top.scroll)setTimeout(()=>window.scrollTo(0,top.scroll||0),60);
+}
 function showHome(){
   navStack.length=0;
   $("#v-detail").classList.remove("on");$("#v-home").classList.add("on");
   document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("on",b.dataset.nav==="home"));
   window.scrollTo(0,homeScroll||0);
+  persistNav();
 }
-function openDetail(title,build,favKey){
+function openDetail(title,build,favKey,route){
   saveScroll();
-  navStack.push({title,build,favKey,scroll:0});
+  navStack.push({title,build,favKey,route:route||null,scroll:0});
   if(histOK){try{history.pushState({zad:navStack.length},"")}catch(e){histOK=false}}
   renderDetail();
 }
@@ -1201,6 +1274,7 @@ function renderDetail(keepScroll){
   else favBtn.style.display="none";
   const body=$("#detailBody");body.innerHTML="";top.build(body);
   window.scrollTo(0,top.scroll||0);
+  persistNav();
 }
 /* --- device back button: step back inside the app; on home, ask before exiting --- */
 function pushGuard(){
@@ -1277,10 +1351,10 @@ document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()
   if(n==="home"){goBackLevels(0,null);return}
   const open=()=>{
     mark();
-    if(n==="adhkar")openDetail("الأذكار",buildAdhkarIndex);
-    if(n==="mushaf")openDetail("المصحف الشريف",buildMushafIndex);
-    if(n==="library")openDetail("الموسوعة والمكتبة",buildLibraryIndex);
-    if(n==="tools")openDetail("أدوات وخدمات",buildToolsIndex);
+    if(n==="adhkar")openDetail("الأذكار",buildAdhkarIndex,null,{k:"adhkarIndex"});
+    if(n==="mushaf")openDetail("المصحف الشريف",buildMushafIndex,null,{k:"mushafIndex"});
+    if(n==="library")openDetail("الموسوعة والمكتبة",buildLibraryIndex,null,{k:"libraryIndex"});
+    if(n==="tools")openDetail("أدوات وخدمات",buildToolsIndex,null,{k:"toolsIndex"});
   };
   goBackLevels(0,open);
 }));
@@ -1340,13 +1414,13 @@ function renderHomeGrids(){
   DB.adhkar.forEach(sec=>{const[ic,col]=ADHKAR_ICONS[sec.name]||["📿","#0a6b32"];
     ag.appendChild(tile(ic,col,"أذكار "+sec.name,sec.items.length+" ذكرًا",()=>openAdhkarSection(sec)))});
   const lg=$("#libGrid");lg.innerHTML="";
-  lg.appendChild(tile("🔍","#2e7d32","تفسير القرآن","٩ تفاسير — ١١٤ سورة",()=>openDetail("تفسير القرآن الكريم",buildTafsirIndex)));
+  lg.appendChild(tile("🔍","#2e7d32","تفسير القرآن","٩ تفاسير — ١١٤ سورة",()=>openDetail("تفسير القرآن الكريم",buildTafsirIndex,null,{k:"tafsirIndex"})));
   [...new Set(DB.library.map(g=>g.sec))].forEach(secName=>{
     const groups=DB.library.filter(g=>g.sec===secName);const total=groups.reduce((a,g)=>a+g.items.length,0);
     const[ic,col]=LIB_ICONS[secName]||["📚","#33691e"];
     lg.appendChild(tile(ic,col,secName,total+" مادة",()=>openLibrarySection(secName,groups)))});
   const tg=$("#toolsGrid");tg.innerHTML="";
-  TOOLS.forEach(t=>tg.appendChild(tile(t.ic,t.col,t.name,t.sub,()=>openDetail(t.name,t.build))));
+  TOOLS.forEach(t=>tg.appendChild(tile(t.ic,t.col,t.name,t.sub,()=>openDetail(t.name,t.build,null,{k:"tool",name:t.name}))));
 }
 const TOOLS=[
  {ic:"📿",col:"#0a6b32",name:"السبحة الإلكترونية",sub:"عداد تسبيح",build:buildTasbeeh},
@@ -1371,7 +1445,7 @@ const TOOLS=[
 
 function buildToolsIndex(body){
   const grid=document.createElement("div");grid.className="grid";grid.style.marginTop="6px";
-  TOOLS.forEach(t=>grid.appendChild(tile(t.ic,t.col,t.name,t.sub,()=>openDetail(t.name,t.build))));
+  TOOLS.forEach(t=>grid.appendChild(tile(t.ic,t.col,t.name,t.sub,()=>openDetail(t.name,t.build,null,{k:"tool",name:t.name}))));
   body.appendChild(grid);
 }
 
@@ -1386,7 +1460,7 @@ function rowItem(title,sub,fn,badge){
   b.innerHTML=`<span class="tt"><b>${esc(title)}</b>${sub?`<small>${esc(sub)}</small>`:""}</span>${badge?`<span class="badge">${esc(badge)}</span>`:""}<span class="arr">‹</span>`;
   b.addEventListener("click",fn);return b;
 }
-function openAdhkarSection(sec){openDetail("أذكار "+sec.name,body=>buildAdhkarSession(body,sec))}
+function openAdhkarSection(sec){openD({k:"adhkar",id:sec.id,name:sec.name},"أذكار "+sec.name,body=>buildAdhkarSession(body,sec))}
 function buildAdhkarSession(body,sec){
   const info=document.createElement("div");info.className="card";info.style.marginTop="4px";
   info.innerHTML=`<b style="font-size:16.5px">أذكار ${esc(sec.name)}</b><div class="note">اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.</div><div class="progress"><i style="width:0%"></i></div><div class="note" style="margin-top:0"><span class="pcount">0</span> من ${sec.items.length} ذكرًا اكتمل</div>`;
@@ -1414,7 +1488,7 @@ function buildAdhkarSession(body,sec){
 /* ============ library ============ */
 function buildLibraryIndex(body){
   const list=document.createElement("div");list.className="list";
-  list.appendChild(rowItem("تفسير القرآن الكريم","٩ تفاسير كاملة — كل تفسير يضم السور الـ١١٤",()=>openDetail("تفسير القرآن الكريم",buildTafsirIndex),"متعدد المصادر"));
+  list.appendChild(rowItem("تفسير القرآن الكريم","٩ تفاسير كاملة — كل تفسير يضم السور الـ١١٤",()=>openDetail("تفسير القرآن الكريم",buildTafsirIndex,null,{k:"tafsirIndex"}),"متعدد المصادر"));
   [...new Set(DB.library.map(g=>g.sec))].forEach(secName=>{
     const groups=DB.library.filter(g=>g.sec===secName);const total=groups.reduce((a,g)=>a+g.items.length,0);
     list.appendChild(rowItem(secName,total+" مادة"+(groups.length>1?" في "+groups.length+" مجلدات":""),()=>openLibrarySection(secName,groups)))});
@@ -1427,14 +1501,14 @@ function folderItem(title,sub,fn){
 }
 function openLibrarySection(secName,groups){
   if(groups.length===1){openLibraryGroup(groups[0]);return}
-  openDetail(secName,body=>{
+  openD({k:"libSection",sec:secName},secName,body=>{
     const list=document.createElement("div");list.className="list";
     groups.forEach(g=>{list.appendChild(folderItem(g.group,g.items.length+" مادة",()=>openLibraryGroup(g)))});
     body.appendChild(list);
   });
 }
 function openLibraryGroup(g){
-  openDetail(g.group,body=>{
+  openD({k:"libGroup",gi:DB.library.indexOf(g)},g.group,body=>{
     const list=document.createElement("div");list.className="list";
     if(!g.items.length)list.innerHTML='<div class="empty">هذا المجلد فارغ حاليًا</div>';
     g.items.forEach((it,ii)=>{list.appendChild(rowItem(it.title,it.text.replace(/\s+/g," ").slice(0,80)+"…",()=>openLibraryItem(g,it,ii)))});
@@ -1443,7 +1517,7 @@ function openLibraryGroup(g){
 }
 function openLibraryItem(g,it,ii){
   const gi=DB.library.indexOf(g);
-  openDetail(it.title,body=>{
+  openD({k:"libItem",gi:gi,ii:ii},it.title,body=>{
     const card=document.createElement("div");card.className="card";card.style.marginTop="4px";
     card.innerHTML=`<div class="reader-text">${esc(it.text)}</div>`;
     card.appendChild(readerTools());
@@ -1480,7 +1554,7 @@ function buildMushafIndex(body){
 }
 function openSurah(idx,scrollAyah){
   const s=DB.surahs[idx];
-  openDetail("سورة "+s.name,body=>{
+  openD({k:"surah",i:idx,a:(scrollAyah===undefined?null:scrollAyah)},"سورة "+s.name,body=>{
     const tools=document.createElement("div");tools.className="reader-tools";tools.style.marginTop="2px";
     tools.innerHTML=`<button data-a="dec">A−</button><button data-a="inc">A+</button><button data-a="uth">${state.uthmani?"الخط العادي":"الخط العثماني"}</button><span class="badge">${s.ayahs} آية — ${s.type}</span>`;
     tools.querySelector('[data-a="inc"]').addEventListener("click",()=>{state.quranFont=Math.min(40,state.quranFont+2);document.documentElement.style.setProperty("--quran-size",state.quranFont+"px");persist()});
@@ -1508,7 +1582,7 @@ function openSurah(idx,scrollAyah){
     body.appendChild(seq);
     const tafAll=document.createElement("button");tafAll.className="primary";tafAll.style.background="var(--green)";tafAll.style.marginTop="8px";
     tafAll.textContent="📖 تفسير السورة كاملة — اختر التفسير";
-    tafAll.addEventListener("click",()=>{openDetail("تفسير سورة "+s.name,tb2=>{const l=document.createElement("div");l.className="list";TAFSIR_SOURCES.forEach(src=>l.appendChild(rowItem(src.name,src.author,()=>openTafsirSurah(src,idx))));tb2.appendChild(l)})});
+    tafAll.addEventListener("click",()=>{openD({k:"tafsirPick",i:idx},"تفسير سورة "+s.name,tb2=>{const l=document.createElement("div");l.className="list";TAFSIR_SOURCES.forEach(src=>l.appendChild(rowItem(src.name,src.author,()=>openTafsirSurah(src,idx))));tb2.appendChild(l)})});
     body.appendChild(tafAll);
     const note=document.createElement("p");note.className="note";note.textContent="النص كامل داخل التطبيق ويعمل بدون إنترنت. بجانب كل آية زر «📖 تفسير» يعرض تفسيرها مباشرة من عدة تفاسير (ابن كثير، السعدي، الميسّر، وغيرها). واضغط أي آية لفتح قائمتها: تشغيل الآية، حفظها علامة، أو مشاركتها بطاقة صورة.";
     body.appendChild(note);
@@ -2116,7 +2190,7 @@ function buildSearch(body){
     DB.surahs.forEach(s=>{if(count<40&&(normAr(s.name).includes(nq)||normAr("سورة "+s.name).includes(nq)||String(s.n)===q)){count++;list.appendChild(rowItem("سورة "+s.name,s.ayahs+" آية — "+s.type+" — اضغط للقراءة والاستماع",()=>openSurah(s.n-1),"📖"))}});
     DB.adhkar.forEach(sec=>sec.items.forEach((it,i)=>{if(count<40&&normAr(it.text).includes(nq)){count++;list.appendChild(rowItem("أذكار "+sec.name,it.text.slice(0,80)+"…",()=>openAdhkarSection(sec)))}}));
     DB.library.forEach(g=>g.items.forEach((it,ii)=>{if(count<40&&(normAr(it.title).includes(nq)||normAr(it.text).includes(nq))){count++;list.appendChild(rowItem(it.title,g.sec+" — "+g.group,()=>openLibraryItem(g,it,ii)))}}));
-    NAMES.forEach(n=>{if(count<40&&normAr(n[0]).includes(nq)){count++;list.appendChild(rowItem("اسم الله: "+n[0],n[1],()=>openDetail("أسماء الله الحسنى",buildNames)))}});
+    NAMES.forEach(n=>{if(count<40&&normAr(n[0]).includes(nq)){count++;list.appendChild(rowItem("اسم الله: "+n[0],n[1],()=>openDetail("أسماء الله الحسنى",buildNames,null,{k:"names"})))}});
     if(!count)list.innerHTML='<div class="empty">لا توجد نتائج مطابقة</div>';
   });
   list.innerHTML='<div class="empty">اكتب حرفين على الأقل للبحث في كل محتوى التطبيق</div>';
@@ -2143,7 +2217,7 @@ function buildSettings(body){
   });
   body.appendChild(acard);
   const dlOpen=document.createElement("button");dlOpen.className="reset-btn";dlOpen.style.cssText="margin-top:14px;width:100%";dlOpen.textContent="⬇️ إدارة تحميلات الصوت — عرض المساحة وحذف سورة";
-  dlOpen.addEventListener("click",()=>openDetail("تحميلات الصوت",buildDownloads));
+  dlOpen.addEventListener("click",()=>openDetail("تحميلات الصوت",buildDownloads,null,{k:"downloads"}));
   body.appendChild(dlOpen);
   const support=document.createElement("a");support.className="ext-btn";support.href="https://wa.me/966562320908";support.target="_blank";support.rel="noopener";
   support.innerHTML=`<span style="font-size:24px">💬</span><span><b>الدعم الفني — واتساب</b><small>راسلنا لأي استفسار أو ملاحظة (يحتاج إنترنت عند الضغط)</small></span>`;
@@ -2152,7 +2226,7 @@ function buildSettings(body){
   share.addEventListener("click",async()=>{const text=window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);share.textContent="تم نسخ نص المشاركة ✓"}});
   body.appendChild(share);
   const owner=document.createElement("button");owner.className="reset-btn";owner.style.cssText="margin-top:16px;width:100%";owner.textContent="🔐 دخول المالك — لوحة التحكم";
-  owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate));
+  owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate,null,{k:"admin"}));
   body.appendChild(owner);
 }
 
@@ -2671,7 +2745,7 @@ buildSettings=function(body){
   bindSel("#ntfHikmaOn",v=>{N.hikmaOn=v==="on";showToast(N.hikmaOn?"حكمة اليوم مفعّلة":"تم إيقاف حكمة اليوم")});
   nc.querySelector("#ntfAyahTime").addEventListener("change",e=>{if(e.target.value){N.ayahTime=e.target.value;N.ayahKey="";persist();showToast("وقت آية اليوم: "+e.target.value)}});
   nc.querySelector("#ntfHikmaTime").addEventListener("change",e=>{if(e.target.value){N.hikmaTime=e.target.value;N.hikmaKey="";persist();showToast("وقت حكمة اليوم: "+e.target.value)}});
-  nc.querySelector("#ntfOpenSalawat").addEventListener("click",()=>openDetail("الصلاة على النبي ﷺ",buildSalawat));
+  nc.querySelector("#ntfOpenSalawat").addEventListener("click",()=>openDetail("الصلاة على النبي ﷺ",buildSalawat,null,{k:"salawat"}));
 
   /* ٥) اللغة */
   head("🌐 اللغة");
@@ -2691,8 +2765,8 @@ buildSettings=function(body){
   const stack=document.createElement("div");stack.className="set-stack";body.appendChild(stack);
   const install=document.createElement("button");install.className="primary";install.id="installBtn2";install.textContent="📲 تثبيت التطبيق على الشاشة الرئيسية";stack.appendChild(install);
   const upd=document.createElement("button");upd.className="reset-btn";upd.textContent="🔄 البحث عن تحديث للتطبيق";upd.addEventListener("click",()=>checkForUpdate(true));stack.appendChild(upd);
-  const dl=document.createElement("button");dl.className="reset-btn";dl.textContent="⬇️ إدارة تحميلات الصوت — عرض المساحة وحذف سورة";dl.addEventListener("click",()=>openDetail("تحميلات الصوت",buildDownloads));stack.appendChild(dl);
-  const fav=document.createElement("button");fav.className="reset-btn";fav.textContent="⭐ مفضلتي"+(state.favorites.size?" ("+state.favorites.size+")":"");fav.addEventListener("click",()=>openDetail("المفضلة",buildFavorites));stack.appendChild(fav);
+  const dl=document.createElement("button");dl.className="reset-btn";dl.textContent="⬇️ إدارة تحميلات الصوت — عرض المساحة وحذف سورة";dl.addEventListener("click",()=>openDetail("تحميلات الصوت",buildDownloads,null,{k:"downloads"}));stack.appendChild(dl);
+  const fav=document.createElement("button");fav.className="reset-btn";fav.textContent="⭐ مفضلتي"+(state.favorites.size?" ("+state.favorites.size+")":"");fav.addEventListener("click",()=>openDetail("المفضلة",buildFavorites,null,{k:"favorites"}));stack.appendChild(fav);
   const share=document.createElement("button");share.className="primary";share.textContent="📤 نشر التطبيق — شاركه صدقة جارية";
   share.addEventListener("click",async()=>{const text=window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);showToast("تم نسخ نص المشاركة ✓")}});
   stack.appendChild(share);
@@ -2713,7 +2787,7 @@ buildSettings=function(body){
   about.innerHTML=`<b style="font-size:15.5px">عن التطبيق</b>
   <p class="note" style="margin-bottom:0">إصدار التطبيق: ${APP_VERSION}<br>كل محتوى التطبيق — الأذكار والموسوعة والمصحف والأدوات — مضمّن داخله ويعمل بدون إنترنت عند أي زائر، وعداداتك وعلامتك وإعداداتك محفوظة على جهازك فقط.<br>البحث في التطبيق ذكي: يفهم النص بلا تشكيل، ويعامل الهمزات والألفات والتاء المربوطة والياء كحروف واحدة.</p>`;
   const owner=document.createElement("button");owner.className="reset-btn";owner.style.cssText="margin-top:16px;width:100%";owner.textContent="🔐 دخول المالك — لوحة التحكم";
-  owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate));
+  owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate,null,{k:"admin"}));
   body.appendChild(owner);
   paintInstallBtns();
 };
@@ -2814,7 +2888,7 @@ function smartSuggestion(){
 }
 $("#nafhaClose").addEventListener("click",()=>$("#nafhaModal").classList.remove("on"));
 let sqTaps=0,sqTimer=null;
-$("#sadaqaCard").addEventListener("click",()=>{sqTaps++;clearTimeout(sqTimer);sqTimer=setTimeout(()=>{sqTaps=0},2500);if(sqTaps>=5){sqTaps=0;openDetail("لوحة التحكم",buildAdminGate)}});
+$("#sadaqaCard").addEventListener("click",()=>{sqTaps++;clearTimeout(sqTimer);sqTimer=setTimeout(()=>{sqTaps=0},2500);if(sqTaps>=5){sqTaps=0;openDetail("لوحة التحكم",buildAdminGate,null,{k:"admin"})}});
 $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
@@ -3103,8 +3177,9 @@ function notifTick(){
 /* ----- ربط كروت الرئيسية وتشغيل المحرك ----- */
 (function(){
   paintSalawatCard();
+  try{restoreNav()}catch(e){}
   const tap=$("#salawatTap");if(tap)tap.addEventListener("click",e=>{e.stopPropagation();salawatTap()});
-  const open=$("#salawatOpen");if(open){open.style.cursor="pointer";open.addEventListener("click",()=>openDetail("الصلاة على النبي ﷺ",buildSalawat))}
+  const open=$("#salawatOpen");if(open){open.style.cursor="pointer";open.addEventListener("click",()=>openDetail("الصلاة على النبي ﷺ",buildSalawat,null,{k:"salawat"}))}
   try{getSWReg()}catch(e){}
   setInterval(notifTick,20000);
   setTimeout(notifTick,4000);
