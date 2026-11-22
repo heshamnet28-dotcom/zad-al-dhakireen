@@ -1461,7 +1461,7 @@ function renderDetail(keepScroll){
 }
 /* --- device back button ---------------------------------------------------
    A small stack of sentinel history entries sits above the app's base
-   entry at all times (see TRAP_TARGET below). Each device back press
+   entry at all times (see trapTarget below). Each device back press
    consumes one sentinel (one popstate), the app takes exactly one step —
    close an open sheet, pop one screen, or, on the home screen, show the
    exit confirmation — and then refills the stack so the next press is
@@ -1475,18 +1475,31 @@ function renderDetail(keepScroll){
    screen fell straight out of the app and the exit dialog never showed.
    With a small stack of sentinels there is always at least one entry for a
    back press to land on; every press fires popstate, the handler below
-   takes one in-app step and refills the stack. Refills also happen on the
-   user's own taps/keys, so at least some entries are user-activated and no
-   shell can treat them all as skippable. */
-const TRAP_TARGET=3;
+   takes one in-app step and refills the stack.
+   Depth alone was not enough, though: entries pushed at load carry NO
+   user activation, and the intervention skips precisely those, however
+   many there are — and the old refill-on-tap never helped because the
+   stack was already «full», so nothing new was ever pushed inside a
+   gesture. The first real tap/key therefore PRIMES the trap (primeTrap
+   below): the target depth rises and fresh sentinels are pushed inside
+   that very gesture, so the entries a back press meets first are
+   user-activated and always fire popstate. */
+let trapTarget=3; /* sentinels to keep armed; raised to 5 once primed */
 let trapDepth=0; /* sentinel entries currently sitting above the base entry */
+let trapPrimed=false; /* true once a user gesture has topped the stack up */
 function armTrap(){
   if(exitingApp)return; /* once exit is confirmed the guard is never re-armed */
   if(!histOK)return;
-  while(trapDepth<TRAP_TARGET){
+  while(trapDepth<trapTarget){
     try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++}
     catch(e){histOK=false;break}
   }
+}
+function primeTrap(){
+  if(trapPrimed)return;
+  trapPrimed=true;
+  trapTarget=5;
+  armTrap();
 }
 function openExitModal(){
   if(exitingApp)return;
@@ -1499,9 +1512,29 @@ function openExitModal(){
 function closeExitModal(){$("#exitModal").classList.remove("on")}
 /* one back step inside the app; returns false when already at the root */
 function stepBackInApp(){
+  /* نفحة اليوم تظهر تلقائيًا عند فتح التطبيق، فلا تستهلك ضغطة الرجوع:
+     تُغلق ويُكمل الرجوع خطوته العادية في نفس الضغطة — كانت قبل ذلك
+     «تسرق» أول ضغطة، فيضغط الزائر للخروج فيجد النفحة تُغلق فقط */
+  const nf=document.querySelector("#nafhaModal.on");
+  if(nf)nf.classList.remove("on");
   /* a sheet/dialog open above the screen closes first */
   const m=document.querySelector(".modal.on");
   if(m){m.classList.remove("on");return true}
+  /* بطاقة «وصل تحديث جديد» تطفو فوق كل شيء: الرجوع يخفيها تمامًا كزرّها
+     «لاحقًا» (وتُسجَّل النسخة كمُتعامَل معها حتى لا تعود) — كانت قبل ذلك
+     لا تُغلق بالرجوع إطلاقًا */
+  const ub=document.querySelector("#updateBanner.on");
+  if(ub){
+    try{if(pendingUpdateVer>APP_VERSION)markUpdateHandled(pendingUpdateVer)}catch(e){}
+    ub.classList.remove("on");return true;
+  }
+  /* المشغّل الصوتي العائم يُغلق ويتوقف قبل الرجوع في الشاشات — كان قبل
+     ذلك يبقى ظاهرًا ويعمل مهما ضغطت رجوع */
+  const pl=document.querySelector("#player.on");
+  if(pl){try{stopPlayer()}catch(e){pl.classList.remove("on")}return true}
+  /* داخل لوحة التحكم: الرجوع يمشي في شاشاتها الداخلية شاشةً شاشة قبل
+     الخروج منها (انظر zadAdminBack بجانب دوال اللوحة) */
+  if(window.zadAdminBack&&window.zadAdminBack())return true;
   if(navStack.length){
     navStack.pop();
     if(navStack.length)renderDetail();else showHome();
@@ -1529,15 +1562,29 @@ window.addEventListener("popstate",()=>{
   openExitModal();
 });
 try{
-  history.replaceState({zad:0},"");
   if("scrollRestoration" in history)history.scrollRestoration="manual";
+  const st=history.state;
+  if(st&&st.zad==="trap"&&typeof st.d==="number"){
+    /* تحديث الصفحة (ريفريش): هذا التحميل جالس على إدخال حارس دفعته نسخة
+       سابقة من التطبيق نفسه في نفس جلسة التبويب — نتبنّى المكدس الموجود
+       كما هو بدل دفع ٣ إدخالات جديدة فوقه، فكان كل ريفريش قبل ذلك يطيل
+       تاريخ المتصفح ٣ إدخالات حتى يضيع الرجوع بين إدخالات قديمة */
+    trapDepth=st.d;
+    trapPrimed=true; /* a reload only happens after real use of the app */
+  }else if(st&&st.zad===0){
+    trapDepth=0; /* sitting on the app's own base entry (e.g. bfcache) */
+  }else{
+    history.replaceState({zad:0},"");
+    trapDepth=0;
+  }
   histOK=true;
 }catch(e){histOK=false}
 armTrap();
-/* keep the sentinel stack topped up: refill on the user's own taps and
-   keys (user-activated entries are never skipped by the shell) and on
-   every return to the foreground */
-["pointerdown","keydown","touchstart","wheel","scroll"].forEach(ev=>window.addEventListener(ev,armTrap,{passive:true}));
+/* the visitor's first real tap/key primes the trap with user-activated
+   sentinels (see primeTrap above); scrolling/wheeling just tops it up,
+   and every return to the foreground re-arms it */
+["pointerdown","keydown","touchstart"].forEach(ev=>window.addEventListener(ev,primeTrap,{passive:true}));
+["wheel","scroll"].forEach(ev=>window.addEventListener(ev,armTrap,{passive:true}));
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)armTrap()});
 window.addEventListener("pageshow",armTrap);
 $("#exitStayBtn").addEventListener("click",()=>{closeExitModal()});
@@ -1561,10 +1608,12 @@ $("#exitYesBtn").addEventListener("click",()=>{
   try{if(window.median&&window.median.share&&window.median.close)window.median.close()}catch(e){}
   /* ٢) النوافذ المفتوحة برمجيًا وبعض الأغلفة تقبل الإغلاق المباشر */
   try{window.close()}catch(e){}
-  /* ٣) قفزة واحدة للخلف فوق كل إدخالات الجلسة: يغادر المتصفح/الغلاف
-        التطبيقَ بخطوة واحدة، بدل سلسلة back() التي كانت كل خطوة منها
-        تُطلق popstate يمكن اعتراضها وإعادة السؤال بسببها */
-  try{history.go(-Math.max(1,history.length-1))}catch(e){}
+  /* ٣) قفزة واحدة للخلف فوق إدخالات التطبيق وحده — إدخالات الحارس فوق
+        الإدخال الأساسي، لا أكثر: يغادر المتصفح/الغلاف التطبيقَ بخطوة
+        واحدة، بدل سلسلة back() التي كانت كل خطوة منها تُطلق popstate
+        يمكن اعتراضها وإعادة السؤال بسببها. وكان الحساب القديم يقفز فوق
+        تاريخ التبويب كله (history.length-1) فيلتهم صفحات ما قبل التطبيق */
+  try{history.go(-(trapDepth+1))}catch(e){}
   /* ٤) ما زلنا هنا؟ المتصفح رفض الإغلاق (تبويب عادي): اعرض شاشة
         «تم الخروج» — الخروج حدث فعلًا من أول ضغطة ولا سؤال بعده */
   setTimeout(()=>{const b=$("#byeScreen");if(b&&exitingApp)b.classList.add("on")},650);
@@ -1578,19 +1627,24 @@ $("#detailFav").addEventListener("click",()=>{
   persist();
   $("#detailFav").textContent=state.favorites.has(top.favKey)?"★":"☆";
 });
+const NAV_ROOT_KEY={adhkar:"adhkarIndex",mushaf:"mushafIndex",library:"libraryIndex",tools:"toolsIndex"};
 document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>{
   const n=b.dataset.nav;
   const mark=()=>document.querySelectorAll("#bottomNav button").forEach(x=>x.classList.toggle("on",x===b));
   mark();
   if(n==="home"){goBackLevels(0,null);return}
-  const open=()=>{
-    mark();
-    if(n==="adhkar")openDetail("الأذكار",buildAdhkarIndex,null,{k:"adhkarIndex"});
-    if(n==="mushaf")openDetail("المصحف الشريف",buildMushafIndex,null,{k:"mushafIndex"});
-    if(n==="library")openDetail("الموسوعة والمكتبة",buildLibraryIndex,null,{k:"libraryIndex"});
-    if(n==="tools")openDetail("أدوات وخدمات",buildToolsIndex,null,{k:"toolsIndex"});
-  };
-  goBackLevels(0,open);
+  /* الشريط السفلي كان يصفّر مكدس التنقل قبل فتح القسم الجديد، فكان
+     الرجوع بعد أي تنقّل به يرمي الزائر إلى الرئيسية وينسى القسم الذي
+     جاء منه. الآن: إن كان القسم مفتوحًا أصلًا في المكدس نرجع إليه،
+     وإن لم يكن يُفتح فوق المكدس الحالي — فيعود الرجوع بعده خطوة إلى
+     القسم السابق كما يتوقع الزائر */
+  const key=NAV_ROOT_KEY[n];
+  const idx=key?navStack.findIndex(e=>e.route&&e.route.k===key):-1;
+  if(idx>=0){goBackLevels(idx+1,null);return}
+  if(n==="adhkar")openDetail("الأذكار",buildAdhkarIndex,null,{k:"adhkarIndex"});
+  if(n==="mushaf")openDetail("المصحف الشريف",buildMushafIndex,null,{k:"mushafIndex"});
+  if(n==="library")openDetail("الموسوعة والمكتبة",buildLibraryIndex,null,{k:"libraryIndex"});
+  if(n==="tools")openDetail("أدوات وخدمات",buildToolsIndex,null,{k:"toolsIndex"});
 }));
 
 /* ============ clock & home strip ============ */
@@ -2879,6 +2933,48 @@ function admBackupTab(box,body){
 }
 
 
+
+/* --- لوحة التحكم: مكدس رجوع داخلي -------------------------------------
+   اللوحة تبدّل شاشاتها الداخلية (تبويبات ← قوائم مواد ← نماذج تعديل)
+   بتغيير محتوى الصفحة مباشرة دون المرور بمكدس التنقل navStack، فكان
+   زر رجوع الجهاز يخرج بالمالك من اللوحة كلها مرة واحدة مهما تعمّق.
+   هنا تُغلَّف دوال عرض اللوحة: الشاشات الجذرية (التبويبات الأربعة
+   واللوحة نفسها وبوابة الدخول) تصفّر الأثر، والشاشات الفرعية (قوائم
+   المواد مستوى ١، ونماذج التعديل مستوى ٢) تدفع الشاشة التي جاءت منها،
+   ودالة window.zadAdminBack — التي يستشيرها stepBackInApp قبل فكّ
+   navStack — تمشي في هذا الأثر شاشةً شاشة، تمامًا كأزرار «رجوع» و
+   «إلغاء» داخل اللوحة نفسها. */
+const adminTrail=[];
+let adminCurrent=null; /* {level, thunk} — الشاشة المعروضة الآن في اللوحة */
+function admTrack(level,thunk){
+  if(level===0){adminTrail.length=0;adminCurrent={level:0,thunk:thunk};return}
+  if(adminCurrent&&adminCurrent.level<level)adminTrail.push(adminCurrent);
+  while(adminTrail.length&&adminTrail[adminTrail.length-1].level>=level)adminTrail.pop();
+  adminCurrent={level:level,thunk:thunk};
+}
+[["buildAdminGate",0],["buildAdminPanel",0],
+ ["admAdhkarTab",0],["admLibraryTab",0],["admNafhaTab",0],["admBackupTab",0],
+ ["admAdhkarItems",1],["admRenameAdhkarSection",1],["admLibraryItems",1],
+ ["admRenameLibSec",1],["admRenameGroup",1],["admNafhaForm",1],
+ ["admDhikrForm",2],["admLibraryForm",2]].forEach(function(pair){
+  const name=pair[0],level=pair[1],orig=window[name];
+  if(typeof orig!=="function")return;
+  window[name]=function(){
+    const args=Array.prototype.slice.call(arguments);
+    const r=orig.apply(this,args);
+    admTrack(level,function(){return orig.apply(null,args)});
+    return r;
+  };
+});
+window.zadAdminBack=function(){
+  const top=navStack[navStack.length-1];
+  if(!top||!top.route||top.route.k!=="admin")return false;
+  if(!adminTrail.length)return false;
+  const prev=adminTrail.pop();
+  adminCurrent=prev;
+  try{prev.thunk()}catch(e){}
+  return true;
+};
 
 /* ============ global upgrade: settings extras, share buttons, PWA install ============ */
 const _buildSettingsOrig=buildSettings;
