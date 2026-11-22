@@ -1483,23 +1483,48 @@ function renderDetail(keepScroll){
    gesture. The first real tap/key therefore PRIMES the trap (primeTrap
    below): the target depth rises and fresh sentinels are pushed inside
    that very gesture, so the entries a back press meets first are
-   user-activated and always fire popstate. */
+   user-activated and always fire popstate.
+   --- لماذا عادت المشكلة رغم إصلاح «التهيئة عند أول لمسة»؟ ---------------
+   التهيئة كانت تحدث مرة واحدة فقط: أول لمسة تدفع إدخالين مفعَّلين فوق
+   إدخالات التحميل، لكن كل ضغطة رجوع بعد ذلك تستهلك إدخالًا ويُعاد ملء
+   العمق من معالج popstate — أي خارج أي إيماءة مستخدم — فتعود قمة
+   المكدس إدخالاتٍ بلا تفعيل مستخدم، وهي بالضبط ما يتخطاه كروم أندرويد
+   عند ضغطة رجوع حقيقية من زر/إيماءة الجهاز: يتخطاها كلها دفعة واحدة
+   ويخرج من التطبيق دون أن يصل popstate إلى الصفحة أصلًا، فلا تظهر
+   رسالة الخروج أبدًا مهما كان كود النافذة سليمًا (وقد ثبت بالفحص
+   الآلي أن النافذة نفسها تظهر فعلًا عند أي تنقّل يصل إلى الصفحة).
+   الإصلاح: كل إيماءة حقيقية — لا الأولى فقط — تُعيد تسليح الحارس،
+   وإن كانت قمة المكدس إدخالًا مولودًا خارج إيماءة دفعت فوقه إدخالًا
+   جديدًا مولودًا داخل الإيماءة نفسها (بسقف ٩ حتى لا يكبر التاريخ
+   بلا حد)، فتكون أول إدخالات يقابلها زر الرجوع دائمًا مفعَّلة من
+   المستخدم فلا يستطيع التدخّل تخطّيها، ويصل popstate وتظهر الرسالة. */
 let trapTarget=3; /* sentinels to keep armed; raised to 5 once primed */
 let trapDepth=0; /* sentinel entries currently sitting above the base entry */
 let trapPrimed=false; /* true once a user gesture has topped the stack up */
+let trapTopLive=false; /* the topmost sentinel was pushed inside a user gesture */
+let trapGesture=false; /* true while a real user-gesture handler is running */
+const TRAP_MAX=9; /* hard cap so gesture top-ups never grow history without bound */
 function armTrap(){
   if(exitingApp)return; /* once exit is confirmed the guard is never re-armed */
   if(!histOK)return;
   while(trapDepth<trapTarget){
-    try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++}
+    try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++;trapTopLive=trapGesture}
     catch(e){histOK=false;break}
+  }
+  /* القمة مولودة خارج إيماءة (من popstate أو تمرير أو عودة للواجهة)؟
+     ضع فوقها — داخل هذه الإيماءة — إدخالًا مفعَّلًا لا يمكن تخطّيه */
+  if(trapGesture&&!trapTopLive&&trapDepth>0&&trapDepth<TRAP_MAX){
+    try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++;trapTopLive=true}
+    catch(e){histOK=false}
   }
 }
 function primeTrap(){
-  if(trapPrimed)return;
+  /* تُستدعى مع كل إيماءة حقيقية، لا الأولى فقط: تُعلِّم أننا داخل
+     إيماءة ثم تُسلِّح الحارس، فيولد أي إدخال جديد مفعَّلًا من المستخدم */
   trapPrimed=true;
   trapTarget=5;
-  armTrap();
+  trapGesture=true;
+  try{armTrap()}finally{trapGesture=false}
 }
 function openExitModal(){
   if(exitingApp)return;
@@ -1555,6 +1580,7 @@ function goBackLevels(target,after){
 }
 window.addEventListener("popstate",()=>{
   if(trapDepth>0)trapDepth--; /* this press consumed one sentinel entry */
+  trapTopLive=false; /* the entry now on top is an older one, not born in a gesture */
   if(exitingApp)return; /* leaving: ignore every history event, never re-ask */
   if(!histOK)return;
   if(stepBackInApp()){armTrap();return}
@@ -1580,9 +1606,10 @@ try{
   histOK=true;
 }catch(e){histOK=false}
 armTrap();
-/* the visitor's first real tap/key primes the trap with user-activated
-   sentinels (see primeTrap above); scrolling/wheeling just tops it up,
-   and every return to the foreground re-arms it */
+/* EVERY real tap/key re-arms the trap from inside the gesture (see
+   primeTrap above), so the topmost sentinel stays user-activated and a
+   real device back press can never skip past it; scrolling/wheeling
+   just tops it up, and every return to the foreground re-arms it */
 ["pointerdown","keydown","touchstart"].forEach(ev=>window.addEventListener(ev,primeTrap,{passive:true}));
 ["wheel","scroll"].forEach(ev=>window.addEventListener(ev,armTrap,{passive:true}));
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)armTrap()});
