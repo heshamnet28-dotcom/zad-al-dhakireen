@@ -1258,6 +1258,7 @@ const navStack=[];
 let homeScroll=0;
 let histOK=false;   // device-back integration through the History API
 let navJump=null;   // pending multi-step history jump {target,after}
+let exitingApp=false; // exit confirmed: keep stepping back until the app is left
 function saveScroll(){
   const t=navStack[navStack.length-1];
   if(t)t.scroll=window.scrollY||0;else homeScroll=window.scrollY||0;
@@ -1388,6 +1389,7 @@ function navBack(){
 }
 window.addEventListener("popstate",()=>{
   if(!histOK)return;
+  if(exitingApp){try{history.back()}catch(e){}return}
   if(navJump){
     if(navStack.length>navJump.target){
       navStack.pop();
@@ -1418,7 +1420,20 @@ try{
   histOK=true;
 }catch(e){histOK=false}
 $("#exitStayBtn").addEventListener("click",()=>{closeExitModal();pushGuard()});
-$("#exitYesBtn").addEventListener("click",()=>{closeExitModal();try{history.back()}catch(e){}});
+$("#exitYesBtn").addEventListener("click",()=>{
+  closeExitModal();
+  exitingApp=true;
+  /* installed app (PWA/TWA/WebView): close the app window itself — one tap */
+  try{window.close()}catch(e){}
+  /* browser tab: step back out; any same-document entries keep stepping
+     back via the exitingApp branch of the popstate handler */
+  try{history.back()}catch(e){}
+  /* if the window is still open a moment later, retry the close once */
+  setTimeout(()=>{if(exitingApp){try{window.close()}catch(e){}}},400);
+  /* if nothing could close the app (plain browser tab), restore normal
+     back-button behaviour so the app keeps working as before */
+  setTimeout(()=>{exitingApp=false},1500);
+});
 $("#exitModal").addEventListener("click",e=>{if(e.target.id==="exitModal"){closeExitModal();pushGuard()}});
 $("#backBtn").addEventListener("click",navBack);
 $("#detailFav").addEventListener("click",()=>{
