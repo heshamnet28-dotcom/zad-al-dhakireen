@@ -362,13 +362,6 @@ body.has-player{padding-bottom:186px}
 .taf-chip{display:inline-block;vertical-align:middle;min-height:25px;margin:0 3px;padding:0 10px;border-radius:999px;border:1px solid var(--gold);background:var(--gold-soft);color:#6b5510;font-family:"Tajawal","Segoe UI",sans-serif;font-size:12.5px;font-weight:800;line-height:1.8;box-shadow:0 1px 4px rgba(180,140,20,.18)}
 [data-theme="dark"] .taf-chip{color:#ffe9a8}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .taf-chip{color:#ffe9a8}}
-.juz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:7px;margin-top:10px}
-.juz-btn{background:var(--bg);border:1.5px solid var(--line);border-radius:11px;padding:7px 6px;text-align:center;color:var(--ink);min-height:52px}
-.juz-btn b{display:block;font-size:13.5px;color:var(--green)}
-.juz-btn small{display:block;font-size:10.8px;color:var(--ink-2);margin-top:1px;line-height:1.45}
-.juz-btn:active{border-color:var(--gold);background:var(--gold-soft)}
-[data-theme="dark"] .juz-btn b{color:#8fe3ab}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .juz-btn b{color:#8fe3ab}}
 /* nafha modal */
 .modal{position:fixed;inset:0;background:rgba(10,30,16,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
 .modal.on{display:flex}
@@ -1466,21 +1459,9 @@ function readerTools(){
 }
 
 /* ============ mushaf ============ */
-const JUZ_POINTS=[[1,1],[2,142],[2,253],[3,93],[4,24],[4,148],[5,82],[6,111],[7,88],[8,41],[9,93],[11,6],[12,53],[15,1],[17,1],[18,75],[21,1],[23,1],[25,21],[27,56],[29,46],[33,31],[36,28],[39,32],[41,47],[46,1],[51,31],[58,1],[67,1],[78,1]];
-const JUZ_TITLES=["الم","سيقول","تلك الرسل","لن تنالوا","والمحصنات","لا يحب الله","وإذا سمعوا","ولو أننا","قال الملأ","واعلموا","يعتذرون","وما من دابة","وما أبرئ","ربما","سبحان الذي","قال ألم","اقترب","قد أفلح","وقال الذين","أمن خلق","اتل ما أوحي","ومن يقنت","وما لي","فمن أظلم","إليه يرد","حم","قال فما خطبكم","قد سمع الله","تبارك الذي","عمّ"];
 function buildMushafIndex(body){
   const inp=document.createElement("input");inp.className="searchbox";inp.placeholder="ابحث باسم السورة أو رقمها…";body.appendChild(inp);
-  const juzCard=document.createElement("div");juzCard.className="card";juzCard.style.marginTop="10px";juzCard.style.padding="12px";
-  juzCard.innerHTML='<b style="font-size:15.5px;color:var(--green)">🧭 التنقّل بالأجزاء</b><div class="note" style="margin:2px 0 0">اضغط أي جزء للانتقال إلى بدايته مباشرة.</div>';
-  const jg=document.createElement("div");jg.className="juz-grid";
-  JUZ_POINTS.forEach((jz,i)=>{
-    const sn=DB.surahs[jz[0]-1];
-    const b=document.createElement("button");b.className="juz-btn";
-    b.innerHTML="<b>الجزء "+(i+1)+"</b><small>«"+JUZ_TITLES[i]+"» — "+esc(sn.name)+" "+jz[1]+"</small>";
-    b.addEventListener("click",()=>openSurah(jz[0]-1,jz[1]-1));
-    jg.appendChild(b);
-  });
-  juzCard.appendChild(jg);body.appendChild(juzCard);
+  const hd=document.createElement("div");hd.style.cssText="margin:12px 2px 8px;font-weight:800;font-size:16px;color:var(--green)";hd.textContent="📖 فهرس السور — اختر سورة للقراءة والاستماع";body.appendChild(hd);
   if(state.bookmark){
     const bm=DB.surahs[state.bookmark.surah];
     const btn=document.createElement("button");btn.className="primary";btn.style.background="var(--gold)";btn.style.color="#231d02";
