@@ -850,12 +850,54 @@ function hijriToGregorian(hy,hm,hd){
 /* ============ global upgrade: normalization, i18n, reciters, ayah playback ============ */
 function normAr(s){
   return String(s||"")
-    .replace(/[ً-ٰٟ]/g,"")
+    .replace(/ٱ/g,"ا").replace(/ﷲ/g,"الله")
+    .replace(/[٠-٩]/g,function(d){return "٠١٢٣٤٥٦٧٨٩".indexOf(d)})
+    .replace(/[۰-۹]/g,function(d){return "۰۱۲۳۴۵۶۷۸۹".indexOf(d)})
     .replace(/ـ/g,"")
+    .replace(/[ً-ٰٟۖ-ۭ]/g,"")
+    .replace(/\p{M}/gu,"")
     .replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه")
-    .replace(/ؤ/g,"و").replace(/ئ/g,"ي").replace(/ؤ/g,"و")
+    .replace(/ؤ/g,"و").replace(/ئ/g,"ي")
     .replace(/[^\p{L}\p{N}\s]/gu," ")
     .replace(/\s+/g," ").trim().toLowerCase();
+}
+/* كلمات عامة لا تُميّز نتيجة بعينها (سورة/أذكار/قصة…) — تُستبعد من لبّ البحث حتى لا تحجب الاسم المقصود */
+const SEARCH_GENERIC={سوره:1,اذكار:1,ذكر:1,دعاء:1,ادعيه:1,قصه:1,قصص:1,حديث:1,احاديث:1};
+function tokEq(a,b){
+  if(a===b)return true;
+  const x=a.length>3&&a.indexOf("ال")===0?a.slice(2):a;
+  const y=b.length>3&&b.indexOf("ال")===0?b.slice(2):b;
+  return x===y||x===b||a===y;
+}
+function fuzzyNameMatch(name,q){
+  const nq=normAr(q);if(!nq)return true;
+  const n=normAr(name);
+  if(n.indexOf(nq)>=0)return true;
+  if(n.length>=2&&nq.indexOf(n)>=0)return true;
+  const qt=nq.split(" ").filter(function(t){return !SEARCH_GENERIC[t]});
+  const use=qt.length?qt:nq.split(" ");
+  const nToks=n.split(" ");
+  return use.every(function(t){return nToks.some(function(x){return tokEq(x,t)})||(t.length>=3&&n.indexOf(t)>=0)});
+}
+function scoreMatch(nqFull,coreQ,toks,title,body){
+  let score=0,hit=0,titleHit=0;
+  const tToks=title?title.split(" "):[];
+  if(title){
+    if(title===coreQ||title===nqFull)score+=120;
+    else if(coreQ.length>=3&&title.indexOf(coreQ)>=0)score+=80;
+    else if(nqFull.length>=3&&nqFull!==coreQ&&title.indexOf(nqFull)>=0)score+=75;
+    if(tToks.length&&toks.length&&tokEq(tToks[0],toks[0]))score+=6;
+  }
+  toks.forEach(function(t){
+    let inT=false;
+    if(tToks.some(function(x){return tokEq(x,t)}))inT=true;
+    else if(t.length>=3&&title&&title.indexOf(t)>=0)inT=true;
+    if(inT){score+=18;hit++;titleHit++}
+    else if(body&&t.length>=2&&(t.length>2?body.indexOf(t)>=0:(" "+body+" ").indexOf(" "+t+" ")>=0)){score+=4;hit++}
+  });
+  if(toks.length>1&&hit===toks.length)score+=25;
+  if(body&&coreQ.length>=3&&body.indexOf(coreQ)>=0)score+=15;
+  return {score:(hit||score>=75)?score:0,hit:hit,titleHit:titleHit};
 }
 const I18N={
  ar:{appName:"زاد الذاكرين",nextPrayer:"الصلاة القادمة",nav_home:"الرئيسية",nav_adhkar:"الأذكار",nav_mushaf:"المصحف",nav_library:"المكتبة",nav_tools:"الأدوات",secAdhkar:"الأذكار",secLib:"الموسوعة الإسلامية",secTools:"أدوات وخدمات",quranBtn:"المصحف الشريف — اقرأ الآن",todayCount:"أذكارك اليوم",startNow:"ابدأ الآن",streakTitle:"سلسلة الالتزام بالذكر"},
@@ -1074,7 +1116,7 @@ function buildTafsirSurahs(body,src){
   const list=document.createElement("div");list.className="list";
   const paint=q=>{
     list.innerHTML="";
-    DB.surahs.filter(s=>!q||normAr(s.name).includes(normAr(q))||String(s.n)===q.trim()).forEach(s=>{
+    DB.surahs.filter(s=>!q||fuzzyNameMatch(s.name,q)||String(s.n)===q.trim()||normAr(q)===String(s.n)).forEach(s=>{
       list.appendChild(rowItem(s.n+". سورة "+s.name,s.ayahs+" آية — "+s.type,()=>openTafsirSurah(src,s.n-1)))});
     if(!list.children.length)list.innerHTML='<div class="empty">لا توجد سورة مطابقة لبحثك</div>';
   };
@@ -1585,7 +1627,7 @@ function buildMushafIndex(body){
   const list=document.createElement("div");list.className="list";
   const paint=q=>{
     list.innerHTML="";
-    DB.surahs.filter(s=>!q||normAr(s.name).includes(normAr(q))||String(s.n)===q.trim()).forEach(s=>{
+    DB.surahs.filter(s=>!q||fuzzyNameMatch(s.name,q)||String(s.n)===q.trim()||normAr(q)===String(s.n)).forEach(s=>{
       list.appendChild(rowItem(s.n+". سورة "+s.name,s.ayahs+" آية — "+s.type,()=>openSurah(s.n-1)))});
     if(!list.children.length)list.innerHTML='<div class="empty">لا توجد سورة مطابقة لبحثك</div>';
   };
@@ -1650,7 +1692,7 @@ const NAMES=[["الله","الاسم الأعظم الجامع لصفات الك
 function buildNames(body){
   const inp=document.createElement("input");inp.className="searchbox";inp.placeholder="ابحث باسم من أسماء الله…";body.appendChild(inp);
   const grid=document.createElement("div");grid.className="names-grid";
-  const paint=q=>{grid.innerHTML="";NAMES.filter(n=>!q||normAr(n[0]).includes(normAr(q))).forEach(n=>{const d=document.createElement("div");d.className="name-card";d.innerHTML=`<b>${esc(n[0])}</b><span>${esc(n[1])}</span>`;grid.appendChild(d)});
+  const paint=q=>{grid.innerHTML="";NAMES.filter(n=>!q||fuzzyNameMatch(n[0],q)||normAr(n[1]).indexOf(normAr(q))>=0).forEach(n=>{const d=document.createElement("div");d.className="name-card";d.innerHTML=`<b>${esc(n[0])}</b><span>${esc(n[1])}</span>`;grid.appendChild(d)});
     if(!grid.children.length)grid.innerHTML='<div class="empty" style="grid-column:1/-1">لا يوجد اسم مطابق</div>'};
   inp.addEventListener("input",()=>paint(inp.value.trim()));paint("");body.appendChild(grid);
 }
@@ -2223,15 +2265,48 @@ function buildFavorites(body){
 function buildSearch(body){
   const inp=document.createElement("input");inp.className="searchbox";inp.placeholder="ابحث في السور والأذكار والأحاديث والقصص وأسماء الله…";body.appendChild(inp);
   const list=document.createElement("div");list.className="list";body.appendChild(list);
+  let IDX=null;
+  const buildIdx=()=>{
+    const idx=[];
+    DB.surahs.forEach(s=>{idx.push({type:0,title:normAr(s.name),body:normAr(s.type)+" سوره "+normAr(s.name),label:"سورة "+s.name,sub:s.ayahs+" آية — "+s.type+" — اضغط للقراءة والاستماع",fn:()=>openSurah(s.n-1),badge:"📖",num:s.n})});
+    DB.adhkar.forEach(sec=>{
+      let bodyTxt=normAr(sec.name);
+      sec.items.forEach(it=>{bodyTxt+=" "+normAr(it.text)});
+      idx.push({type:1,title:normAr(sec.name),titleAlt:normAr("أذكار "+sec.name),body:bodyTxt,label:"أذكار "+sec.name,items:sec.items,sub:sec.items.length+" ذكرًا — اضغط للفتح",fn:()=>openAdhkarSection(sec),badge:"📿"});
+    });
+    DB.library.forEach(g=>g.items.forEach((it,ii)=>{idx.push({type:2,title:normAr(it.title),body:normAr(it.text)+" "+normAr(g.sec)+" "+normAr(g.group),label:it.title,sub:g.sec+" — "+g.group,fn:()=>openLibraryItem(g,it,ii)})}));
+    NAMES.forEach(n=>{idx.push({type:3,title:normAr(n[0]),body:normAr(n[1]),label:"اسم الله: "+n[0],sub:n[1],fn:()=>openDetail("أسماء الله الحسنى",buildNames,null,{k:"names"})})});
+    return idx;
+  };
   inp.addEventListener("input",()=>{
-    const q=inp.value.trim();const nq=normAr(q);list.innerHTML="";
+    const q=inp.value.trim();list.innerHTML="";
     if(q.length<2){list.innerHTML='<div class="empty">اكتب حرفين على الأقل للبحث في كل محتوى التطبيق</div>';return}
-    let count=0;
-    DB.surahs.forEach(s=>{if(count<40&&(normAr(s.name).includes(nq)||normAr("سورة "+s.name).includes(nq)||String(s.n)===q)){count++;list.appendChild(rowItem("سورة "+s.name,s.ayahs+" آية — "+s.type+" — اضغط للقراءة والاستماع",()=>openSurah(s.n-1),"📖"))}});
-    DB.adhkar.forEach(sec=>sec.items.forEach((it,i)=>{if(count<40&&normAr(it.text).includes(nq)){count++;list.appendChild(rowItem("أذكار "+sec.name,it.text.slice(0,80)+"…",()=>openAdhkarSection(sec)))}}));
-    DB.library.forEach(g=>g.items.forEach((it,ii)=>{if(count<40&&(normAr(it.title).includes(nq)||normAr(it.text).includes(nq))){count++;list.appendChild(rowItem(it.title,g.sec+" — "+g.group,()=>openLibraryItem(g,it,ii)))}}));
-    NAMES.forEach(n=>{if(count<40&&normAr(n[0]).includes(nq)){count++;list.appendChild(rowItem("اسم الله: "+n[0],n[1],()=>openDetail("أسماء الله الحسنى",buildNames,null,{k:"names"})))}});
-    if(!count)list.innerHTML='<div class="empty">لا توجد نتائج مطابقة</div>';
+    if(!IDX)IDX=buildIdx();
+    const nq=normAr(q);
+    const allToks=nq.split(" ").filter(Boolean);
+    const coreToks=allToks.filter(t=>!SEARCH_GENERIC[t]);
+    const toks=coreToks.length?coreToks:allToks;
+    const coreQ=toks.join(" ");
+    const numQ=(allToks.length===1&&/^\d+$/.test(allToks[0]))?parseInt(allToks[0],10):-1;
+    const res=[];
+    IDX.forEach((c,ci)=>{
+      let best=scoreMatch(nq,coreQ,toks,c.title,c.body);
+      if(c.titleAlt){const alt=scoreMatch(nq,coreQ,toks,c.titleAlt,c.body);if(alt.score>best.score)best=alt}
+      if(c.type===0&&numQ>0&&c.num===numQ)best={score:200,hit:1,titleHit:1};
+      if(numQ>0&&c.type!==0&&best.score<75)return;
+      if(c.type===3&&!best.titleHit&&!(best.hit===toks.length&&toks.length>=2))return;
+      if(best.score>0)res.push({c:c,ci:ci,score:best.score});
+    });
+    res.sort((a,b)=>b.score-a.score||a.c.type-b.c.type||a.ci-b.ci);
+    if(!res.length){list.innerHTML='<div class="empty">لا توجد نتائج مطابقة — جرّب كلمات أقصر أو اكتب الاسم بدون «ال»</div>';return}
+    res.slice(0,40).forEach(r=>{
+      const c=r.c;let sub=c.sub;
+      if(c.type===1){
+        const hit=c.items.find(it=>{const nt=normAr(it.text);return toks.some(t=>t.length>=2&&nt.indexOf(t)>=0)});
+        if(hit)sub=hit.text.slice(0,80)+"…";
+      }
+      list.appendChild(rowItem(c.label,sub,c.fn,c.badge));
+    });
   });
   list.innerHTML='<div class="empty">اكتب حرفين على الأقل للبحث في كل محتوى التطبيق</div>';
 }
