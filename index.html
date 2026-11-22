@@ -2336,7 +2336,7 @@ function buildSettings(body){
   support.innerHTML=`<span style="font-size:24px">💬</span><span><b>الدعم الفني — واتساب</b><small>راسلنا لأي استفسار أو ملاحظة (يحتاج إنترنت عند الضغط)</small></span>`;
   body.appendChild(support);
   const share=document.createElement("button");share.className="primary";share.textContent="نشر التطبيق — شاركه صدقة جارية";
-  share.addEventListener("click",async()=>{const text=window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);share.textContent="تم نسخ نص المشاركة ✓"}});
+  share.addEventListener("click",async()=>{const text=window.ZAD_SHARE_SHORT||window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت — الويب: https://is.gd/J4yZdK — تحميل تطبيق الأندرويد: https://is.gd/ttQnQy";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);share.textContent="تم نسخ نص المشاركة ✓"}});
   body.appendChild(share);
   const owner=document.createElement("button");owner.className="reset-btn";owner.style.cssText="margin-top:16px;width:100%";owner.textContent="🔐 دخول المالك — لوحة التحكم";
   owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate,null,{k:"admin"}));
@@ -2881,8 +2881,11 @@ buildSettings=function(body){
   const dl=document.createElement("button");dl.className="reset-btn";dl.textContent="⬇️ إدارة تحميلات الصوت — عرض المساحة وحذف سورة";dl.addEventListener("click",()=>openDetail("تحميلات الصوت",buildDownloads,null,{k:"downloads"}));stack.appendChild(dl);
   const fav=document.createElement("button");fav.className="reset-btn";fav.textContent="⭐ مفضلتي"+(state.favorites.size?" ("+state.favorites.size+")":"");fav.addEventListener("click",()=>openDetail("المفضلة",buildFavorites,null,{k:"favorites"}));stack.appendChild(fav);
   const share=document.createElement("button");share.className="primary";share.textContent="📤 نشر التطبيق — شاركه صدقة جارية";
-  share.addEventListener("click",async()=>{const text=window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);showToast("تم نسخ نص المشاركة ✓")}});
+  share.addEventListener("click",async()=>{const text=window.ZAD_SHARE_SHORT||window.ZAD_PROMO||"زاد الذاكرين — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت — الويب: https://is.gd/J4yZdK — تحميل تطبيق الأندرويد: https://is.gd/ttQnQy";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين",text})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(text);showToast("تم نسخ نص المشاركة ✓")}});
   stack.appendChild(share);
+  const apkShare=document.createElement("button");apkShare.className="reset-btn";apkShare.textContent="📱 مشاركة رابط تحميل التطبيق (APK)";
+  apkShare.addEventListener("click",async()=>{const t="📱 تطبيق «زاد الذاكرين» للأندرويد — حمّله وثبّته مباشرة على موبايلك من هنا 👇\nhttps://is.gd/ttQnQy\n🔗 أو افتحه على الويب: https://is.gd/J4yZdK";if(navigator.share){try{await navigator.share({title:"زاد الذاكرين — تحميل التطبيق",text:t})}catch(_){}}else if(navigator.clipboard){await navigator.clipboard.writeText(t);showToast("تم نسخ رابط التحميل ✓")}});
+  stack.appendChild(apkShare);
   const support=document.createElement("a");support.className="ext-btn";support.style.marginTop="0";support.href="https://wa.me/966562320908";support.target="_blank";support.rel="noopener";
   support.innerHTML=`<span style="font-size:24px">💬</span><span><b>الدعم الفني — واتساب</b><small>راسلنا لأي استفسار أو ملاحظة (يحتاج إنترنت عند الضغط)</small></span>`;
   stack.appendChild(support);
@@ -3011,7 +3014,9 @@ const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
 "🌿📖 تطبيق «زاد الذاكرين» — رفيقك اليومي للذكر والقرآن 📖🌿\n"+
-"صدقة جارية مجانية، تجمع لك عبادتك اليومية كلها في مكان واحد:\n\n"+
+"صدقة جارية مجانية، تجمع لك عبادتك اليومية كلها في مكان واحد:\n"+
+"🔗 افتح التطبيق على الويب من هنا: "+APP_LINK+"\n"+
+"📱 أو حمّل تطبيق الأندرويد (APK) وثبّته مباشرة من هنا: "+APK_LINK+"\n\n"+
 "📖 المصحف الشريف كاملًا — 114 سورة و6236 آية بالرسم العثماني، مع تلاوة صوتية آيةً آية وبأصوات عدد من القرّاء، وبحث وحفظ علامات.\n"+
 "📚 تفسير القرآن الكريم من 9 مصادر موثوقة: ابن كثير، السعدي، الطبري، القرطبي، البغوي، الجلالين، الميسّر، الوسيط، والمختصر في التفسير.\n"+
 "🤲 الأذكار كاملة: 18 قسمًا و179 ذكرًا — أذكار الصباح والمساء والنوم والصلاة والمناسبات من حصن المسلم، مع عدّاد ذكي وسلسلة التزام يومية تشجعك على المداومة.\n"+
@@ -3028,6 +3033,12 @@ window.ZAD_PROMO=
 "افتح التطبيق من هنا 👇\n"+APP_LINK+"\n\n"+
 "📱 أو نزّل تطبيق أندرويد (APK) مباشرة وثبّته على موبايلك من هنا 👇\n"+APK_LINK+"\n\n"+
 "انشره بين أهلك وأحبابك، فالدال على الخير كفاعله، ولك مثل أجر من انتفع به بإذن الله 🤲";
+/* نص مشاركة قصير: الرابطان (الويب + تحميل APK) في المقدمة حتى لا يُقتطع رابط التحميل عند النشر */
+window.ZAD_SHARE_SHORT=
+"🌿📖 تطبيق «زاد الذاكرين» — أذكار ومصحف وموسوعة وأدوات إسلامية تعمل بدون إنترنت، صدقة جارية مجانية.\n"+
+"🔗 افتح التطبيق على الويب من هنا:\n"+APP_LINK+"\n"+
+"📱 أو حمّل تطبيق الأندرويد (APK) وثبّته مباشرة على موبايلك من هنا:\n"+APK_LINK+"\n"+
+"انشره بين أهلك وأحبابك، فالدال على الخير كفاعله 🤲";
 (function(){
   const full=$("#promoFull");if(full)full.textContent=window.ZAD_PROMO;
   const vb=$("#viewPromoBtn");
