@@ -495,6 +495,10 @@ html.lite .card,html.lite .tile,html.lite .row-item,html.lite .stat-box{box-shad
 .vid-txt b{font-size:16px;display:block;line-height:1.5}
 .vid-txt small{color:var(--ink-2);font-size:13px;display:block;line-height:1.6;margin-top:2px}
 .vid-go{display:inline-block;margin-top:8px;color:#c62828;font-weight:900;font-size:13.5px}
+.vid-card{cursor:pointer}
+.vid-frame{display:block;position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.vid-frame iframe{width:100%;height:100%;border:0;display:block}
+.vid-stop{position:absolute;top:8px;inset-inline-end:8px;z-index:2;background:rgba(0,0,0,.78);color:#fff;border:0;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:700;cursor:pointer;line-height:1.5;font-family:inherit}
 .ayah-hide{filter:blur(8px);user-select:none}
 .palette{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 .pal-btn{width:40px;height:40px;min-height:40px;border-radius:50%;border:2px solid var(--line);padding:0}
@@ -4541,8 +4545,8 @@ function buildRaceGame(body){
 }
 /* --- الفيديوهات التعليمية --- */
 function kidArt(kind){
-  const bg={wudu:"#bfe6f5",prayer:"#ffe9a8",boat:"#bfe6f5",mosque:"#ffe9a8",quran:"#d9ecd9",moon:"#2c3e70",letters:"#fde2e4",food:"#ffe3c2"}[kind]||"#eee";
-  const fg={wudu:"#0a6b32",prayer:"#064420",boat:"#8a6d1a",mosque:"#064420",quran:"#064420",moon:"#ffd94d",letters:"#c62828",food:"#e65100"}[kind]||"#333";
+  const bg={wudu:"#bfe6f5",prayer:"#ffe9a8",boat:"#bfe6f5",mosque:"#ffe9a8",quran:"#d9ecd9",moon:"#2c3e70",letters:"#fde2e4",food:"#ffe3c2",kaaba:"#ece5d8"}[kind]||"#eee";
+  const fg={wudu:"#0a6b32",prayer:"#064420",boat:"#8a6d1a",mosque:"#064420",quran:"#064420",moon:"#ffd94d",letters:"#c62828",food:"#e65100",kaaba:"#222222"}[kind]||"#333";
   let inner="";
   if(kind==="wudu")inner='<circle cx="70" cy="34" r="13" fill="'+fg+'"/><circle cx="105" cy="26" r="9" fill="#2980b9"/><circle cx="130" cy="38" r="11" fill="#2980b9"/><path d="M40 84 q60 -18 120 0 l-8 14 h-104z" fill="#2980b9"/>';
   else if(kind==="prayer")inner='<rect x="88" y="30" width="24" height="52" rx="4" fill="'+fg+'"/><circle cx="100" cy="22" r="9" fill="'+fg+'"/><path d="M55 84 h90 l10 12 h-110z" fill="#c62828"/>';
@@ -4552,28 +4556,48 @@ function kidArt(kind){
   else if(kind==="moon")inner='<path d="M118 12 a40 40 0 1 0 22 66 a32 32 0 1 1 -22 -66z" fill="'+fg+'"/><path d="M52 26 l4 9 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1z" fill="#fff"/><path d="M150 78 l3 7 7 1 -5 5 1 7 -6 -4 -6 4 1 -7 -5 -5 7 -1z" fill="#fff"/>';
   else if(kind==="letters")inner='<text x="100" y="72" text-anchor="middle" font-size="46" font-weight="900" fill="'+fg+'" font-family="Amiri,serif">أ ب ت</text>';
   else if(kind==="food")inner='<circle cx="100" cy="58" r="34" fill="#fff" stroke="'+fg+'" stroke-width="4"/><circle cx="100" cy="58" r="20" fill="#ffd94d"/><circle cx="60" cy="30" r="9" fill="#e74c3c"/><circle cx="142" cy="30" r="9" fill="#27ae60"/>';
+  else if(kind==="kaaba")inner='<rect x="66" y="32" width="68" height="60" fill="'+fg+'"/><rect x="66" y="44" width="68" height="10" fill="#d4af37"/><rect x="94" y="64" width="12" height="28" fill="#d4af37"/><path d="M100 8 l3 7 7 1 -5 5 1 7 -6 -4 -6 4 1 -7 -5 -5 7 -1z" fill="#d4af37"/>';
   return '<svg viewBox="0 0 200 110" width="100%" height="104" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="200" height="110" fill="'+bg+'"/>'+inner+'</svg>';
 }
 const KID_VIDEOS=[
-  {t:"تعليم الوضوء للأطفال خطوة بخطوة",q:"تعليم الوضوء للأطفال خطوة بخطوة كرتون إسلامي",d:"تعلّم كيف تتوضأ كما علّمنا النبي ﷺ",art:"wudu"},
-  {t:"تعليم الصلاة للأطفال",q:"تعليم الصلاة للأطفال كرتون إسلامي أركان الصلاة",d:"حركات الصلاة وأركانها ببساطة ومتعة",art:"prayer"},
-  {t:"قصص الأنبياء للأطفال",q:"قصص الأنبياء للأطفال كرتون إسلامي",d:"نوح ويوسف وموسى ومحمد ﷺ وغيرهم عليهم السلام",art:"boat"},
-  {t:"أنشودة أركان الإسلام الخمسة",q:"أركان الإسلام الخمسة للأطفال أنشودة",d:"احفظ الأركان الخمسة وأنت تغنّي",art:"mosque"},
-  {t:"سورة الفاتحة للأطفال — تكرار للحفظ",q:"سورة الفاتحة للأطفال تكرار المعلم للأطفال حفظ",d:"ردّد مع المعلّم واحفظ أمّ الكتاب",art:"quran"},
-  {t:"أناشيد إسلامية للأطفال",q:"أناشيد إسلامية للأطفال طلع البدر علينا",d:"أناشيد جميلة عن النبي ﷺ والأخلاق الطيبة",art:"moon"},
-  {t:"الحروف العربية بأنشودة ممتعة",q:"تعليم الحروف العربية للأطفال أنشودة الحروف الهجائية",d:"تعلّم حروف لغة القرآن الكريم",art:"letters"},
-  {t:"آداب الطعام والسلام للأطفال",q:"آداب الطعام للأطفال كرتون إسلامي بسم الله",d:"بسم الله، وكُل بيمينك، وقل الحمد لله",art:"food"}
+  {t:"تعليم الوضوء للأطفال خطوة بخطوة",id:"CRktVXOn5nE",d:"تعلّم كيف تتوضأ كما علّمنا النبي ﷺ",art:"wudu"},
+  {t:"تعليم الصلاة للأطفال",id:"a-s1N5AwSk0",d:"حركات الصلاة وأركانها ببساطة ومتعة",art:"prayer"},
+  {t:"قصة سيدنا نوح عليه السلام",id:"pToxEGj1NgQ",d:"سفينة نوح والطوفان العظيم — قصة من القرآن",art:"boat"},
+  {t:"قصة سيدنا إسماعيل عليه السلام",id:"BRmx3Yk_ukw",d:"قصة الذبيح وبناء الكعبة المشرفة",art:"kaaba"},
+  {t:"أنشودة أركان الإسلام الخمسة",id:"7-8d__GOKWg",d:"احفظ الأركان الخمسة وأنت تغنّي",art:"mosque"},
+  {t:"حفظ سورة الفاتحة للأطفال",id:"BuWZYXKa4KU",d:"ردّد مع المعلّم واحفظ أمّ الكتاب",art:"quran"},
+  {t:"الحروف العربية للأطفال",id:"muBxY6H1n2Q",d:"تعلّم حروف لغة القرآن الكريم",art:"letters"},
+  {t:"آداب المسلم الصغير",id:"HYQGHCmMgiA",d:"بسم الله، وكُل بيمينك، وقل الحمد لله",art:"food"}
 ];
 function buildKidsVideos(body){
   const intro=document.createElement("div");intro.className="card";intro.style.marginTop="4px";
-  intro.innerHTML='<b style="font-size:16.5px">🎬 مكتبة الفيديو التعليمية</b><p class="note" style="font-size:14.5px;color:var(--ink)">فيديوهات مختارة بعناوينها: الوضوء والصلاة وقصص الأنبياء والأناشيد وحفظ الفاتحة. اضغط أي بطاقة فيفتح يوتيوب على نتائج هذا الموضوع لتختار مع بابا وماما الفيديو المناسب. الفيديوهات تحتاج اتصالًا بالإنترنت.</p>';
+  intro.innerHTML='<b style="font-size:16.5px">🎬 مكتبة الفيديو التعليمية</b><p class="note" style="font-size:14.5px;color:var(--ink)">فيديوهات تعليمية مختارة: الوضوء والصلاة وقصص الأنبياء والأناشيد وحفظ الفاتحة. اضغط أي بطاقة فيشتغل الفيديو هنا في مكانه داخل التطبيق — من غير ما تخرج منه أبدًا. الفيديوهات تحتاج اتصالًا بالإنترنت، وتُشاهد مع بابا وماما.</p>';
   body.appendChild(intro);
   const list=document.createElement("div");list.className="list";
+  let activeStop=null;
   KID_VIDEOS.forEach(v=>{
-    const a=document.createElement("a");a.className="vid-card";a.target="_blank";a.rel="noopener";
-    a.href="https://www.youtube.com/results?search_query="+encodeURIComponent(v.q);
-    a.innerHTML='<span class="vid-thumb">'+kidArt(v.art)+'<span class="vid-play">▶</span></span><span class="vid-txt"><b>'+v.t+'</b><small>'+v.d+'</small><span class="vid-go">شاهد على يوتيوب ◀</span></span>';
-    list.appendChild(a);
+    const card=document.createElement("div");card.className="vid-card";
+    const thumb=document.createElement("span");thumb.className="vid-thumb";
+    thumb.innerHTML=kidArt(v.art)+'<span class="vid-play">▶</span>';
+    const txt=document.createElement("span");txt.className="vid-txt";
+    txt.innerHTML='<b>'+v.t+'</b><small>'+v.d+'</small><span class="vid-go">▶ تشغيل هنا داخل التطبيق</span>';
+    card.appendChild(thumb);card.appendChild(txt);
+    function stop(){
+      thumb.innerHTML=kidArt(v.art)+'<span class="vid-play">▶</span>';
+      thumb.classList.remove("playing");
+      txt.querySelector(".vid-go").textContent="▶ تشغيل هنا داخل التطبيق";
+      if(activeStop===stop)activeStop=null;
+    }
+    function play(){
+      if(activeStop&&activeStop!==stop)activeStop();
+      thumb.innerHTML='<span class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/'+v.id+'?rel=0&playsinline=1&autoplay=1" title="'+v.t+'" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></span><button type="button" class="vid-stop" aria-label="إيقاف الفيديو وإغلاقه">✕ إيقاف</button>';
+      thumb.classList.add("playing");
+      txt.querySelector(".vid-go").textContent="🎬 الفيديو يعمل الآن هنا — اضغط «إيقاف» لإغلاقه";
+      thumb.querySelector(".vid-stop").addEventListener("click",function(e){e.stopPropagation();stop();});
+      activeStop=stop;
+    }
+    card.addEventListener("click",()=>{if(!thumb.classList.contains("playing"))play();});
+    list.appendChild(card);
   });
   body.appendChild(list);
 }
