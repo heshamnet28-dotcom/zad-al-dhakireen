@@ -33,7 +33,7 @@
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/IMG-20261121-WA9892.jpg" />
 <meta name="twitter:image:alt" content="زاد الذاكرين — صدقة جارية" />
-<meta name="app-version" content="29" />
+<meta name="app-version" content="30" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -709,7 +709,7 @@ html.lite .card,html.lite .tile,html.lite .row-item,html.lite .stat-box{box-shad
   <div class="bye-box">
     <div class="bye-ic" aria-hidden="true">🌙</div>
     <h3>تم الخروج من التطبيق</h3>
-    <p>تقبّل الله منك. أغلق نافذة المتصفح الآن لإنهاء الجلسة، أو اضغط الزر بالأسفل إن أردت العودة إلى «زاد الذاكرين».</p>
+    <p>تقبّل الله منك. خرجت من «زاد الذاكرين» — يمكنك إغلاق هذه النافذة الآن، أو العودة إلى التطبيق بالزر بالأسفل.</p>
     <button id="byeReopenBtn" type="button">فتح التطبيق من جديد</button>
   </div>
 </div>
@@ -1404,7 +1404,7 @@ function restoreNav(){
 function doRestoreNav(){
   if(navStack.length)return;
   const saved=readSavedNav();
-  if(!saved)return;
+  if(!saved){initHistForStack();return}
   navRestoring=true;
   try{
     homeScroll=saved.home||0;
@@ -1422,15 +1422,16 @@ function doRestoreNav(){
       if(top)top.scroll=se.scroll||0;
     }
     if(!navStack.length){showHome();return}
-    /* no history entries are rebuilt for restored screens: the single
-       always-armed trap entry (see armTrap below) catches every device
-       back press and steps the in-memory stack back one screen at a time,
-       however deep the restored stack is */
+    /* history depth is reconciled with the rebuilt stack by
+       initHistForStack() in the finally block below: one entry per
+       restored screen above the home guard, so device back steps the
+       in-memory stack back one screen at a time, however deep it is */
     renderDetail();
     const top=navStack[navStack.length-1];
     if(top&&top.scroll)setTimeout(()=>window.scrollTo(0,top.scroll||0),60);
   }finally{
     navRestoring=false;
+    initHistForStack();
     if(navStack.length)persistNav();
   }
 }
@@ -1444,7 +1445,7 @@ function showHome(){
 function openDetail(title,build,favKey,route){
   saveScroll();
   navStack.push({title,build,favKey,route:route||null,scroll:0});
-  armTrap();
+  histPush(navStack.length+1); /* one history entry per screen, above the home guard */
   renderDetail();
 }
 function renderDetail(keepScroll){
@@ -1459,104 +1460,78 @@ function renderDetail(keepScroll){
   window.scrollTo(0,top.scroll||0);
   persistNav();
 }
-/* --- device back button ---------------------------------------------------
-   A small stack of sentinel history entries sits above the app's base
-   entry at all times (see trapTarget below). Each device back press
-   consumes one sentinel (one popstate), the app takes exactly one step —
-   close an open sheet, pop one screen, or, on the home screen, show the
-   exit confirmation — and then refills the stack so the next press is
-   caught the same way. The in-memory navStack is the only navigation
-   stack, so nothing can drift apart, and the in-app back button runs the
-   very same single step directly, without touching history at all. --- */
-/* Sentinel depth: keep SEVERAL pushed entries above the app's base entry,
-   not one. A single pushState entry made at load — before any user gesture —
-   is exactly what Chrome's history-manipulation intervention and several
-   WebView/TWA shells skip or drop, so the first back press on the home
-   screen fell straight out of the app and the exit dialog never showed.
-   With a small stack of sentinels there is always at least one entry for a
-   back press to land on; every press fires popstate, the handler below
-   takes one in-app step and refills the stack.
-   Depth alone was not enough, though: entries pushed at load carry NO
-   user activation, and the intervention skips precisely those, however
-   many there are — and the old refill-on-tap never helped because the
-   stack was already «full», so nothing new was ever pushed inside a
-   gesture. The first real tap/key therefore PRIMES the trap (primeTrap
-   below): the target depth rises and fresh sentinels are pushed inside
-   that very gesture, so the entries a back press meets first are
-   user-activated and always fire popstate.
-   --- لماذا عادت المشكلة رغم إصلاح «التهيئة عند أول لمسة»؟ ---------------
-   التهيئة كانت تحدث مرة واحدة فقط: أول لمسة تدفع إدخالين مفعَّلين فوق
-   إدخالات التحميل، لكن كل ضغطة رجوع بعد ذلك تستهلك إدخالًا ويُعاد ملء
-   العمق من معالج popstate — أي خارج أي إيماءة مستخدم — فتعود قمة
-   المكدس إدخالاتٍ بلا تفعيل مستخدم، وهي بالضبط ما يتخطاه كروم أندرويد
-   عند ضغطة رجوع حقيقية من زر/إيماءة الجهاز: يتخطاها كلها دفعة واحدة
-   ويخرج من التطبيق دون أن يصل popstate إلى الصفحة أصلًا، فلا تظهر
-   رسالة الخروج أبدًا مهما كان كود النافذة سليمًا (وقد ثبت بالفحص
-   الآلي أن النافذة نفسها تظهر فعلًا عند أي تنقّل يصل إلى الصفحة).
-   الإصلاح: كل إيماءة حقيقية — لا الأولى فقط — تُعيد تسليح الحارس،
-   وإن كانت قمة المكدس إدخالًا مولودًا خارج إيماءة دفعت فوقه إدخالًا
-   جديدًا مولودًا داخل الإيماءة نفسها (بسقف ٩ حتى لا يكبر التاريخ
-   بلا حد)، فتكون أول إدخالات يقابلها زر الرجوع دائمًا مفعَّلة من
-   المستخدم فلا يستطيع التدخّل تخطّيها، ويصل popstate وتظهر الرسالة. */
-let trapTarget=3; /* sentinels to keep armed; raised to 5 once primed */
-let trapDepth=0; /* sentinel entries currently sitting above the base entry */
-let trapPrimed=false; /* true once a user gesture has topped the stack up */
-let trapTopLive=false; /* the topmost sentinel was pushed inside a user gesture */
-let trapGesture=false; /* true while a real user-gesture handler is running */
-const TRAP_MAX=9; /* hard cap so gesture top-ups never grow history without bound */
-function armTrap(){
-  if(exitingApp)return; /* once exit is confirmed the guard is never re-armed */
+/* --- device back button: exactly one history entry per screen --------
+   The old design piled up a stack of «sentinel» entries above the app and
+   refilled them from gestures, scrolls and timers. The counter drifted
+   (every gesture top-up raised it, every refill happened outside a user
+   gesture), so a real device back press could skip every sentinel at
+   once and leave the app from inside a section, the exit question came
+   and went unreliably, and the exit jump used the inflated counter and
+   overshot or undershot the app's own entries.
+   The model now — one invariant everywhere, no exceptions:
+     entries above the app's base entry = 1 home guard + navStack.length
+     screen entries, and every entry's state is {zad:1, d:<its depth>}.
+   Every screen is opened from a real tap, so its entry is user-activated
+   and a device back press always lands on the previous entry and fires
+   popstate; the handler below then takes exactly one step: close an open
+   sheet/banner/player, take one internal admin step, pop exactly one
+   screen, or — only on the home screen — ask the exit question. The
+   in-app back button calls history.back(), so the button and the device
+   key run the very same single step and can never disagree. Nothing is
+   ever pushed from scroll/visibility/timer handlers, so history depth
+   can no longer grow on its own or drift away from the visible stack. */
+let histPos=0;   /* depth above the base entry of the entry we are on */
+let histSkip=0;  /* stale entries left by a reload mismatch: swallowed silently */
+function histPush(depth){
   if(!histOK)return;
-  while(trapDepth<trapTarget){
-    try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++;trapTopLive=trapGesture}
-    catch(e){histOK=false;break}
-  }
-  /* القمة مولودة خارج إيماءة (من popstate أو تمرير أو عودة للواجهة)؟
-     ضع فوقها — داخل هذه الإيماءة — إدخالًا مفعَّلًا لا يمكن تخطّيه */
-  if(trapGesture&&!trapTopLive&&trapDepth>0&&trapDepth<TRAP_MAX){
-    try{history.pushState({zad:"trap",d:trapDepth+1},"");trapDepth++;trapTopLive=true}
-    catch(e){histOK=false}
-  }
+  try{history.pushState({zad:1,d:depth},"");histPos=depth}catch(e){histOK=false}
 }
-function primeTrap(){
-  /* تُستدعى مع كل إيماءة حقيقية، لا الأولى فقط: تُعلِّم أننا داخل
-     إيماءة ثم تُسلِّح الحارس، فيولد أي إدخال جديد مفعَّلًا من المستخدم */
-  trapPrimed=true;
-  trapTarget=5;
-  trapGesture=true;
-  try{armTrap()}finally{trapGesture=false}
+function histDepthOf(state){
+  if(state&&state.zad===1&&typeof state.d==="number")return state.d;
+  if(state&&state.zad===0)return 0;
+  return -1; /* foreign entry (a page from before the app): not ours */
 }
-function openExitModal(){
-  if(exitingApp)return;
-  $("#exitModal").classList.add("on");
-  /* re-arm the trap the back press just consumed: pressing back again with
-     the dialog open then just closes it (the sheet branch of stepBackInApp),
-     and «البقاء» needs no extra push */
-  armTrap();
+function initHistForStack(){
+  if(!histOK)return;
+  const want=navStack.length+1;
+  if(histPos<want){while(histPos<want)histPush(histPos+1)}
+  else if(histPos>want){histSkip=histPos-want;histPos=want}
 }
-function closeExitModal(){$("#exitModal").classList.remove("on")}
-/* one back step inside the app; returns false when already at the root */
-function stepBackInApp(){
-  /* نفحة اليوم تظهر تلقائيًا عند فتح التطبيق، فلا تستهلك ضغطة الرجوع:
-     تُغلق ويُكمل الرجوع خطوته العادية في نفس الضغطة — كانت قبل ذلك
-     «تسرق» أول ضغطة، فيضغط الزائر للخروج فيجد النفحة تُغلق فقط */
-  const nf=document.querySelector("#nafhaModal.on");
-  if(nf)nf.classList.remove("on");
-  /* a sheet/dialog open above the screen closes first */
-  const m=document.querySelector(".modal.on");
-  if(m){m.classList.remove("on");return true}
-  /* بطاقة «وصل تحديث جديد» تطفو فوق كل شيء: الرجوع يخفيها تمامًا كزرّها
-     «لاحقًا» (وتُسجَّل النسخة كمُتعامَل معها حتى لا تعود) — كانت قبل ذلك
-     لا تُغلق بالرجوع إطلاقًا */
+/* close the topmost floating layer; returns true when one was open.
+   Used by BOTH back paths (device key via popstate, and the manual
+   fallback), so every sheet in the app behaves the same everywhere */
+function closeTopOverlay(){
   const ub=document.querySelector("#updateBanner.on");
   if(ub){
     try{if(pendingUpdateVer>APP_VERSION)markUpdateHandled(pendingUpdateVer)}catch(e){}
     ub.classList.remove("on");return true;
   }
-  /* المشغّل الصوتي العائم يُغلق ويتوقف قبل الرجوع في الشاشات — كان قبل
-     ذلك يبقى ظاهرًا ويعمل مهما ضغطت رجوع */
+  const m=document.querySelector(".modal.on");
+  if(m){m.classList.remove("on");return true}
   const pl=document.querySelector("#player.on");
-  if(pl){try{stopPlayer()}catch(e){pl.classList.remove("on")}return true}
+  if(pl){
+    try{if(typeof zqStop==="function")zqStop();else stopPlayer()}
+    catch(e){try{stopPlayer()}catch(e2){pl.classList.remove("on")}}
+    return true;
+  }
+  return false;
+}
+function openExitModal(){
+  if(exitingApp)return;
+  $("#exitModal").classList.add("on");
+  /* re-arm the home guard the back press just consumed, so pressing back
+     again with the dialog open just closes it, and «البقاء» needs no push */
+  if(histOK&&histPos<1)histPush(1);
+}
+function closeExitModal(){$("#exitModal").classList.remove("on")}
+/* one manual back step — fallback for shells without a usable History
+   API; returns false when already at the root */
+function stepBackInApp(){
+  /* نفحة اليوم تظهر تلقائيًا عند فتح التطبيق، فلا تستهلك ضغطة الرجوع:
+     تُغلق ويُكمل الرجوع خطوته العادية في نفس الضغطة */
+  const nf=document.querySelector("#nafhaModal.on");
+  if(nf)nf.classList.remove("on");
+  if(closeTopOverlay())return true;
   /* داخل لوحة التحكم: الرجوع يمشي في شاشاتها الداخلية شاشةً شاشة قبل
      الخروج منها (انظر zadAdminBack بجانب دوال اللوحة) */
   if(window.zadAdminBack&&window.zadAdminBack())return true;
@@ -1568,62 +1543,79 @@ function stepBackInApp(){
   return false;
 }
 function navBack(){
+  /* زر الرجوع داخل التطبيق = زر الجهاز تمامًا: خطوة واحدة عبر التاريخ،
+     فيتولاها معالج popstate وحده ولا توجد خطوة مكررة أبدًا */
+  if(histOK&&histPos>0){try{history.back();return}catch(e){}}
   if(stepBackInApp())return;
   openExitModal();
 }
 function goBackLevels(target,after){
   if(navStack.length>target){
+    const delta=navStack.length-target;
+    /* القفزات البرمجية (الشريط السفلي) تمرّ عبر التاريخ أيضًا، فيفكّ
+       معالج popstate المكدس إلى العمق المطلوب بخطوة واحدة متسقة */
+    if(histOK&&histPos>delta){try{history.go(-delta);if(after)after();return}catch(e){}}
     navStack.length=target;
     if(target)renderDetail();else showHome();
   }
   if(after)after();
 }
 window.addEventListener("popstate",()=>{
-  if(trapDepth>0)trapDepth--; /* this press consumed one sentinel entry */
-  trapTopLive=false; /* the entry now on top is an older one, not born in a gesture */
   if(exitingApp)return; /* leaving: ignore every history event, never re-ask */
   if(!histOK)return;
-  if(stepBackInApp()){armTrap();return}
-  /* back pressed on the home screen: confirm before exiting */
-  openExitModal();
+  const d=histDepthOf(history.state);
+  if(d<0)return; /* the browser has moved onto a page from before the app */
+  if(navRestoring){histPos=d;return}
+  const prevPos=histPos;
+  histPos=d;
+  if(histSkip>0){histSkip--;return} /* a stale entry left by a reload: swallow it */
+  /* نفحة اليوم تُغلق ولا تستهلك الضغطة (سلوك متفق عليه) */
+  const nf=document.querySelector("#nafhaModal.on");
+  if(nf)nf.classList.remove("on");
+  /* طبقة عائمة مفتوحة (نافذة/بانر تحديث/مشغّل) أو خطوة داخلية في لوحة
+     التحكم تستهلك الضغطة وحدها: تُغلق/تتراجع خطوة، ثم نعيد دفع إدخال
+     الشاشة الحالية فيبقى العمق مطابقًا للمكدس الظاهر */
+  if(closeTopOverlay()||(window.zadAdminBack&&window.zadAdminBack())){
+    histPush(prevPos);return;
+  }
+  const target=Math.max(0,d-1); /* screens sitting above the home guard */
+  if(navStack.length>target){
+    navStack.length=target;
+    if(target)renderDetail();else showHome();
+    return;
+  }
+  if(navStack.length<target)return; /* forward entries we cannot rebuild: ignore */
+  /* المكدس فارغ والضغطة وصلت للإدخال الأساسي: رجوع في الرئيسية نفسها */
+  if(!navStack.length)openExitModal();
 });
 try{
   if("scrollRestoration" in history)history.scrollRestoration="manual";
-  const st=history.state;
-  if(st&&st.zad==="trap"&&typeof st.d==="number"){
-    /* تحديث الصفحة (ريفريش): هذا التحميل جالس على إدخال حارس دفعته نسخة
-       سابقة من التطبيق نفسه في نفس جلسة التبويب — نتبنّى المكدس الموجود
-       كما هو بدل دفع ٣ إدخالات جديدة فوقه، فكان كل ريفريش قبل ذلك يطيل
-       تاريخ المتصفح ٣ إدخالات حتى يضيع الرجوع بين إدخالات قديمة */
-    trapDepth=st.d;
-    trapPrimed=true; /* a reload only happens after real use of the app */
-  }else if(st&&st.zad===0){
-    trapDepth=0; /* sitting on the app's own base entry (e.g. bfcache) */
+  const d=histDepthOf(history.state);
+  histOK=true;
+  if(d>0){
+    /* تحديث الصفحة (ريفريش): هذا التحميل جالس على إدخال من إدخالات
+       التطبيق نفسها — نتبنّى عمقه كما هو، وdoRestoreNav توائم المكدس
+       معه عبر initHistForStack، فلا يكبر التاريخ مع كل ريفريش */
+    histPos=d;
   }else{
     history.replaceState({zad:0},"");
-    trapDepth=0;
+    histPos=0;
+    histPush(1); /* the home guard */
   }
-  histOK=true;
 }catch(e){histOK=false}
-armTrap();
-/* EVERY real tap/key re-arms the trap from inside the gesture (see
-   primeTrap above), so the topmost sentinel stays user-activated and a
-   real device back press can never skip past it; scrolling/wheeling
-   just tops it up, and every return to the foreground re-arms it */
-["pointerdown","keydown","touchstart"].forEach(ev=>window.addEventListener(ev,primeTrap,{passive:true}));
-["wheel","scroll"].forEach(ev=>window.addEventListener(ev,armTrap,{passive:true}));
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)armTrap()});
-window.addEventListener("pageshow",armTrap);
 $("#exitStayBtn").addEventListener("click",()=>{closeExitModal()});
 $("#exitYesBtn").addEventListener("click",()=>{
   if(exitingApp)return;
-  /* الخروج نهائي من أول ضغطة: لا يُعاد تسليح حارس الرجوع أبدًا بعد التأكيد،
-     ولا تتعامل أي popstate لاحقة مع الأمر كضغطة رجوع جديدة — وهذا هو ما
-     كان يجعل نافذة «الخروج من التطبيق؟» تعود وتسأل من جديد: فالمؤقّت
-     القديم كان يلغي حالة الخروج بعد ١٫٥ ثانية ويعيد تسليح الحارس، فتصل
-     popstate متأخرة من سلسلة history.back() المتتابعة فتُفتح النافذة ثانية */
+  /* الخروج نهائي من أول ضغطة واحدة: تُعلَّم حالة الخروج فلا يتعامل أي
+     حدث تاريخ لاحق مع الأمر كضغطة رجوع جديدة ولا يُعاد تسليح أي حارس
+     أبدًا — وهذا هو ما كان يجعل سؤال الخروج يعود أو يجعل «خروج» تهبط
+     على شاشة وسيطة: فالقفزة القديمة كانت تُحسب من عدّاد حراس متضخم
+     لا يطابق إدخالات التطبيق الفعلية. الآن القفزة محسوبة بدقة من
+     النموذج الموحّد: إدخالاتنا فوق الأساس (حارس الرئيسية) + الإدخال
+     الأساسي نفسه، فتغادر الصفحة التطبيقَ بضغطة واحدة إلى ما قبله */
   exitingApp=true;
   closeExitModal();
+  try{if(typeof zqStop==="function")zqStop()}catch(e){}
   try{stopPlayer()}catch(e){}
   /* a confirmed exit starts the next launch at home, not mid-stack */
   try{sessionStorage.removeItem("zadNav")}catch(e){}
@@ -1632,18 +1624,17 @@ $("#exitYesBtn").addEventListener("click",()=>{
   try{if(window.AndroidBridge&&window.AndroidBridge.exitApp)window.AndroidBridge.exitApp()}catch(e){}
   try{if(window.Android&&window.Android.exitApp)window.Android.exitApp()}catch(e){}
   try{if(window.gonative&&window.gonative.close)window.gonative.close()}catch(e){}
-  try{if(window.median&&window.median.share&&window.median.close)window.median.close()}catch(e){}
+  try{if(window.median&&window.median.close)window.median.close()}catch(e){}
   /* ٢) النوافذ المفتوحة برمجيًا وبعض الأغلفة تقبل الإغلاق المباشر */
   try{window.close()}catch(e){}
-  /* ٣) قفزة واحدة للخلف فوق إدخالات التطبيق وحده — إدخالات الحارس فوق
-        الإدخال الأساسي، لا أكثر: يغادر المتصفح/الغلاف التطبيقَ بخطوة
-        واحدة، بدل سلسلة back() التي كانت كل خطوة منها تُطلق popstate
-        يمكن اعتراضها وإعادة السؤال بسببها. وكان الحساب القديم يقفز فوق
-        تاريخ التبويب كله (history.length-1) فيلتهم صفحات ما قبل التطبيق */
-  try{history.go(-(trapDepth+1))}catch(e){}
-  /* ٤) ما زلنا هنا؟ المتصفح رفض الإغلاق (تبويب عادي): اعرض شاشة
-        «تم الخروج» — الخروج حدث فعلًا من أول ضغطة ولا سؤال بعده */
-  setTimeout(()=>{const b=$("#byeScreen");if(b&&exitingApp)b.classList.add("on")},650);
+  /* ٣) قفزة واحدة محسوبة فوق إدخالات التطبيق وحدها — لا تاريخ التبويب كله */
+  const steps=histPos+1;
+  histPos=0;
+  try{history.go(-steps)}catch(e){}
+  /* ٤) ما زلنا هنا؟ المتصفح رفض المغادرة (تبويب عادي لا يملك التطبيق
+        إغلاقه برمجيًا): اعرض شاشة «تم الخروج» كحالة نهائية صامتة —
+        الخروج حدث من أول ضغطة ولا سؤال ولا رجوع بعده */
+  setTimeout(()=>{const b=$("#byeScreen");if(b&&exitingApp)b.classList.add("on")},700);
 });
 $("#byeReopenBtn").addEventListener("click",()=>{try{location.reload()}catch(e){}});
 $("#exitModal").addEventListener("click",e=>{if(e.target.id==="exitModal")closeExitModal()});
@@ -1778,7 +1769,7 @@ function rowItem(title,sub,fn,badge){
 function openAdhkarSection(sec){openD({k:"adhkar",id:sec.id,name:sec.name},"أذكار "+sec.name,body=>buildAdhkarSession(body,sec))}
 function buildAdhkarSession(body,sec){
   const info=document.createElement("div");info.className="card";info.style.marginTop="4px";
-  info.innerHTML=`<b style="font-size:16.5px">أذكار ${esc(sec.name)}</b><div class="note">اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.</div><div class="progress"><i style="width:0%"></i></div><div class="note" style="margin-top:0"><span class="pcount">0</span> من ${sec.items.length} ذكرًا اكتمل</div><div class="sheet-actions" style="margin-top:10px;justify-content:flex-start"><button type="button" id="secListen">🎧 استمع للأذكار بصوت القارئ</button><button type="button" id="secListenStop" style="display:none">⏹ إيقاف الاستماع</button></div><div class="note" style="margin-bottom:0">أذكار الصباح والمساء تُسمَع كاملة من تسجيل صوتي حقيقي عند الضغط على «استمع». وفي بقية الأقسام تُتلى الآيات القرآنية داخل الأذكار بصوت ${esc(reciterObj().name)} — تسجيل حقيقي من تلاوة المصحف — وتتكرر بعدد مرات كل ذكر، أما الأدعية التي لا تسجيل لها فيمرّ عليها التسلسل سريعًا وكارتُها مظلَّل لتقرأها بنفسك؛ فلا صوت آلي في التطبيق إطلاقًا. الاستماع يحتاج إنترنت أول مرة.</div>`;
+  info.innerHTML=`<b style="font-size:16.5px">أذكار ${esc(sec.name)}</b><div class="note">اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.</div><div class="progress"><i style="width:0%"></i></div><div class="note" style="margin-top:0"><span class="pcount">0</span> من ${sec.items.length} ذكرًا اكتمل</div><div class="sheet-actions" style="margin-top:10px;justify-content:flex-start"><button type="button" id="secListen">🎧 استمع للأذكار بصوت القارئ</button><button type="button" id="secListenStop" style="display:none">⏹ إيقاف الاستماع</button></div><div class="note" style="margin-bottom:0">أذكار الصباح والمساء تُسمَع كاملة من تسجيل صوتي حقيقي عند الضغط على «استمع». وفي بقية الأقسام تُتلى الآيات القرآنية داخل الأذكار بصوت ${esc(reciterObj().name)} — تسجيل حقيقي من تلاوة المصحف — وتتكرر بعدد مرات كل ذكر، والأدعية المكتوبة التي لا تسجيل لها لا تدخل في التسلسل الصوتي أصلًا — اقرأها من كروتها على الشاشة؛ فلا صوت آلي في التطبيق إطلاقًا. الاستماع يحتاج إنترنت أول مرة.</div>`;
   body.appendChild(info);
   const secListenBtn=info.querySelector("#secListen"),secListenStopBtn=info.querySelector("#secListenStop");
   if(secListenBtn)secListenBtn.addEventListener("click",()=>{if(typeof window.zadPlaySection==="function"){zadPlaySection(sec.id);secListenStopBtn.style.display="";}});
@@ -2281,7 +2272,7 @@ const RADIOS=[
 const audioEl=$("#audioEl"), playerEl=$("#player");
 let curTrack=null, curObjUrl=null, toastTimer=null;
 function showToast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),3400)}
-function fmtDur(x){if(!isFinite(x)||x<0)return"";const m=Math.floor(x/60),ss=Math.floor(x%60);return m+":"+String(ss).padStart(2,"0")}
+function fmtDur(x){if(!isFinite(x)||x<0)return"0:00";const m=Math.floor(x/60),ss=Math.floor(x%60);return m+":"+String(ss).padStart(2,"0")}
 let liveFails=0, liveWatchdog=null;
 function armLiveWatchdog(){
   clearTimeout(liveWatchdog);
@@ -2310,7 +2301,8 @@ async function playTrack(o){
   audioEl.src=src;audioEl.playbackRate=state.speed||1;
   playerEl.classList.add("on");document.body.classList.add("has-player");
   $("#plTitle").innerHTML=esc(o.title)+(o.live?'<span class="live-tag">مباشر</span>':"")+(offline?' <span class="badge">بدون نت ✓</span>':"");
-  $("#plTime").textContent=o.live?"بث مباشر":"…";
+  const zs0=window.zadSeqState?window.zadSeqState():null;
+  $("#plTime").textContent=o.live?"بث مباشر":(zs0&&zs0.active?zs0.label:"…");
   $("#plFill").style.width="0";
   $("#plToggle").textContent="⏳";
   audioEl.play().then(()=>{$("#plToggle").textContent="⏸"}).catch(()=>{if(o.live){liveFallback()}else{$("#plToggle").textContent="▶";showToast("تعذّر بدء التشغيل — تحقق من اتصال الإنترنت")}});
@@ -2332,9 +2324,27 @@ audioEl.addEventListener("play",()=>{$("#plToggle").textContent="⏸"});
 audioEl.addEventListener("pause",()=>{$("#plToggle").textContent="▶"});
 audioEl.addEventListener("timeupdate",()=>{
   if(!curTrack||curTrack.live)return;
+  /* أثناء تسلسل استماع الأذكار كل مقطع آية قصيرة منفصلة بمدة خاصة به،
+     فعرض «المنقضي / 0:00» لكل مقطع كان يبدو كأن المشغّل مكسور ويقفز.
+     أثناء التسلسل يعرض المشغّل موضعه الحقيقي: «الذكر س من ص» بدل
+     أزمنة المقاطع، ولا تُعرض الأزمنة إلا للمقاطع المفردة الحقيقية */
+  const zs=window.zadSeqState?window.zadSeqState():null;
+  if(zs&&zs.active){$("#plFill").style.width="0";$("#plTime").textContent=zs.label;return}
   const d=audioEl.duration,c=audioEl.currentTime;
-  if(isFinite(d)&&d>0)$("#plFill").style.width=(c/d*100)+"%";
-  $("#plTime").textContent=fmtDur(c)+" / "+fmtDur(d);
+  if(isFinite(d)&&d>0){
+    $("#plFill").style.width=(c/d*100)+"%";
+    $("#plTime").textContent=fmtDur(c)+" / "+fmtDur(d);
+  }else{
+    $("#plFill").style.width="0";
+    $("#plTime").textContent=fmtDur(c)+" / …";
+  }
+});
+audioEl.addEventListener("loadedmetadata",()=>{
+  if(!curTrack||curTrack.live)return;
+  const zs=window.zadSeqState?window.zadSeqState():null;
+  if(zs&&zs.active)return;
+  const d=audioEl.duration;
+  if(isFinite(d)&&d>0)$("#plTime").textContent=fmtDur(audioEl.currentTime||0)+" / "+fmtDur(d);
 });
 audioEl.addEventListener("ended",()=>{
   if(ayahSeq.active){nextAyahInSeq();return}
@@ -3301,7 +3311,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=29;
+const APP_VERSION=30;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
@@ -5042,15 +5052,25 @@ function zKnownAyahs(item){
   return out;
 }
 function zSectionSteps(sec){
+  /* التسلسل الصوتي يضم المقاطع المسموعة فقط: آيات كل ذكر بصوت القارئ.
+     الأدعية المكتوبة التي لا تسجيل لها لا تدخل التسلسل إطلاقًا — كانت
+     قبل ذلك تدخله كخطوات «قراءة» صامتة بمؤقّتات، فكان المشغّل يعرض
+     0:09/0:00 لمقاطع وهمية ويقفز بالتظليل بين الكروت بلا أي صوت */
   const steps=[];
   sec.items.forEach((it,i)=>{
     let ays=zItemAyahs(it);
     if(!ays.length)ays=zKnownAyahs(it);
     if(ays.length){const reps=Math.min(Math.max(1,+it.c||1),5);for(let r=0;r<reps;r++)ays.forEach(a=>steps.push({k:"ayah",si:a[0],ai:a[1],card:i,title:"أذكار "+sec.name+" — بصوت "+reciterObj().name}))}
-    else steps.push({k:"read",text:String(it.text||"").replace(/[{}]/g," "),card:i,title:"أذكار "+sec.name});
   });
   return steps;
 }
+function zqSeqLabel(){
+  if(!ZQ.active||!ZQ.steps.length)return "";
+  const cards=[];ZQ.steps.forEach(st=>{if(cards.indexOf(st.card)<0)cards.push(st.card)});
+  const cur=ZQ.steps[ZQ.i]?cards.indexOf(ZQ.steps[ZQ.i].card)+1:1;
+  return "الذكر "+arDigits(cur||1)+" من "+arDigits(cards.length);
+}
+window.zadSeqState=function(){return ZQ.active?{active:true,label:zqSeqLabel()}:null};
 
 /* ----- محرك تشغيل تسلسلي واحد: آيات بصوت القارئ + مقاطع كاملة + وقفات قراءة للأدعية (لا نطق آلي إطلاقًا — صوت الجهاز لا ينطق العربية صحيحًا)، مع تظليل الكارت الجاري ومؤقّت اختياري ----- */
 const ZQ={steps:[],i:-1,active:false,tok:0,timer:null,cards:null,onDone:null,errs:0};
@@ -5070,22 +5090,14 @@ function zqNext(){
   if(ZQ.i>=ZQ.steps.length){const cb=ZQ.onDone;ZQ.active=false;zqPaintCards(-1);const sb=document.querySelector("#secListenStop");if(sb)sb.style.display="none";if(cb)cb();return}
   const st=ZQ.steps[ZQ.i];
   if(st.card!=null)zqPaintCards(st.card);
-  const tok=++ZQ.tok;
-  if(st.k==="read")zqReadPause(st,tok);
-  else{const url=st.k==="ayah"?ayahAudioUrl(st.si,st.ai):st.url;playTrack({key:"zq:"+Date.now()+":"+ZQ.i,title:st.title||"استماع",url:url})}
+  ZQ.tok++;
+  const url=st.k==="ayah"?ayahAudioUrl(st.si,st.ai):st.url;
+  playTrack({key:"zq:"+Date.now()+":"+ZQ.i,title:st.title||"استماع",url:url});
+  try{$("#plTime").textContent=zqSeqLabel()}catch(e){}
 }
-function zqReadPause(st,tok){
-  /* ذكرٌ لا تسجيل له: لا نطق آلي إطلاقًا، لكن لا صمت طويل مضلِّل أيضًا —
-     وقفة قصيرة على الكارت المظلَّل ثم يتابع التسلسل للمقطع المسموع التالي.
-     الوقفة الطويلة القديمة (حتى ٦٠ ثانية لكل دعاء) هي ما جعل الاستماع
-     يبدو وكأنه «يشتغل من غير صوت» */
-  const len=String((st&&st.text)||"").length;
-  const ms=Math.max(1500,Math.min(4500,1200+len*22));
-  setTimeout(()=>{if(ZQ.active&&ZQ.tok===tok)zqNext()},ms);
-}
-audioEl.addEventListener("ended",()=>{if(ZQ.active){const st=ZQ.steps[ZQ.i];if(st&&st.k!=="read")setTimeout(()=>{if(ZQ.active)zqNext()},250)}});
+audioEl.addEventListener("ended",()=>{if(ZQ.active)setTimeout(()=>{if(ZQ.active)zqNext()},250)});
 audioEl.addEventListener("playing",()=>{ZQ.errs=0});
-audioEl.addEventListener("error",()=>{if(ZQ.active){const st=ZQ.steps[ZQ.i];if(st&&st.k!=="read"){ZQ.errs++;if(ZQ.errs>4){zqStop();showToast("تعذّر تشغيل الصوت — تحقق من اتصال الإنترنت");return}setTimeout(()=>{if(ZQ.active)zqNext()},900)}}});
+audioEl.addEventListener("error",()=>{if(ZQ.active){ZQ.errs++;if(ZQ.errs>4){zqStop();showToast("تعذّر تشغيل الصوت — تحقق من اتصال الإنترنت");return}setTimeout(()=>{if(ZQ.active)zqNext()},900)}});
 document.addEventListener("click",e=>{if(e.target&&e.target.id==="plClose"&&ZQ.active)zqStop()});
 window.zadPlaySection=function(secId){
   const sec=DB.adhkar.find(s=>s.id===secId);if(!sec){showToast("القسم غير متاح حاليًا");return}
@@ -5093,7 +5105,7 @@ window.zadPlaySection=function(secId){
   if(ZADHKAR_FULL[sec.name]){zadPlayFullAdhkar(sec);return}
   const steps=zSectionSteps(sec);
   /* قسم بلا أي مقطع مسموع: لا تشغيل صامت متظاهِر بالعمل — رسالة واضحة */
-  if(!steps.some(s=>s.k!=="read")){showToast("أذكار "+sec.name+" أدعية مكتوبة لا تسجيل صوتيًّا لها — تُقرأ من الشاشة");return}
+  if(!steps.length){showToast("أذكار "+sec.name+" أدعية مكتوبة لا تسجيل صوتيًّا لها — تُقرأ من الشاشة");return}
   const cards=Array.prototype.slice.call(document.querySelectorAll("#detailBody .dhikr"));
   zqPlay(steps,{label:"أذكار "+sec.name+" بصوت "+reciterObj().name,cards:cards,onDone:()=>showToast("انتهت أذكار "+sec.name+" — تقبّل الله منك 🤲")});
 };
@@ -5102,14 +5114,13 @@ window.zadPlayItem=function(secId,idx){
   const cards=Array.prototype.slice.call(document.querySelectorAll("#detailBody .dhikr"));
   const steps=zSectionSteps({name:sec.name,items:[sec.items[idx]]});
   steps.forEach(s=>s.card=idx);
-  const audible=steps.filter(s=>s.k!=="read");
-  if(!audible.length){
+  if(!steps.length){
     /* ذكر بلا مقطع قرآني: في الصباح/المساء شغّل التسجيل الكامل الحقيقي،
        وفي غيرهما لا صوت صامت — أخبر المستخدم بوضوح */
     if(ZADHKAR_FULL[sec.name]){zadPlayFullAdhkar(sec);return}
     showToast("هذا الذكر دعاء مكتوب لا تسجيل صوتيًّا له — اقرأه من الشاشة");return;
   }
-  zqPlay(audible,{label:"ذكر من أذكار "+sec.name,cards:cards,onDone:()=>showToast("انتهى الذكر — تقبّل الله")});
+  zqPlay(steps,{label:"ذكر من أذكار "+sec.name,cards:cards,onDone:()=>showToast("انتهى الذكر — تقبّل الله")});
 };
 window.zadStopListen=function(){zqStop();showToast("تم إيقاف الاستماع")};
 
