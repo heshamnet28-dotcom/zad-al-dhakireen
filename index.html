@@ -575,12 +575,7 @@ html.lite .card,html.lite .tile,html.lite .row-item,html.lite .stat-box{box-shad
       <p class="end">تقبّل الله منّا ومنكم • وجعله في ميزان حسناتهم</p>
     </div>
 
-    <div class="install-card" id="installBanner" style="display:none">
-      <span style="font-size:26px">📲</span>
-      <div style="flex:1;min-width:0"><b>ثبّت «زاد الذاكرين» على شاشتك</b><small>أيقونة تطبيق على الشاشة الرئيسية. المحتوى النصي كله مضمّن داخل التطبيق، والسور التي تحمّلها تعمل بدون إنترنت. في آيفون: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».</small></div>
-      <button id="installBtn">تثبيت</button>
-      <button class="ib-x" id="installBannerClose" aria-label="إخفاء رسالة التثبيت">✕</button>
-    </div>
+    
 
     <div class="home-duo">
       <button class="smart" id="smartBtn">
@@ -3705,7 +3700,6 @@ function isIOSDevice(){return /iphone|ipad|ipod/i.test(navigator.userAgent)||(na
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;paintInstallBtns()});
 window.addEventListener("appinstalled",()=>{deferredInstall=null;try{localStorage.setItem("zadInstallNever","1")}catch(e){}paintInstallBtns();showToast("تم تثبيت «زاد الذاكرين» على جهازك 🎉")});
 function paintInstallBtns(){
-  const banner=$("#installBanner");if(banner)banner.style.display=(!isStandaloneApp()&&!installSnoozed())?"flex":"none";
   const b2=document.querySelector("#installBtn2");if(b2)b2.style.display=isStandaloneApp()?"none":"";
 }
 function snoozeInstall(days){try{localStorage.setItem("zadInstallSnooze",String(Date.now()+days*864e5))}catch(e){}paintInstallBtns()}
@@ -3716,12 +3710,7 @@ async function doInstall(){
   try{await deferredInstall.userChoice}catch(e){}
   deferredInstall=null;paintInstallBtns();
 }
-const _ib=$("#installBtn");if(_ib)_ib.addEventListener("click",doInstall);
 document.addEventListener("click",e=>{if(e.target&&e.target.id==="installBtn2")doInstall()});
-/* install banner wiring */
-(function(){
-  const bc=$("#installBannerClose");if(bc)bc.addEventListener("click",e=>{e.stopPropagation();snoozeInstall(3)});
-})();
 if("caches" in window){caches.open("zad-shell-v2").then(c=>c.add("index.html")).catch(()=>{})}
 /* ----- player speed select ----- */
 (function(){
