@@ -33,7 +33,7 @@
 <meta name="twitter:description" content="أذكار ومصحف وتفسير وتاريخ إسلامي ومواقيت صلاة — يعمل بدون إنترنت." />
 <meta name="twitter:image" content="https://heshamnet28-dotcom.github.io/zad-al-dhakireen/IMG-20261121-WA9892.jpg" />
 <meta name="twitter:image:alt" content="زاد الذاكرين — صدقة جارية" />
-<meta name="app-version" content="30" />
+<meta name="app-version" content="34" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Amiri+Quran&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -866,7 +866,7 @@ function prayerTimes(date){
   return {fajr:adj(midDay-ha(M.f)),sunrise,dhuhr:adj(midDay),asr:adj(midDay+haAsr()),maghrib,
     isha:M.im?fix24(maghrib+M.im/60):adj(midDay+ha(M.i))};
 }
-function fmtTime(t){let h=Math.floor(t),m=Math.floor((t-h)*60+0.5);if(m===60){m=0;h=(h+1)%24}const ap=h<12?"ص":"م";let hh=h%12;if(hh===0)hh=12;return hh+":"+String(m).padStart(2,"0")+" "+ap}
+function fmtTime(t){let h=Math.floor(t),m=Math.floor((t-h)*60+0.5);if(m===60){m=0;h=(h+1)%24}const L=(typeof state!=="undefined"&&state.lang)||"ar";const marks={ar:["ص","م"],en:["AM","PM"],fr:["AM","PM"],ur:["صبح","شام"],id:["pagi","malam"]}[L]||["ص","م"];const ap=h<12?marks[0]:marks[1];let hh=h%12;if(hh===0)hh=12;return hh+":"+String(m).padStart(2,"0")+" "+ap}
 function timeToDate(t,base){const d=new Date(base);let h=Math.floor(t),m=Math.floor((t-h)*60+0.5);if(m===60){m=0;h=(h+1)%24}d.setHours(h,m,0,0);return d}
 
 /* ============ hijri (Umm al-Qura, local) ============ */
@@ -935,11 +935,11 @@ function scoreMatch(nqFull,coreQ,toks,title,body){
   return {score:(hit||score>=75)?score:0,hit:hit,titleHit:titleHit};
 }
 const I18N={
- ar:{appName:"زاد الذاكرين",nextPrayer:"الصلاة القادمة",nav_home:"الرئيسية",nav_adhkar:"الأذكار",nav_mushaf:"المصحف",nav_library:"المكتبة",nav_tools:"الأدوات",secAdhkar:"الأذكار",secLib:"الموسوعة الإسلامية",secTools:"أدوات وخدمات",quranBtn:"المصحف الشريف — اقرأ الآن",todayCount:"أذكارك اليوم",startNow:"ابدأ الآن",streakTitle:"سلسلة الالتزام بالذكر"},
- en:{appName:"Zad Al-Dhakireen",nextPrayer:"Next Prayer",nav_home:"Home",nav_adhkar:"Azkar",nav_mushaf:"Mushaf",nav_library:"Library",nav_tools:"Tools",secAdhkar:"Azkar",secLib:"Islamic Encyclopedia",secTools:"Tools & Services",quranBtn:"The Holy Mushaf — Read Now",todayCount:"Your Azkar Today",startNow:"Start Now",streakTitle:"Dhikr Streak"},
- ur:{appName:"زاد الذاکرین",nextPrayer:"اگلی نماز",nav_home:"ہوم",nav_adhkar:"اذکار",nav_mushaf:"مصحف",nav_library:"لائبریری",nav_tools:"اوزار",secAdhkar:"اذکار",secLib:"اسلامی انسائیکلوپیڈیا",secTools:"اوزار و خدمات",quranBtn:"مصحف شریف — ابھی پڑھیں",todayCount:"آج کے اذکار",startNow:"ابھی شروع کریں",streakTitle:"ذکر کا سلسلہ"},
- id:{appName:"Zad Al-Dhakireen",nextPrayer:"Shalat Berikutnya",nav_home:"Beranda",nav_adhkar:"Dzikir",nav_mushaf:"Mushaf",nav_library:"Pustaka",nav_tools:"Alat",secAdhkar:"Dzikir",secLib:"Ensiklopedia Islam",secTools:"Alat & Layanan",quranBtn:"Mushaf Suci — Baca Sekarang",todayCount:"Dzikir Anda Hari Ini",startNow:"Mulai Sekarang",streakTitle:"Rangkaian Dzikir"},
- fr:{appName:"Zad Al-Dhakireen",nextPrayer:"Prochaine prière",nav_home:"Accueil",nav_adhkar:"Adhkar",nav_mushaf:"Mushaf",nav_library:"Bibliothèque",nav_tools:"Outils",secAdhkar:"Adhkar",secLib:"Encyclopédie islamique",secTools:"Outils et services",quranBtn:"Le Saint Mushaf — Lire maintenant",todayCount:"Vos adhkar aujourd'hui",startNow:"Commencer",streakTitle:"Série de dhikr"}
+ ar:{appName:"زاد الذاكرين",nextPrayer:"الصلاة القادمة",nav_home:"الرئيسية",nav_adhkar:"الأذكار",nav_mushaf:"المصحف",nav_library:"المكتبة",nav_tools:"الأدوات",secAdhkar:"الأذكار",secLib:"الموسوعة الإسلامية",secTools:"أدوات وخدمات",quranBtn:"المصحف الشريف — اقرأ الآن",todayCount:"أذكارك اليوم",startNow:"ابدأ الآن",streakTitle:"سلسلة الالتزام بالذكر",remaining:"المتبقي عليها",now:"الوقت الآن",am:"صباحًا",pm:"مساءً"},
+ en:{appName:"Zad Al-Dhakireen",nextPrayer:"Next Prayer",nav_home:"Home",nav_adhkar:"Azkar",nav_mushaf:"Mushaf",nav_library:"Library",nav_tools:"Tools",secAdhkar:"Azkar",secLib:"Islamic Encyclopedia",secTools:"Tools & Services",quranBtn:"The Holy Mushaf — Read Now",todayCount:"Your Azkar Today",startNow:"Start Now",streakTitle:"Dhikr Streak",remaining:"Time left",now:"Now",am:"AM",pm:"PM"},
+ ur:{appName:"زاد الذاکرین",nextPrayer:"اگلی نماز",nav_home:"ہوم",nav_adhkar:"اذکار",nav_mushaf:"مصحف",nav_library:"لائبریری",nav_tools:"اوزار",secAdhkar:"اذکار",secLib:"اسلامی انسائیکلوپیڈیا",secTools:"اوزار و خدمات",quranBtn:"مصحف شریف — ابھی پڑھیں",todayCount:"آج کے اذکار",startNow:"ابھی شروع کریں",streakTitle:"ذکر کا سلسلہ",remaining:"باقی وقت",now:"ابھی",am:"صبح",pm:"شام"},
+ id:{appName:"Zad Al-Dhakireen",nextPrayer:"Shalat Berikutnya",nav_home:"Beranda",nav_adhkar:"Dzikir",nav_mushaf:"Mushaf",nav_library:"Pustaka",nav_tools:"Alat",secAdhkar:"Dzikir",secLib:"Ensiklopedia Islam",secTools:"Alat & Layanan",quranBtn:"Mushaf Suci — Baca Sekarang",todayCount:"Dzikir Anda Hari Ini",startNow:"Mulai Sekarang",streakTitle:"Rangkaian Dzikir",remaining:"Sisa waktu",now:"Sekarang",am:"pagi",pm:"malam"},
+ fr:{appName:"Zad Al-Dhakireen",nextPrayer:"Prochaine prière",nav_home:"Accueil",nav_adhkar:"Adhkar",nav_mushaf:"Mushaf",nav_library:"Bibliothèque",nav_tools:"Outils",secAdhkar:"Adhkar",secLib:"Encyclopédie islamique",secTools:"Outils et services",quranBtn:"Le Saint Mushaf — Lire maintenant",todayCount:"Vos adhkar aujourd'hui",startNow:"Commencer",streakTitle:"Série de dhikr",remaining:"Temps restant",now:"Heure actuelle",am:"du matin",pm:"du soir"}
 };
 function tr(k){const d=I18N[state.lang]||I18N.ar;return d[k]||I18N.ar[k]||k}
 const RECITERS=[
@@ -1175,6 +1175,7 @@ function openShareMenu(text,title){
   mk("📋 نسخ النص","",async()=>{try{await navigator.clipboard.writeText(text);showToast("تم نسخ النص")}catch(e){showToast("تعذّر النسخ على هذا الجهاز")}});
   if(navigator.share)mk("📤 مشاركة النظام","",()=>{navigator.share({title:title||"زاد الذاكرين",text:text}).catch(()=>{})});
   $("#ayahModal").classList.add("on");
+  translateUI($("#ayahModal"));
 }
 /* ----- tafsir: complete Quran tafsir from multiple sources -----
    Texts are NOT stored inside the app (a full tafsir runs to thousands of
@@ -1381,6 +1382,7 @@ function openAyahMenu(si,ai){
   });
   mk("📤 مشاركة","",()=>openShareMenu(verse,"سورة "+s.name+" — الآية "+(ai+1)));
   $("#ayahModal").classList.add("on");
+  translateUI($("#ayahModal"));
 }
 /* ----- streak ----- */
 function touchStreak(){
@@ -1420,6 +1422,9 @@ function applyLanguage(){
   document.documentElement.dir=(L==="ar"||L==="ur")?"rtl":"ltr";
   document.title=tr("appName");
   const nl=document.querySelector(".next-label");if(nl)nl.textContent=tr("nextPrayer");
+  const nls=document.querySelectorAll(".next-label");
+  if(nls[1])nls[1].textContent=tr("remaining");
+  if(nls[2])nls[2].textContent=tr("now");
   document.querySelectorAll("#bottomNav button").forEach(b=>{
     const lbl=tr("nav_"+b.dataset.nav),ic=b.querySelector(".ni");
     if(lbl&&ic)b.innerHTML="";if(lbl&&ic){const s=document.createElement("span");s.className="ni";s.textContent=ic.textContent;b.appendChild(s);b.appendChild(document.createTextNode(lbl))}
@@ -1432,6 +1437,318 @@ function applyLanguage(){
   const tc=document.querySelector(".today-count b");if(tc)tc.textContent=tr("todayCount");
   const go=document.querySelector("#smartBtn .go");if(go)go.textContent=tr("startNow");
   paintStreak();
+  translateUI(document.getElementById("v-home"));
+  translateUI(document.getElementById("v-detail"));
+  translateUI(document.getElementById("updateBanner"));
+  translateUI(document.getElementById("ayahModal"));
+}
+
+/* ----- ترجمة واجهة كاملة: قاموس نصوص الواجهة الثابتة -------------------
+   كانت applyLanguage تترجم شريط التنقّل وعناوين أقسام الرئيسية فقط،
+   فتبقى صفحة الإعدادات وبطاقات الرئيسية بالعربية مهما اختار الزائر
+   (وظهر ذلك بوضوح مع الفرنسية). هذا القاموس يغطي نصوص الواجهة:
+   عناوين أقسام الإعدادات وحقولها وخياراتها وأزرارها، وبطاقات
+   الرئيسية، وعناوين الشاشات، والعناصر المشتركة بين الشاشات.
+   المحتوى الديني نفسه (نص القرآن والأذكار والتفاسير وبطاقة الصدقة
+   الجارية وأسماء الله) لا يُترجم — يبقى بالعربية كما هو متفق عليه.
+   translateUI تمشي على العقد النصية داخل العرض الحالي، وتحفظ الأصل
+   العربي لكل عقدة حتى تعود الواجهة عربية تمامًا عند اختيار العربية */
+const PRAYER_TR={
+ "الفجر":{fr:"Fajr",en:"Fajr",ur:"فجر",id:"Subuh"},
+ "الشروق":{fr:"Lever du soleil",en:"Sunrise",ur:"طلوعِ آفتاب",id:"Syuruk"},
+ "الظهر":{fr:"Dhuhr",en:"Dhuhr",ur:"ظہر",id:"Dzuhur"},
+ "العصر":{fr:"Asr",en:"Asr",ur:"عصر",id:"Ashar"},
+ "المغرب":{fr:"Maghrib",en:"Maghrib",ur:"مغرب",id:"Maghrib"},
+ "العشاء":{fr:"Icha",en:"Isha",ur:"عشاء",id:"Isya"}
+};
+function pnName(ar){const L=state.lang||"ar";if(L==="ar")return ar;const e=PRAYER_TR[ar];return e?(e[L]||e.en||ar):ar}
+const UI_DICT={
+ "📍 الموقع ومواقيت الصلاة":{fr:"📍 Localisation et horaires de prière",en:"📍 Location & Prayer Times",ur:"📍 مقام اور نماز کے اوقات",id:"📍 Lokasi & Waktu Shalat"},
+ "🎨 المظهر والقراءة":{fr:"🎨 Apparence et lecture",en:"🎨 Appearance & Reading",ur:"🎨 ظاہری شکل اور مطالعہ",id:"🎨 Tampilan & Bacaan"},
+ "🔔 الصوت والتنبيهات":{fr:"🔔 Son et alertes",en:"🔔 Sound & Alerts",ur:"🔔 آواز اور تنبیہات",id:"🔔 Suara & Pengingat"},
+ "🔔 الإشعارات والتذكيرات":{fr:"🔔 Notifications et rappels",en:"🔔 Notifications & Reminders",ur:"🔔 اطلاعات اور یاد دہانیاں",id:"🔔 Notifikasi & Pengingat"},
+ "🌐 اللغة":{fr:"🌐 Langue",en:"🌐 Language",ur:"🌐 زبان",id:"🌐 Bahasa"},
+ "📱 التطبيق وبياناتي":{fr:"📱 L'application et mes données",en:"📱 App & My Data",ur:"📱 ایپ اور میرا ڈیٹا",id:"📱 Aplikasi & Data Saya"},
+ "📍 استخدم موقعي الحالي":{fr:"📍 Utiliser ma position actuelle",en:"📍 Use my current location",ur:"📍 میرا موجودہ مقام استعمال کریں",id:"📍 Gunakan lokasi saya saat ini"},
+ "المدينة (اختيار يدوي)":{fr:"Ville (choix manuel)",en:"City (manual choice)",ur:"شہر (دستی انتخاب)",id:"Kota (pilihan manual)"},
+ "طريقة حساب المواقيت":{fr:"Méthode de calcul des horaires",en:"Prayer time calculation method",ur:"اوقات کے حساب کا طریقہ",id:"Metode perhitungan waktu shalat"},
+ "مواقيت الصلاة والتقويم الهجري واتجاه القبلة وإمساكية رمضان تُحسب كلها من هذا الموقع — غيّره هنا ويتحدّث التطبيق كله فورًا.":{fr:"Les horaires de prière, le calendrier hégirien, la direction de la qibla et l'imsakia de Ramadan sont tous calculés à partir de cette position — changez-la ici et toute l'application se met à jour aussitôt.",en:"Prayer times, the Hijri calendar, the qibla direction and the Ramadan imsakia are all calculated from this location — change it here and the whole app updates at once."},
+ "المظهر":{fr:"Apparence",en:"Appearance",ur:"ظاہری شکل",id:"Tampilan"},
+ "حسب نظام الجهاز":{fr:"Selon le système de l'appareil",en:"System default",ur:"آلے کے نظام کے مطابق",id:"Ikuti sistem perangkat"},
+ "نهاري":{fr:"Clair",en:"Light",ur:"دن کا",id:"Terang"},
+ "ليلي":{fr:"Sombre",en:"Dark",ur:"رات کا",id:"Gelap"},
+ "حجم خط الأذكار والنصوص":{fr:"Taille du texte (adhkar et textes)",en:"Text font size (adhkar & texts)",ur:"اذکار اور متن کے خط کا سائز",id:"Ukuran huruf teks & dzikir"},
+ "حجم خط المصحف":{fr:"Taille du texte du Mushaf",en:"Mushaf font size",ur:"مصحف کے خط کا سائز",id:"Ukuran huruf Mushaf"},
+ "الخط العثماني في المصحف":{fr:"Police ottomane dans le Mushaf",en:"Uthmani script in the Mushaf",ur:"مصحف میں عثمانی خط",id:"Huruf Utsmani di Mushaf"},
+ "الخط العادي":{fr:"Police standard",en:"Standard script",ur:"عام خط",id:"Huruf biasa"},
+ "الخط العثماني":{fr:"Police ottomane",en:"Uthmani script",ur:"عثمانی خط",id:"Huruf Utsmani"},
+ "وضع كبار السن — خط أكبر وأزرار أوضح في التطبيق كله":{fr:"Mode seniors — texte plus grand et boutons plus clairs dans toute l'application",en:"Senior mode — larger text & clearer buttons across the app",ur:"بزرگوں کا موڈ — پوری ایپ میں بڑا خط اور واضح بٹن",id:"Mode lansia — huruf lebih besar & tombol lebih jelas di seluruh aplikasi"},
+ "معطّل":{fr:"Désactivé",en:"Off",ur:"بند",id:"Nonaktif"},
+ "مفعّل":{fr:"Activé",en:"On",ur:"آن",id:"Aktif"},
+ "القارئ الافتراضي لتلاوة السور والآيات":{fr:"Récitateur par défaut des sourates et versets",en:"Default reciter for surahs & verses",ur:"سورتوں اور آیات کے لیے طے شدہ قاری",id:"Qari bawaan untuk surah & ayat"},
+ "القارئ":{fr:"Récitateur",en:"Reciter",ur:"قاری",id:"Qari"},
+ "سرعة تشغيل الصوت الافتراضية":{fr:"Vitesse de lecture audio par défaut",en:"Default audio playback speed",ur:"آواز کی طے شدہ رفتار",id:"Kecepatan putar audio bawaan"},
+ "تنبيه الأذان الصوتي":{fr:"Alerte sonore de l'adhan",en:"Adhan audio alert",ur:"اذان کی صوتی تنبیہ",id:"Peringatan audio azan"},
+ "مفعّل — يُرفع الأذان عند دخول وقت كل صلاة":{fr:"Activé — l'adhan est récité à l'entrée de chaque heure de prière",en:"On — the adhan is called at each prayer time",ur:"آن — ہر نماز کے وقت اذان دی جائے گی",id:"Aktif — azan dikumandangkan di setiap waktu shalat"},
+ "صوت المؤذن — يُرفع الأذان كاملًا عند دخول الوقت":{fr:"Voix du muezzin — adhan complet à l'heure de la prière",en:"Muezzin voice — full adhan at prayer time",ur:"مؤذن کی آواز — وقت پر مکمل اذان",id:"Suara muazin — azan lengkap di waktunya"},
+ "صوت مؤذن الفجر":{fr:"Voix du muezzin du Fajr",en:"Fajr muezzin voice",ur:"فجر کے مؤذن کی آواز",id:"Suara muazin Subuh"},
+ "▶ استمع إلى الأذان كاملًا الآن بهذا الصوت":{fr:"▶ Écouter l'adhan complet avec cette voix",en:"▶ Listen to the full adhan in this voice now",ur:"▶ اس آواز میں مکمل اذان سنیں",id:"▶ Dengarkan azan lengkap dengan suara ini"},
+ "يعمل تنبيه الأذان أثناء بقاء التطبيق مفتوحًا على الجهاز، بصوت الأذان وإشعار عند دخول الوقت. فعّله ثم اسمح بالإشعارات إن طلبها المتصفح. عشرة تسجيلات كاملة للأذان بأصوات مؤذنين مختلفين — جرّبها واختر ما يريح قلبك، ويمكنك جعل صوت الفجر مختلفًا عن بقية الصلوات. وبقية التذكيرات — قبل الصلاة وأذكار الصباح والمساء وبعد الصلاة والصلاة على النبي والآيات والحكم — تُدار كلها من قسم «الإشعارات والتذكيرات» التالي.":{fr:"L'alerte de l'adhan fonctionne tant que l'application reste ouverte sur l'appareil, avec le son de l'adhan et une notification à l'heure de la prière. Activez-la puis autorisez les notifications si le navigateur les demande. Dix enregistrements complets de l'adhan par différents muezzins — essayez-les et choisissez celui qui apaise votre cœur ; la voix du Fajr peut différer des autres prières. Les autres rappels se gèrent dans la section « Notifications et rappels » ci-dessous.",en:"The adhan alert works while the app stays open on the device, with the adhan sound and a notification at prayer time. Turn it on, then allow notifications if the browser asks. Ten full adhan recordings by different muezzins — try them and pick the voice that soothes your heart; the Fajr voice can differ from the other prayers. All other reminders are managed in the “Notifications & Reminders” section below."},
+ "إذن إشعارات الجهاز":{fr:"Autorisation des notifications de l'appareil",en:"Device notification permission",ur:"آلے کی اطلاعات کی اجازت",id:"Izin notifikasi perangkat"},
+ "طلب الإذن / إرسال إشعار تجريبي":{fr:"Demander l'autorisation / envoyer un test",en:"Request permission / send a test notification",ur:"اجازت طلب کریں / آزمائشی اطلاع بھیجیں",id:"Minta izin / kirim notifikasi uji"},
+ "عند دخول وقت الصلاة":{fr:"À l'entrée de l'heure de prière",en:"When prayer time begins",ur:"نماز کا وقت شروع ہونے پر",id:"Saat waktu shalat tiba"},
+ "مفعّل — إشعار عند دخول وقت كل صلاة (إن كان الأذان الصوتي مفعّلًا يكفي إشعاره فلا نكرّر)":{fr:"Activé — une notification à chaque heure de prière (si l'adhan sonore est activé, sa notification suffit)",en:"On — a notification at each prayer time (if the audio adhan is on, its notification is enough)",ur:"آن — ہر نماز کے وقت اطلاع (اگر صوتی اذان آن ہو تو اسی کی اطلاع کافی ہے)",id:"Aktif — notifikasi di setiap waktu shalat (jika azan audio aktif, notifikasinya sudah cukup)"},
+ "تنبيه قبل الصلاة":{fr:"Rappel avant la prière",en:"Reminder before prayer",ur:"نماز سے پہلے یاد دہانی",id:"Pengingat sebelum shalat"},
+ "قبل الصلاة بـ ٥ دقائق":{fr:"5 minutes avant la prière",en:"5 minutes before prayer",ur:"نماز سے ۵ منٹ پہلے",id:"5 menit sebelum shalat"},
+ "قبل الصلاة بـ ١٠ دقائق":{fr:"10 minutes avant la prière",en:"10 minutes before prayer",ur:"نماز سے ۱۰ منٹ پہلے",id:"10 menit sebelum shalat"},
+ "قبل الصلاة بـ ١٥ دقيقة":{fr:"15 minutes avant la prière",en:"15 minutes before prayer",ur:"نماز سے ۱۵ منٹ پہلے",id:"15 menit sebelum shalat"},
+ "قبل الصلاة بـ ٣٠ دقيقة":{fr:"30 minutes avant la prière",en:"30 minutes before prayer",ur:"نماز سے ۳۰ منٹ پہلے",id:"30 menit sebelum shalat"},
+ "أذكار بعد الصلاة":{fr:"Adhkar après la prière",en:"Adhkar after prayer",ur:"نماز کے بعد کے اذکار",id:"Dzikir setelah shalat"},
+ "مفعّل — تذكير بعد كل صلاة بـ ٤ دقائق":{fr:"Activé — rappel 4 minutes après chaque prière",en:"On — reminder 4 minutes after each prayer",ur:"آن — ہر نماز کے ۴ منٹ بعد یاد دہانی",id:"Aktif — pengingat 4 menit setelah setiap shalat"},
+ "أذكار الصباح والمساء":{fr:"Adhkar du matin et du soir",en:"Morning & evening adhkar",ur:"صبح و شام کے اذکار",id:"Dzikir pagi & petang"},
+ "مفعّل — تنبيه في وقتها داخل التطبيق وإشعار إن سمحت":{fr:"Activé — alerte dans l'application à leur heure, et notification si autorisée",en:"On — in-app alert at their time, plus a notification if allowed",ur:"آن — وقت پر ایپ میں تنبیہ، اور اجازت ہو تو اطلاع",id:"Aktif — peringatan dalam aplikasi pada waktunya, dan notifikasi jika diizinkan"},
+ "تذكير بالصلاة على النبي ﷺ أثناء استخدام التطبيق":{fr:"Rappel de prier sur le Prophète ﷺ pendant l'utilisation de l'application",en:"Reminder to send blessings on the Prophet ﷺ while using the app",ur:"ایپ استعمال کے دوران درود کی یاد دہانی",id:"Pengingat bershalawat saat menggunakan aplikasi"},
+ "كل ١٥ دقيقة":{fr:"Toutes les 15 minutes",en:"Every 15 minutes",ur:"ہر ۱۵ منٹ",id:"Setiap 15 menit"},
+ "كل ٣٠ دقيقة":{fr:"Toutes les 30 minutes",en:"Every 30 minutes",ur:"ہر ۳۰ منٹ",id:"Setiap 30 menit"},
+ "كل ساعة":{fr:"Toutes les heures",en:"Every hour",ur:"ہر گھنٹے",id:"Setiap jam"},
+ "كل ساعتين":{fr:"Toutes les 2 heures",en:"Every 2 hours",ur:"ہر ۲ گھنٹے",id:"Setiap 2 jam"},
+ "آية قرآنية كل يوم":{fr:"Un verset du Coran chaque jour",en:"A Quranic verse every day",ur:"ہر روز ایک قرآنی آیت",id:"Satu ayat Al-Qur'an setiap hari"},
+ "مفعّل — آية مختارة تصلك في إشعار على شاشة جهازك في الوقت المحدد":{fr:"Activé — un verset choisi vous parvient en notification à l'heure définie",en:"On — a chosen verse reaches you as a notification at the set time",ur:"آن — منتخب آیت مقررہ وقت پر اطلاع میں ملے گی",id:"Aktif — ayat pilihan terkirim sebagai notifikasi pada waktu yang ditentukan"},
+ "وقت آية اليوم":{fr:"Heure du verset du jour",en:"Daily verse time",ur:"روز کی آیت کا وقت",id:"Waktu ayat harian"},
+ "حكمة وموعظة كل يوم":{fr:"Une sagesse et une exhortation chaque jour",en:"Wisdom & admonition every day",ur:"ہر روز ایک حکمت و نصیحت",id:"Hikmah & nasihat setiap hari"},
+ "مفعّل — حديث نبوي أو حكمة نافعة يوميًا":{fr:"Activé — un hadith ou une sagesse utile chaque jour",en:"On — a prophetic hadith or useful wisdom daily",ur:"آن — روزانہ ایک حدیث یا مفید حکمت",id:"Aktif — hadis Nabi atau hikmah bermanfaat setiap hari"},
+ "وقت الحكمة":{fr:"Heure de la sagesse",en:"Wisdom time",ur:"حکمت کا وقت",id:"Waktu hikmah"},
+ "🌹 فتح عدّاد الصلاة على النبي ﷺ":{fr:"🌹 Ouvrir le compteur de prières sur le Prophète ﷺ",en:"🌹 Open the blessings-on-the-Prophet ﷺ counter",ur:"🌹 درود کا کاؤنٹر کھولیں",id:"🌹 Buka penghitung shalawat"},
+ "تتغيّر لغة الواجهة والتنقّل والإعدادات، ويبقى نص القرآن والأذكار بالعربية كما هو.":{fr:"La langue de l'interface, de la navigation et des réglages change ; le texte du Coran et des adhkar reste en arabe, tel quel.",en:"The language of the interface, navigation and settings changes; the text of the Quran and the adhkar stays in Arabic, as it is.",ur:"انٹرفیس، نیویگیشن اور ترتیبات کی زبان بدلتی ہے؛ قرآن اور اذکار کا متن عربی میں ہی رہتا ہے۔",id:"Bahasa antarmuka, navigasi, dan pengaturan berubah; teks Al-Qur'an dan dzikir tetap dalam bahasa Arab."},
+ "📲 تثبيت التطبيق على الشاشة الرئيسية":{fr:"📲 Installer l'application sur l'écran d'accueil",en:"📲 Install the app on the home screen",ur:"📲 ایپ کو ہوم اسکرین پر انسٹال کریں",id:"📲 Pasang aplikasi di layar utama"},
+ "🔄 البحث عن تحديث للتطبيق":{fr:"🔄 Rechercher une mise à jour de l'application",en:"🔄 Check for an app update",ur:"🔄 ایپ کی اپڈیٹ تلاش کریں",id:"🔄 Periksa pembaruan aplikasi"},
+ "⬇️ إدارة تحميلات الصوت — عرض المساحة وحذف سورة":{fr:"⬇️ Gérer les téléchargements audio — espace et suppression",en:"⬇️ Manage audio downloads — view space & delete a surah",ur:"⬇️ آڈیو ڈاؤن لوڈز کا انتظام",id:"⬇️ Kelola unduhan audio — lihat ruang & hapus surah"},
+ "⭐ مفضلتي":{fr:"⭐ Mes favoris",en:"⭐ My favorites",ur:"⭐ میری پسندیدہ",id:"⭐ Favorit saya"},
+ "📤 نشر التطبيق — شاركه صدقة جارية":{fr:"📤 Partager l'application — une aumône continue",en:"📤 Share the app — an ongoing charity",ur:"📤 ایپ شائع کریں — صدقۂ جاریہ",id:"📤 Bagikan aplikasi — sedekah jariyah"},
+ "📱 مشاركة رابط تحميل التطبيق (APK)":{fr:"📱 Partager le lien de téléchargement de l'application (APK)",en:"📱 Share the app download link (APK)",ur:"📱 ایپ ڈاؤن لوڈ لنک (APK) شائع کریں",id:"📱 Bagikan tautan unduhan aplikasi (APK)"},
+ "الدعم الفني — واتساب":{fr:"Assistance technique — WhatsApp",en:"Technical support — WhatsApp",ur:"تکنیکی معاونت — واٹس ایپ",id:"Dukungan teknis — WhatsApp"},
+ "راسلنا لأي استفسار أو ملاحظة (يحتاج إنترنت عند الضغط)":{fr:"Écrivez-nous pour toute question ou remarque (Internet requis au clic)",en:"Message us with any question or note (needs Internet when tapped)",ur:"کسی بھی سوال یا رائے کے لیے پیغام بھیجیں",id:"Hubungi kami untuk pertanyaan atau catatan (perlu Internet saat diketuk)"},
+ "🧹 تصفير تقدّم الأذكار وعدادات اليوم وصلواتي":{fr:"🧹 Réinitialiser ma progression d'adhkar, mes compteurs du jour et mes prières",en:"🧹 Reset my adhkar progress, today's counters & my prayers",ur:"🧹 میری پیش رفت اور کاؤنٹرز صفر کریں",id:"🧹 Atur ulang progres dzikir & penghitung saya"},
+ "عن التطبيق":{fr:"À propos de l'application",en:"About the app",ur:"ایپ کے بارے میں",id:"Tentang aplikasi"},
+ "🔐 دخول المالك — لوحة التحكم":{fr:"🔐 Espace propriétaire — panneau de contrôle",en:"🔐 Owner login — control panel",ur:"🔐 مالک کا داخلہ — کنٹرول پینل",id:"🔐 Masuk pemilik — panel kontrol"},
+ "الإعدادات":{fr:"Réglages",en:"Settings",ur:"ترتیبات",id:"Pengaturan"},
+ "أدوات وخدمات":{fr:"Outils et services",en:"Tools & Services",ur:"اوزار و خدمات",id:"Alat & Layanan"},
+ "المصحف الشريف":{fr:"Le Saint Mushaf",en:"The Holy Mushaf",ur:"مصحف شریف",id:"Mushaf Suci"},
+ "الأذكار":{fr:"Adhkar",en:"Adhkar",ur:"اذکار",id:"Dzikir"},
+ "الموسوعة والمكتبة":{fr:"Encyclopédie et bibliothèque",en:"Encyclopedia & Library",ur:"انسائیکلوپیڈیا اور لائبریری",id:"Ensiklopedia & Pustaka"},
+ "تحميلات الصوت":{fr:"Téléchargements audio",en:"Audio downloads",ur:"آڈیو ڈاؤن لوڈز",id:"Unduhan audio"},
+ "المفضلة":{fr:"Favoris",en:"Favorites",ur:"پسندیدہ",id:"Favorit"},
+ "لوحة التحكم":{fr:"Panneau de contrôle",en:"Control panel",ur:"کنٹرول پینل",id:"Panel kontrol"},
+ "تفسير القرآن الكريم":{fr:"Exégèse du Saint Coran",en:"Tafsir of the Holy Quran",ur:"تفسیر قرآن کریم",id:"Tafsir Al-Qur'an"},
+ "أسماء الله الحسنى":{fr:"Les plus beaux noms d'Allah",en:"Allah's Most Beautiful Names",ur:"اسماءِ الٰہی الحسنیٰ",id:"Asmaul Husna"},
+ "الصلاة على النبي ﷺ":{fr:"Prière sur le Prophète ﷺ",en:"Blessings on the Prophet ﷺ",ur:"نبی ﷺ پر درود",id:"Shalawat kepada Nabi ﷺ"},
+ "⬇ تحميل":{fr:"⬇ Télécharger",en:"⬇ Download",ur:"⬇ ڈاؤن لوڈ",id:"⬇ Unduh"},
+ "✓ محمّلة — حذف":{fr:"✓ Téléchargé — supprimer",en:"✓ Downloaded — delete",ur:"✓ محفوظ — حذف کریں",id:"✓ Terunduh — hapus"},
+ "📤 مشاركة":{fr:"📤 Partager",en:"📤 Share",ur:"📤 شائع کریں",id:"📤 Bagikan"},
+ "📤 مشاركة هذه المادة":{fr:"📤 Partager ce contenu",en:"📤 Share this item",ur:"📤 یہ مواد شائع کریں",id:"📤 Bagikan materi ini"},
+ "إغلاق":{fr:"Fermer",en:"Close",ur:"بند کریں",id:"Tutup"},
+ "✨ نفحة اليوم ✨":{fr:"✨ Inspiration du jour ✨",en:"✨ Today's Inspiration ✨",ur:"✨ آج کی نفحہ ✨",id:"✨ Inspirasi Hari Ini ✨"},
+ "تقبّل الله":{fr:"Qu'Allah accepte",en:"May Allah accept",ur:"اللہ قبول فرمائے",id:"Semoga Allah menerima"},
+ "وصل تحديث جديد للتطبيق":{fr:"Une nouvelle mise à jour est disponible",en:"A new app update has arrived",ur:"ایپ کی نئی اپڈیٹ آ گئی ہے",id:"Pembaruan aplikasi baru telah tiba"},
+ "فيه محتوى إضافي جديد. اضغط «تحديث الآن» لتثبيت أحدث نسخة، أو «إخفاء» للمتابعة بالنسخة الحالية.":{fr:"Elle contient du nouveau contenu. Touchez « Mettre à jour » pour installer la dernière version, ou « Masquer » pour continuer avec la version actuelle.",en:"It has new extra content. Tap “Update now” to install the latest version, or “Hide” to continue with the current one.",ur:"اس میں نیا اضافی مواد ہے۔ تازہ ترین نسخے کے لیے «اپڈیٹ» دبائیں، یا جاری رکھنے کے لیے «چھپائیں»۔",id:"Ada konten baru tambahan. Ketuk «Perbarui sekarang» untuk memasang versi terbaru, atau «Sembunyikan» untuk melanjutkan dengan versi saat ini."},
+ "تحديث الآن":{fr:"Mettre à jour",en:"Update now",ur:"ابھی اپڈیٹ کریں",id:"Perbarui sekarang"},
+ "إخفاء":{fr:"Masquer",en:"Hide",ur:"چھپائیں",id:"Sembunyikan"},
+ "ثبّت «زاد الذاكرين» على شاشتك":{fr:"Installez « Zad Al-Dhakireen » sur votre écran",en:"Install “Zad Al-Dhakireen” on your screen",ur:"«زاد الذاکرین» کو اپنی اسکرین پر انسٹال کریں",id:"Pasang «Zad Al-Dhakireen» di layar Anda"},
+ "أيقونة تطبيق على الشاشة الرئيسية. المحتوى النصي كله مضمّن داخل التطبيق، والسور التي تحمّلها تعمل بدون إنترنت. في آيفون: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».":{fr:"Une icône d'application sur l'écran d'accueil. Tout le contenu textuel est intégré à l'application, et les sourates téléchargées fonctionnent sans Internet. Sur iPhone : bouton Partager puis « Sur l'écran d'accueil ».",en:"An app icon on your home screen. All text content is built into the app, and downloaded surahs work offline. On iPhone: the Share button, then “Add to Home Screen”."},
+ "تثبيت":{fr:"Installer",en:"Install",ur:"انسٹال",id:"Pasang"},
+ "أذكار الصباح":{fr:"Adhkar du matin",en:"Morning adhkar",ur:"صبح کے اذکار",id:"Dzikir pagi"},
+ "أذكار المساء":{fr:"Adhkar du soir",en:"Evening adhkar",ur:"شام کے اذکار",id:"Dzikir petang"},
+ "هذا وقتها — ابدأ يومك بذكر الله":{fr:"C'est leur heure — commencez votre journée par le rappel d'Allah",en:"It's their time — start your day with the remembrance of Allah",ur:"یہی ان کا وقت ہے — دن کا آغاز ذکرِ الٰہی سے کریں",id:"Inilah waktunya — awali hari Anda dengan dzikir"},
+ "هذا وقتها — اختم يومك بذكر الله":{fr:"C'est leur heure — terminez votre journée par le rappel d'Allah",en:"It's their time — end your day with the remembrance of Allah",ur:"یہی ان کا وقت ہے — دن کا اختتام ذکرِ الٰہی سے کریں",id:"Inilah waktunya — akhiri hari Anda dengan dzikir"},
+ "🎤 أوامر صوتية — تكلّم وسيُنفَّذ طلبك":{fr:"🎤 Commandes vocales — parlez et votre demande sera exécutée",en:"🎤 Voice commands — speak and your request will be carried out",ur:"🎤 صوتی احکامات — بولیں اور آپ کی درخواست پوری ہوگی",id:"🎤 Perintah suara — bicara dan permintaan Anda akan dijalankan"},
+ "📊 إحصائيات عبادتي — رسوم آخر ١٤ يومًا":{fr:"📊 Statistiques de mon adoration — 14 derniers jours",en:"📊 My worship statistics — last 14 days",ur:"📊 میری عبادت کے اعداد — آخری ۱۴ دن",id:"📊 Statistik ibadah saya — 14 hari terakhir"},
+ "— يُصفَّر منتصف الليل":{fr:"— remis à zéro à minuit",en:"— resets at midnight",ur:"— آدھی رات کو صفر ہو جاتا ہے",id:"— diatur ulang tengah malam"},
+ "اليوم:":{fr:"Aujourd'hui :",en:"Today:",ur:"آج:",id:"Hari ini:"},
+ "من ورد":{fr:"sur un objectif de",en:"of a daily goal of",ur:"روزانہ ہدف میں سے",id:"dari target harian"},
+ "— اضغط الأيقونة للعدّ، أو هنا لفتح العدّاد":{fr:"— touchez l'icône pour compter, ou ici pour ouvrir le compteur",en:"— tap the icon to count, or here to open the counter",ur:"— گننے کے لیے آئیکن دبائیں، یا کاؤنٹر کھولنے کے لیے یہاں",id:"— ketuk ikon untuk menghitung, atau di sini untuk membuka penghitung"},
+ "📤 شارك التطبيق — صدقة جارية":{fr:"📤 Partagez l'application — une aumône continue",en:"📤 Share the app — an ongoing charity",ur:"📤 ایپ شائع کریں — صدقۂ جاریہ",id:"📤 Bagikan aplikasi — sedekah jariyah"},
+ "انشر «زاد الذاكرين» بين أهلك وأحبابك، فالدال على الخير كفاعله.":{fr:"Partagez « Zad Al-Dhakireen » avec votre famille et vos proches : celui qui indique un bien a la même récompense que celui qui le fait.",en:"Share “Zad Al-Dhakireen” with your family and loved ones — whoever points to good earns the same reward as the one who does it.",ur:"«زاد الذاکرین» اپنے اہل و احباب میں پھیلائیں، نیکی کی راہ دکھانے والا اس کے کرنے والے جیسا ہے۔",id:"Sebarkan «Zad Al-Dhakireen» kepada keluarga dan orang tercinta — penunjuk kebaikan seperti pelakunya."},
+ "📤 مشاركة التطبيق":{fr:"📤 Partager l'application",en:"📤 Share the app",ur:"📤 ایپ شائع کریں",id:"📤 Bagikan aplikasi"},
+ "📋 نسخ نص النشر":{fr:"📋 Copier le texte de partage",en:"📋 Copy the share text",ur:"📋 اشاعت کا متن نقل کریں",id:"📋 Salin teks bagikan"},
+ "📱 تنزيل تطبيق أندرويد (APK)":{fr:"📱 Télécharger l'application Android (APK)",en:"📱 Download the Android app (APK)",ur:"📱 اینڈرائیڈ ایپ ڈاؤن لوڈ کریں (APK)",id:"📱 Unduh aplikasi Android (APK)"},
+ "عرض نص النشر الكامل":{fr:"Afficher le texte de partage complet",en:"View the full share text",ur:"مکمل اشاعتی متن دیکھیں",id:"Lihat teks bagikan lengkap"},
+ "التحديثات التلقائية:":{fr:"Mises à jour automatiques :",en:"Automatic updates:",ur:"خودکار اپڈیٹس:",id:"Pembaruan otomatis:"},
+ "أي محتوى جديد يصل إلى الزائر تلقائيًا عند فتح التطبيق بالإنترنت، ويظهر تنبيه «تحديث الآن» في منتصف الشاشة.":{fr:"Tout nouveau contenu parvient automatiquement au visiteur lorsqu'il ouvre l'application avec Internet, et une alerte « Mettre à jour » s'affiche au centre de l'écran.",en:"Any new content reaches the visitor automatically when the app is opened with Internet, and an “Update now” alert appears in the middle of the screen.",ur:"کوئی بھی نیا مواد انٹرنیٹ کے ساتھ ایپ کھولنے پر خود بخود پہنچ جاتا ہے، اور اسکرین کے وسط میں «ابھی اپڈیٹ کریں» تنبیہ ظاہر ہوتی ہے۔",id:"Konten baru apa pun sampai otomatis saat aplikasi dibuka dengan Internet, dan peringatan «Perbarui sekarang» muncul di tengah layar."},
+ "البحث عن تحديث الآن":{fr:"Rechercher une mise à jour",en:"Check for updates now",ur:"ابھی اپڈیٹ تلاش کریں",id:"Periksa pembaruan sekarang"},
+ "ابحث باسم من أسماء الله…":{fr:"Rechercher parmi les noms d'Allah…",en:"Search Allah's names…",ur:"اللہ کے ناموں میں تلاش کریں…",id:"Cari di antara nama-nama Allah…"},
+ "أذكار الصباح":{fr:"Adhkar du matin",en:"Morning adhkar",ur:"صبح کے اذکار",id:"Dzikir pagi"},
+ "أذكار المساء":{fr:"Adhkar du soir",en:"Evening adhkar",ur:"شام کے اذکار",id:"Dzikir petang"},
+ "أذكار النوم":{fr:"Adhkar du coucher",en:"Adhkar before sleep",ur:"سونے کے اذکار",id:"Dzikir sebelum tidur"},
+ "أذكار الاستيقاظ":{fr:"Adhkar du réveil",en:"Adhkar on waking up",ur:"جاگنے کے اذکار",id:"Dzikir bangun tidur"},
+ "أذكار الصلاة":{fr:"Adhkar de la prière",en:"Prayer adhkar",ur:"نماز کے اذکار",id:"Dzikir shalat"},
+ "أذكار بعد الصلاة":{fr:"Adhkar après la prière",en:"Adhkar after prayer",ur:"نماز کے بعد کے اذکار",id:"Dzikir setelah shalat"},
+ "أذكار الرقية":{fr:"Adhkar de la rouqya",en:"Ruqyah adhkar",ur:"رقیہ کے اذکار",id:"Dzikir ruqyah"},
+ "أذكار المسجد":{fr:"Adhkar de la mosquée",en:"Mosque adhkar",ur:"مسجد کے اذکار",id:"Dzikir masjid"},
+ "أذكار المنزل":{fr:"Adhkar de la maison",en:"Home adhkar",ur:"گھر کے اذکار",id:"Dzikir rumah"},
+ "أذكار الطعام والشراب":{fr:"Adhkar du repas et de la boisson",en:"Food & drink adhkar",ur:"کھانے پینے کے اذکار",id:"Dzikir makan & minum"},
+ "أذكار الوضوء والخلاء":{fr:"Adhkar des ablutions",en:"Ablution adhkar",ur:"وضو کے اذکار",id:"Dzikir wudhu"},
+ "أذكار اللباس":{fr:"Adhkar de l'habillement",en:"Clothing adhkar",ur:"لباس کے اذکار",id:"Dzikir berpakaian"},
+ "أذكار السفر والركوب":{fr:"Adhkar du voyage",en:"Travel adhkar",ur:"سفر کے اذکار",id:"Dzikir perjalanan"},
+ "أذكار الأذان":{fr:"Adhkar de l'adhan",en:"Adhan adhkar",ur:"اذان کے اذکار",id:"Dzikir azan"},
+ "أذكار الاستخارة والكرب":{fr:"Adhkar de l'istikhara et de la détresse",en:"Istikhara & distress adhkar",ur:"استخارہ اور پریشانی کے اذکار",id:"Dzikir istikharah & kesusahan"},
+ "أذكار المطر والهلال":{fr:"Adhkar de la pluie et du croissant",en:"Rain & crescent adhkar",ur:"بارش اور چاند کے اذکار",id:"Dzikir hujan & hilal"},
+ "أذكار المريض والميت":{fr:"Adhkar du malade et du défunt",en:"Adhkar for the sick & the deceased",ur:"مریض اور میت کے اذکار",id:"Dzikir orang sakit & jenazah"},
+ "أذكار المجلس والسوق":{fr:"Adhkar de l'assemblée et du marché",en:"Gathering & market adhkar",ur:"مجلس اور بازار کے اذکار",id:"Dzikir majelis & pasar"},
+ "أذكار أدعية جامعة":{fr:"Invocations générales",en:"General supplications",ur:"جامع دعائیں",id:"Doa-doa umum"},
+ "تفسير القرآن":{fr:"Exégèse du Coran",en:"Quran Tafsir",ur:"تفسیر قرآن",id:"Tafsir Al-Qur'an"},
+ "الأنبياء":{fr:"Les prophètes",en:"The Prophets",ur:"انبیاء",id:"Para Nabi"},
+ "أحاديث":{fr:"Hadiths",en:"Hadiths",ur:"احادیث",id:"Hadis"},
+ "السيرة":{fr:"Biographie du Prophète",en:"The Prophet's Biography",ur:"سیرت",id:"Sirah"},
+ "الصحابة":{fr:"Les compagnons",en:"The Companions",ur:"صحابہ",id:"Para Sahabat"},
+ "أدعية الأنبياء":{fr:"Invocations des prophètes",en:"Supplications of the Prophets",ur:"انبیاء کی دعائیں",id:"Doa para Nabi"},
+ "المكتبة":{fr:"La bibliothèque",en:"The Library",ur:"لائبریری",id:"Pustaka"},
+ "فتاوى":{fr:"Fatwas",en:"Fatwas",ur:"فتاویٰ",id:"Fatwa"},
+ "العقيدة":{fr:"La croyance",en:"Creed",ur:"عقیدہ",id:"Akidah"},
+ "قصص قرآن":{fr:"Récits du Coran",en:"Quranic Stories",ur:"قرآنی قصے",id:"Kisah Al-Qur'an"},
+ "فضائل":{fr:"Mérites et vertus",en:"Virtues",ur:"فضائل",id:"Keutamaan"},
+ "وصايا":{fr:"Recommandations",en:"Counsels",ur:"وصایا",id:"Wasiat"},
+ "التاريخ الإسلامي":{fr:"Histoire de l'islam",en:"Islamic History",ur:"اسلامی تاریخ",id:"Sejarah Islam"},
+ "أسئلة وأجوبة":{fr:"Questions et réponses",en:"Questions & Answers",ur:"سوالات و جوابات",id:"Tanya Jawab"},
+ "ركن الأطفال":{fr:"Coin des enfants",en:"Kids' Corner",ur:"بچوں کا گوشہ",id:"Pojok Anak"},
+ "مواقيت الصلاة":{fr:"Horaires de prière",en:"Prayer Times",ur:"نماز کے اوقات",id:"Waktu Shalat"},
+ "متابعة الصلاة":{fr:"Suivi des prières",en:"Prayer Tracker",ur:"نماز کی نگرانی",id:"Pelacak Shalat"},
+ "القبلة":{fr:"La qibla",en:"Qibla",ur:"قبلہ",id:"Kiblat"},
+ "المساجد والمصليات":{fr:"Mosquées et lieux de prière",en:"Mosques & Prayer Places",ur:"مساجد و مصلے",id:"Masjid & Musala"},
+ "السبحة الإلكترونية":{fr:"Chapelet électronique",en:"Electronic Tasbih",ur:"الیکٹرانک تسبیح",id:"Tasbih Elektronik"},
+ "وضع قبل النوم":{fr:"Mode avant le coucher",en:"Before-Sleep Mode",ur:"سونے سے پہلے کا موڈ",id:"Mode Sebelum Tidur"},
+ "الثلث الأخير من الليل":{fr:"Le dernier tiers de la nuit",en:"The Last Third of the Night",ur:"رات کا آخری ثلث",id:"Sepertiga Malam Terakhir"},
+ "الختمة":{fr:"La khatma (lecture complète)",en:"Khatma (full reading)",ur:"ختمہ",id:"Khataman"},
+ "الختمة الذكية":{fr:"La khatma intelligente",en:"Smart Khatma",ur:"سمارٹ ختمہ",id:"Khataman Cerdas"},
+ "الختمة الجماعية والتحديات":{fr:"Khatma collective et défis",en:"Group Khatma & Challenges",ur:"اجتماعی ختمہ اور چیلنجز",id:"Khataman Kelompok & Tantangan"},
+ "خطة الحفظ للكبار":{fr:"Plan de mémorisation pour adultes",en:"Memorization Plan for Adults",ur:"بڑوں کے لیے حفظ کا منصوبہ",id:"Rencana Hafalan Dewasa"},
+ "آيات لقلبك":{fr:"Des versets pour votre cœur",en:"Verses for Your Heart",ur:"آپ کے دل کے لیے آیات",id:"Ayat untuk Hatimu"},
+ "البحث في القرآن":{fr:"Recherche dans le Coran",en:"Search the Quran",ur:"قرآن میں تلاش",id:"Cari di Al-Qur'an"},
+ "ترجمات المعاني":{fr:"Traductions des sens",en:"Translations of the Meanings",ur:"معانی کے تراجم",id:"Terjemahan Makna"},
+ "المكتبة الصوتية":{fr:"Bibliothèque audio",en:"Audio Library",ur:"آڈیو لائبریری",id:"Pustaka Audio"},
+ "نوادر القراءات":{fr:"Récitations rares",en:"Rare Recitations",ur:"نادر تلاوتیں",id:"Tilawah Langka"},
+ "الإذاعة":{fr:"La radio",en:"Radio",ur:"ریڈیو",id:"Radio"},
+ "التقويم والتحويل":{fr:"Calendrier et conversion",en:"Calendar & Conversion",ur:"کیلنڈر اور تبدیلی",id:"Kalender & Konversi"},
+ "المناسبات الإسلامية":{fr:"Occasions islamiques",en:"Islamic Occasions",ur:"اسلامی مناسبات",id:"Hari Besar Islam"},
+ "المواسم والعبادات الموسمية":{fr:"Saisons et adorations saisonnières",en:"Seasons & Seasonal Worship",ur:"موسم اور موسمی عبادات",id:"Musim & Ibadah Musiman"},
+ "رمضان":{fr:"Ramadan",en:"Ramadan",ur:"رمضان",id:"Ramadan"},
+ "دليل الحج والعمرة":{fr:"Guide du Hajj et de la Omra",en:"Hajj & Umrah Guide",ur:"حج و عمرہ رہنما",id:"Panduan Haji & Umrah"},
+ "حاسبة الزكاة":{fr:"Calculatrice de la zakat",en:"Zakat Calculator",ur:"زکاۃ کیلکولیٹر",id:"Kalkulator Zakat"},
+ "إحصائيات عبادتي":{fr:"Statistiques de mon adoration",en:"My Worship Statistics",ur:"میری عبادت کے اعداد",id:"Statistik Ibadah Saya"},
+ "بحث":{fr:"Recherche",en:"Search",ur:"تلاش",id:"Cari"},
+ "البحث الصوتي":{fr:"Recherche vocale",en:"Voice Search",ur:"صوتی تلاش",id:"Pencarian Suara"},
+ "بطاقات المشاركة":{fr:"Cartes de partage",en:"Share Cards",ur:"اشاعت کارڈز",id:"Kartu Bagikan"},
+ "المسابقة الأسبوعية":{fr:"Concours hebdomadaire",en:"Weekly Quiz",ur:"ہفتہ وار مقابلہ",id:"Kuis Mingguan"},
+ "تحدي اليوم":{fr:"Défi du jour",en:"Today's Challenge",ur:"آج کا چیلنج",id:"Tantangan Hari Ini"},
+ "ألعاب الأطفال التعليمية":{fr:"Jeux éducatifs pour enfants",en:"Educational Kids' Games",ur:"بچوں کے تعلیمی کھیل",id:"Permainan Edukasi Anak"},
+ "حسابي وبياناتي":{fr:"Mon compte et mes données",en:"My Account & Data",ur:"میرا حساب اور ڈیٹا",id:"Akun & Data Saya"},
+ "🖼 بطاقة صورة":{fr:"🖼 Carte image",en:"🖼 Image card",ur:"🖼 تصویری کارڈ",id:"🖼 Kartu gambar"},
+ "💬 واتساب":{fr:"💬 WhatsApp",en:"💬 WhatsApp",ur:"💬 واٹس ایپ",id:"💬 WhatsApp"},
+ "📘 فيسبوك":{fr:"📘 Facebook",en:"📘 Facebook",ur:"📘 فیس بک",id:"📘 Facebook"},
+ "✈️ تيليجرام":{fr:"✈️ Telegram",en:"✈️ Telegram",ur:"✈️ ٹیلیگرام",id:"✈️ Telegram"},
+ "📋 نسخ النص":{fr:"📋 Copier le texte",en:"📋 Copy text",ur:"📋 متن کاپی کریں",id:"📋 Salin teks"},
+ "📤 مشاركة النظام":{fr:"📤 Partage système",en:"📤 System share",ur:"📤 سسٹم شیئر",id:"📤 Bagikan sistem"},
+ "🔊 تشغيل الآية":{fr:"🔊 Écouter le verset",en:"🔊 Play the verse",ur:"🔊 آیت سنیں",id:"🔊 Putar ayat"},
+ "📖 تفسير الآية":{fr:"📖 Exégèse du verset",en:"📖 Tafsir of the verse",ur:"📖 آیت کی تفسیر",id:"📖 Tafsir ayat"},
+ "🔖 حفظ علامة":{fr:"🔖 Marquer ici",en:"🔖 Bookmark here",ur:"🔖 نشان لگائیں",id:"🔖 Tandai di sini"},
+ "🎧 استمع للأذكار بصوت القارئ":{fr:"🎧 Écouter les adhkar récités",en:"🎧 Listen to the adhkar recited",ur:"🎧 اذکار کی تلاوت سنیں",id:"🎧 Dengarkan dzikir dibacakan"},
+ "⏹ إيقاف الاستماع":{fr:"⏹ Arrêter l'écoute",en:"⏹ Stop listening",ur:"⏹ سننا بند کریں",id:"⏹ Hentikan pemutaran"},
+ "سبّح":{fr:"Compter",en:"Count",ur:"تسبیح کریں",id:"Berzikir"},
+ "تم بحمد الله":{fr:"Accompli, grâce à Allah",en:"Done, praise be to Allah",ur:"الحمدللہ مکمل ہوا",id:"Selesai, alhamdulillah"},
+ "إعادة":{fr:"Réinitialiser",en:"Reset",ur:"دوبارہ",id:"Ulangi"},
+ "✓ اكتمل":{fr:"✓ Terminé",en:"✓ Completed",ur:"✓ مکمل",id:"✓ Selesai"},
+ "اضغط «سبّح» أو اضغط على الكارت نفسه لإنقاص العداد. اكتمال كل ذكر يلوّن كارتَه.":{fr:"Touchez « Compter » ou la carte elle-même pour décrémenter le compteur. Chaque dhikr accompli colore sa carte.",en:"Tap “Count” or the card itself to decrease the counter. Completing each dhikr colors its card.",ur:"گنتی کم کرنے کے لیے «تسبیح کریں» یا کارڈ کو دبائیں۔ ہر مکمل ذکر کا کارڈ رنگین ہو جاتا ہے۔",id:"Ketuk «Berzikir» atau kartunya untuk mengurangi hitungan. Setiap dzikir yang selesai mewarnai kartunya."},
+ "استمع لهذا الذكر":{fr:"Écouter ce dhikr",en:"Listen to this dhikr",ur:"یہ ذکر سنیں",id:"Dengarkan dzikir ini"},
+ "مفضلة":{fr:"Favori",en:"Favorite",ur:"پسندیدہ",id:"Favorit"},
+ "بحث وأوامر صوتية بالميكروفون":{fr:"Recherche et commandes vocales au micro",en:"Voice search and commands",ur:"صوتی تلاش اور احکامات",id:"Pencarian & perintah suara"},
+ "إخفاء رسالة التثبيت":{fr:"Masquer le message d'installation",en:"Hide the install message",ur:"انسٹال پیغام چھپائیں",id:"Sembunyikan pesan instalasi"},
+ "إصدار التطبيق:":{fr:"Version de l'application :",en:"App version:",ur:"ایپ کا نسخہ:",id:"Versi aplikasi:"},
+ "كل محتوى التطبيق — الأذكار والموسوعة والمصحف والأدوات — مضمّن داخله ويعمل بدون إنترنت عند أي زائر، وعداداتك وعلامتك وإعداداتك محفوظة على جهازك فقط.":{fr:"Tout le contenu de l'application — adhkar, encyclopédie, Mushaf et outils — est intégré et fonctionne sans Internet pour tout visiteur ; vos compteurs, votre marque-page et vos réglages ne sont conservés que sur votre appareil.",en:"All of the app's content — adhkar, encyclopedia, Mushaf and tools — is built in and works offline for every visitor; your counters, bookmark and settings are kept only on your device."},
+ "البحث في التطبيق ذكي: يفهم النص بلا تشكيل، ويعامل الهمزات والألفات والتاء المربوطة والياء كحروف واحدة.":{fr:"La recherche dans l'application est intelligente : elle comprend le texte sans voyelles et traite les hamzas, les alifs, le ta marbouta et le ya comme une même lettre.",en:"Search in the app is smart: it understands unvocalized text and treats hamzas, alifs, ta marbuta and ya as the same letter."},
+ "يصل كل إشعار بصورة كبيرة مناسبة لمحتواه: مئذنة لمواقيت الصلاة، وشروق الشمس لأذكار الصباح، وغروبها لأذكار المساء، وسبحة لأذكار ما بعد الصلاة، وورد للصلاة على النبي ﷺ، ومصحف مفتوح لآية اليوم، والمسجد النبوي لحكمة اليوم. جرّبها من زر «إرسال إشعار تجريبي» بالأعلى وانظر شاشة جهازك. تصلك الإشعارات أثناء بقاء التطبيق مفتوحًا أو مثبّتًا ويُفتح من وقت لآخر؛ فإن أُغلق التطبيق تمامًا فقد يتأخر الإشعار حتى فتحه التالي، فالإشعارات المضمونة في الخلفية تحتاج خادمًا غير متوفر في هذه النسخة. وآية اليوم وحكمة اليوم تتجددان تلقائيًا كل يوم.":{fr:"Chaque notification arrive avec une grande image adaptée à son contenu : un minaret pour les heures de prière, un lever de soleil pour les adhkar du matin, un coucher de soleil pour ceux du soir, un chapelet pour les adhkar après la prière, des roses pour la prière sur le Prophète ﷺ, un Mushaf ouvert pour le verset du jour et la mosquée du Prophète pour la sagesse du jour. Essayez-la depuis le bouton « envoyer un test » ci-dessus et regardez l'écran de votre appareil. Les notifications arrivent tant que l'application reste ouverte ou installée et ouverte de temps à autre ; si elle est complètement fermée, une notification peut être retardée jusqu'à la prochaine ouverture, car les notifications d'arrière-plan garanties nécessitent un serveur absent de cette version. Le verset du jour et la sagesse du jour se renouvellent automatiquement chaque jour.",en:"Each notification arrives with a large image suited to its content: a minaret for prayer times, a sunrise for morning adhkar, a sunset for evening adhkar, prayer beads for post-prayer adhkar, roses for blessings on the Prophet ﷺ, an open Mushaf for the verse of the day, and the Prophet's Mosque for the wisdom of the day. Try it from the “send a test notification” button above and watch your device screen. Notifications reach you while the app stays open or installed and opened from time to time; if the app is fully closed, a notification may be delayed until its next opening, since guaranteed background notifications need a server this version does not have. The verse of the day and the wisdom of the day renew automatically every day."},
+ "هذا المتصفح لا يدعم إشعارات الجهاز — ستعمل التنبيهات داخل التطبيق فقط.":{fr:"Ce navigateur ne prend pas en charge les notifications de l'appareil — les alertes fonctionneront uniquement dans l'application.",en:"This browser does not support device notifications — alerts will work inside the app only.",ur:"یہ براؤزر آلے کی اطلاعات کی حمایت نہیں کرتا — تنبیہات صرف ایپ کے اندر کام کریں گی۔",id:"Peramban ini tidak mendukung notifikasi perangkat — peringatan hanya akan bekerja di dalam aplikasi."},
+ "الإذن ممنوح ✓ — ستصلك الإشعارات على شاشة الجهاز.":{fr:"Autorisation accordée ✓ — les notifications arriveront sur l'écran de votre appareil.",en:"Permission granted ✓ — notifications will reach your device screen.",ur:"اجازت مل گئی ✓ — اطلاعات آپ کے آلے کی اسکرین پر پہنچیں گی۔",id:"Izin diberikan ✓ — notifikasi akan sampai di layar perangkat Anda."},
+ "الإذن مرفوض من إعدادات المتصفح أو الجهاز — فعّله من هناك لتصلك إشعارات الجهاز، وستعمل التنبيهات داخل التطبيق في كل الأحوال.":{fr:"Autorisation refusée dans les réglages du navigateur ou de l'appareil — activez-la là-bas pour recevoir les notifications ; les alertes internes fonctionneront dans tous les cas.",en:"Permission denied in the browser or device settings — enable it there to receive device notifications; in-app alerts will work either way.",ur:"اجازت براؤزر یا آلے کی ترتیبات میں مسترد ہے — وہاں سے فعال کریں، اندرونی تنبیہات ہر حال میں کام کریں گی۔",id:"Izin ditolak di pengaturan peramban atau perangkat — aktifkan di sana untuk menerima notifikasi; peringatan dalam aplikasi tetap bekerja."},
+ "لم يُطلب الإذن بعد — اضغط الزر واسمح بالإشعارات لتصلك على شاشة الجهاز.":{fr:"L'autorisation n'a pas encore été demandée — touchez le bouton et autorisez les notifications pour les recevoir sur l'écran de votre appareil.",en:"Permission has not been requested yet — tap the button and allow notifications to receive them on your device screen.",ur:"اجازت ابھی طلب نہیں کی گئی — بٹن دبائیں اور اطلاعات کی اجازت دیں۔",id:"Izin belum diminta — ketuk tombol dan izinkan notifikasi agar sampai di layar perangkat Anda."}
+};
+const UI_ORIG=new WeakMap();
+const UI_SKIP="#sadaqaCard,.surah-text,.reader-text,.ayah-txt,.names-grid,.name-card,#ayahModalText,#plTitle,script,style,textarea";
+function uiT(s){const L=state.lang||"ar";if(L==="ar")return s;const e=UI_DICT[s];return e?(e[L]||e.en||s):s}
+function translateUI(root){
+  if(!root||!root.querySelectorAll)return;
+  const L=state.lang||"ar";
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+    if(!n.nodeValue||!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
+    const p=n.parentElement;
+    if(p&&p.closest(UI_SKIP))return NodeFilter.FILTER_REJECT;
+    return NodeFilter.FILTER_ACCEPT;
+  }});
+  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+  const COUNT_WORDS={"ذكرًا":{fr:"adhkar",en:"adhkar",ur:"اذکار",id:"dzikir"},"مادة":{fr:"éléments",en:"items",ur:"مواد",id:"materi"}};
+  nodes.forEach(function(n){
+    if(L==="ar"){if(UI_ORIG.has(n))n.nodeValue=UI_ORIG.get(n);return}
+    const cur=n.nodeValue,t=cur.trim();if(!t)return;
+    /* عدّادات البلاطات: «٢٤ ذكرًا» / «207 مادة» — الرقم يبقى وكلمة
+       العدّ وحدها تُترجم، فتُترجم كل البلاطات مهما تغيّرت أعدادها */
+    const cm=t.match(/^([0-9٠-٩]+)\s+(ذكرًا|مادة)$/);
+    if(cm){
+      const w=COUNT_WORDS[cm[2]];const rep=w&&(w[L]||w.en);
+      if(rep){if(!UI_ORIG.has(n))UI_ORIG.set(n,cur);n.nodeValue=cur.replace(t,cm[1]+" "+rep)}
+      return;
+    }
+    /* أسطر مركّبة فيها أرقام متغيّرة: عدّاد جلسة الأذكار والمتبقّي */
+    const pm=t.match(/^من ([0-9٠-٩]+) ذكرًا اكتمل$/);
+    if(pm){
+      const rep={fr:"sur "+pm[1]+" adhkar terminés",en:"of "+pm[1]+" adhkar completed",ur:pm[1]+" اذکار میں سے مکمل",id:"dari "+pm[1]+" dzikir selesai"}[L];
+      if(rep){if(!UI_ORIG.has(n))UI_ORIG.set(n,cur);n.nodeValue=cur.replace(t,rep)}
+      return;
+    }
+    const rm=t.match(/^المتبقي: (.+)$/);
+    if(rm){
+      const pre={fr:"Reste : ",en:"Remaining: ",ur:"باقی: ",id:"Sisa: "}[L];
+      if(pre){if(!UI_ORIG.has(n))UI_ORIG.set(n,cur);n.nodeValue=cur.replace(t,pre+rm[1])}
+      return;
+    }
+    /* ترويسة قائمة المشاركة: البادئة ثابتة والباقي وصف للمحتوى */
+    if(t.indexOf("📤 مشاركة — ")===0){
+      const pre={"fr":"📤 Partage — ","en":"📤 Share — ","ur":"📤 اشاعت — ","id":"📤 Bagikan — "}[L];
+      if(pre){if(!UI_ORIG.has(n))UI_ORIG.set(n,cur);n.nodeValue=cur.replace(t,pre+t.slice("📤 مشاركة — ".length))}
+      return;
+    }
+    const e=UI_DICT[t];if(!e)return;
+    const rep=e[L]||e.en;if(!rep)return;
+    if(!UI_ORIG.has(n))UI_ORIG.set(n,cur);
+    n.nodeValue=cur.replace(t,rep);
+  });
+  root.querySelectorAll("input[placeholder]").forEach(function(inp){
+    const p=(inp.getAttribute("placeholder")||"").trim();
+    if(L==="ar"){if(inp.dataset.uiOrig)inp.setAttribute("placeholder",inp.dataset.uiOrig);return}
+    const e=UI_DICT[p];if(!e)return;
+    const rep=e[L]||e.en;if(!rep)return;
+    if(!inp.dataset.uiOrig)inp.dataset.uiOrig=inp.getAttribute("placeholder");
+    inp.setAttribute("placeholder",rep);
+  });
+  /* تسميات الوصول للأزرار الأيقونية (مفضلة، استمع، رجوع…) */
+  root.querySelectorAll("[aria-label]").forEach(function(el){
+    if(el.closest&&el.closest(UI_SKIP))return;
+    const p=(el.getAttribute("aria-label")||"").trim();if(!p)return;
+    if(L==="ar"){if(el.dataset.uiAria)el.setAttribute("aria-label",el.dataset.uiAria);return}
+    const e=UI_DICT[p];if(!e)return;
+    const rep=e[L]||e.en;if(!rep)return;
+    if(!el.dataset.uiAria)el.dataset.uiAria=el.getAttribute("aria-label");
+    el.setAttribute("aria-label",rep);
+  });
+}
+/* شاشات كثيرة تعيد بناء محتواها مباشرة دون المرور بـrenderDetail
+   (إعادة رسم الإعدادات عند تغيير اللغة أو الخط، تبويبات لوحة التحكم…)،
+   فكانت إعادة البناء بعد تغيير اللغة تُرجع النصوص العربية وتفقد
+   الترجمة. مراقب التغيّرات يعيد تطبيق الترجمة بعد أي إعادة بناء
+   لمحتوى التفاصيل — ويراقب بنية العقد فقط لا النصوص، فلا يدور مع
+   تعديلات translateUI نفسها */
+if(window.MutationObserver){
+  const _db=document.getElementById("detailBody");
+  if(_db)new MutationObserver(function(){
+    if(state.lang&&state.lang!=="ar")translateUI(document.getElementById("v-detail"));
+  }).observe(_db,{childList:true,subtree:true});
 }
 
 /* ============ navigation ============ */
@@ -1556,6 +1873,7 @@ function showHome(){
   document.querySelectorAll("#bottomNav button").forEach(b=>b.classList.toggle("on",b.dataset.nav==="home"));
   window.scrollTo(0,homeScroll||0);
   persistNav();
+  translateUI($("#v-home"));
 }
 function openDetail(title,build,favKey,route){
   saveScroll();
@@ -1574,6 +1892,7 @@ function renderDetail(keepScroll){
   const body=$("#detailBody");body.innerHTML="";top.build(body);
   window.scrollTo(0,top.scroll||0);
   persistNav();
+  translateUI($("#v-detail"));
 }
 /* --- device back button: exactly one history entry per screen --------
    The old design piled up a stack of «sentinel» entries above the app and
@@ -1597,8 +1916,17 @@ function renderDetail(keepScroll){
    can no longer grow on its own or drift away from the visible stack. */
 let histPos=0;   /* depth above the base entry of the entry we are on */
 let histSkip=0;  /* stale entries left by a reload mismatch: swallowed silently */
+let navJump=-1, navJumpAt=0; /* target of a declared multi-level jump (bottom nav) */
 function histPush(depth){
   if(!histOK)return;
+  /* أثناء استعادة المكدس المحفوظ لا تدفع أي شاشة إدخالها بنفسها: الشاشات
+     التي تُفتح عبر resolveRoute بصيغة open (سورة/تفسير سورة) كانت تستدعي
+     openDetail فتدفع إدخالًا بعمق «طول المكدس + ١» بينما الشاشات العادية
+     لا تدفع شيئًا، فتترك الاستعادة فجوات في أعماق التاريخ (١ ثم ٣ بلا ٢)،
+     وأول رجوع بعد إعادة الفتح كان يقفز فوق قائمة السور إلى الرئيسية أو
+     يخرج من التطبيق. initHistForStack وحدها تبني الإدخالات بعد اكتمال
+     الاستعادة — إدخالًا متصلًا لكل شاشة */
+  if(typeof navRestoring!=="undefined"&&navRestoring)return;
   try{history.pushState({zad:1,d:depth},"");histPos=depth}catch(e){histOK=false}
 }
 function histDepthOf(state){
@@ -1686,8 +2014,10 @@ function goBackLevels(target,after){
   if(navStack.length>target){
     const delta=navStack.length-target;
     /* القفزات البرمجية (الشريط السفلي) تمرّ عبر التاريخ أيضًا، فيفكّ
-       معالج popstate المكدس إلى العمق المطلوب بخطوة واحدة متسقة */
-    if(histOK&&histPos>delta){try{history.go(-delta);if(after)after();return}catch(e){}}
+       معالج popstate المكدس إلى العمق المطلوب بخطوة واحدة متسقة —
+       تُعلَن القفزة وهدفها قبل تنفيذها حتى لا يختزلها ضابط «خطوة
+       واحدة لكل ضغطة» في معالج popstate إلى شاشة واحدة */
+    if(histOK&&histPos>delta){try{navJump=target;navJumpAt=Date.now();history.go(-delta);if(after)after();return}catch(e){navJump=-1}}
     navStack.length=target;
     if(target)renderDetail();else showHome();
   }
@@ -1701,17 +2031,35 @@ window.addEventListener("popstate",()=>{
   if(navRestoring){histPos=d;return}
   const prevPos=histPos;
   histPos=d;
-  if(histSkip>0){histSkip--;return} /* a stale entry left by a reload: swallow it */
   /* نفحة اليوم تُغلق ولا تستهلك الضغطة (سلوك متفق عليه) */
   const nf=document.querySelector("#nafhaModal.on");
   if(nf)nf.classList.remove("on");
   /* طبقة عائمة مفتوحة (نافذة/بانر تحديث/مشغّل) أو خطوة داخلية في لوحة
      التحكم تستهلك الضغطة وحدها: تُغلق/تتراجع خطوة، ثم نعيد دفع إدخال
-     الشاشة الحالية فيبقى العمق مطابقًا للمكدس الظاهر */
+     الشاشة الحالية فيبقى العمق مطابقًا للمكدس الظاهر.
+     تُفحص الطبقات قبل ابتلاع الإدخالات الزائدة، حتى لا تضيع ضغطة
+     على قائمة آيات أو مشغّل مفتوح فتخرج الضغطة التالية من التطبيق */
   if(closeTopOverlay()||(window.zadAdminBack&&window.zadAdminBack())){
     histPush(prevPos);return;
   }
-  const target=Math.max(0,d-1); /* screens sitting above the home guard */
+  if(histSkip>0){histSkip--;return} /* a stale entry left by a reload: swallow it */
+  /* قفزة معلنة من الشريط السفلي (goBackLevels): تُفكّ إلى هدفها دفعة
+     واحدة كما طُلبت، لا خطوة واحدة */
+  if(navJump>=0&&Date.now()-navJumpAt<2500){
+    const jt=navJump;navJump=-1;
+    if(navStack.length>jt){
+      navStack.length=jt;
+      if(jt)renderDetail();else showHome();
+    }
+    return;
+  }
+  navJump=-1;
+  let target=Math.max(0,d-1); /* screens sitting above the home guard */
+  /* ضغطة رجوع واحدة = خطوة واحدة دائمًا: إن اختلف عمق التاريخ عن
+     المكدس الظاهر لأي سبب (استعادة ناقصة، فجوة قديمة…) لا تقفز
+     الضغطة فوق شاشات وسيطة إلى الرئيسية أو خارج التطبيق، بل تتراجع
+     شاشة واحدة ويُعاد ضبط العمق مع الضغطات التالية */
+  if(navStack.length>target)target=navStack.length-1;
   if(navStack.length>target){
     navStack.length=target;
     if(target)renderDetail();else showHome();
@@ -1726,10 +2074,16 @@ try{
   if("scrollRestoration" in history)history.scrollRestoration="manual";
   const d=histDepthOf(history.state);
   histOK=true;
-  if(d>0){
+  if(d>0&&history.length>=d+1){
     /* تحديث الصفحة (ريفريش): هذا التحميل جالس على إدخال من إدخالات
        التطبيق نفسها — نتبنّى عمقه كما هو، وdoRestoreNav توائم المكدس
-       معه عبر initHistForStack، فلا يكبر التاريخ مع كل ريفريش */
+       معه عبر initHistForStack، فلا يكبر التاريخ مع كل ريفريش.
+       الشرط الإضافي: لا نتبنّى العمق إلا إذا كان عدد إدخالات التاريخ
+       يكفي فعلًا لوجود الإدخالات التي تحته؛ فبعض الأغلفة ومتصفحات
+       الجوال تستعيد الصفحة بعد قتل العملية بإدخال وحيد يحمل حالة
+       العمق القديمة دون أي إدخال تحته — وتبنّي ذلك العمق الوهمي
+       كان يجعل أول ضغطة رجوع تخرج من التطبيق تمامًا بلا أي popstate.
+       عندها نعيد بناء الأساس من الإدخال الحالي نفسه كما في الفتح الجديد */
     histPos=d;
   }else{
     history.replaceState({zad:0},"");
@@ -1771,7 +2125,7 @@ function tick(){
   const pad=n=>String(n).padStart(2,"0");
   const h24=now.getHours(),h12=h24%12||12;
   $("#clock").textContent=pad(h12)+":"+pad(now.getMinutes())+":"+pad(now.getSeconds());
-  $("#clockAp").textContent=h24<12?"صباحًا":"مساءً";
+  $("#clockAp").textContent=h24<12?tr("am"):tr("pm");
   const wdName=now.toLocaleDateString("ar-EG",{weekday:"long"});
   const arNum=s=>String(s).replace(/[0-9]/g,d=>"٠١٢٣٤٥٦٧٨٩"[+d]);
   $("#hijriDate").textContent=wdName+"، "+arNum(hijriString(now));
@@ -1782,11 +2136,11 @@ function tick(){
   strip.innerHTML=PRAYERS.map(([k,n])=>{
     const dt=timeToDate(pt[k],now);
     if(!next&&dt>now){next=dt;nextKey=k}
-    return `<div class="ptime" data-k="${k}"><span>${n}</span><b>${fmtTime(pt[k])}</b></div>`;
+    return `<div class="ptime" data-k="${k}"><span>${pnName(n)}</span><b>${fmtTime(pt[k])}</b></div>`;
   }).join("");
   if(!next){const tmr=new Date(now.getTime()+86400000);next=timeToDate(prayerTimes(tmr).fajr,tmr);nextKey="fajr"}
   const name=(PRAYERS.find(p=>p[0]===nextKey)||[])[1]||"";
-  $("#nextName").textContent=name+" — "+fmtTime(prayerTimes(now)[nextKey]!==undefined?prayerTimes(now)[nextKey]:0);
+  $("#nextName").textContent=pnName(name)+" — "+fmtTime(prayerTimes(now)[nextKey]!==undefined?prayerTimes(now)[nextKey]:0);
   strip.querySelectorAll(".ptime").forEach(el=>el.classList.toggle("on",el.dataset.k===nextKey));
   let diff=Math.max(0,next-now);
   const hh=Math.floor(diff/3600000),mm=Math.floor(diff%3600000/60000),ss=Math.floor(diff%60000/1000);
@@ -1826,6 +2180,7 @@ function renderHomeGrids(){
     lg.appendChild(tile(ic,col,secName,total+" مادة",()=>openLibrarySection(secName,groups)))});
   const tg=$("#toolsGrid");tg.innerHTML="";
   TOOLS.forEach(t=>tg.appendChild(tile(t.ic,t.col,t.name,t.sub,()=>openDetail(t.name,t.build,null,{k:"tool",name:t.name}))));
+  translateUI($("#v-home"));
 }
 const TOOLS=[
  {ic:"🕐",col:"#00695c",name:"مواقيت الصلاة",sub:"حساب محلي دقيق",build:buildPrayerPage},
@@ -2356,9 +2711,9 @@ const NAWADER=[
  {name:"مصطفى إسماعيل - نوادر خارجية",url:"https://server11.mp3quran.net/mustafa/050.mp3"},
  {name:"ياسر الدوسري - تلاوة حجازية",url:"https://server11.mp3quran.net/yasser/005.mp3"},
  {name:"الحصري - المصحف المعلم",url:"https://server13.mp3quran.net/hussary/002.mp3"},
- {name:"محمود علي البنا - نوادر",url:"https://server8.mp3quran.net/banna/012.mp3"},
+ {name:"محمود علي البنا - نوادر",url:"https://cdn.mp3quran.net/audio/mahmoud-banna/r1/012.mp3"},
  {name:"ناصر القطامي - تلاوة خاشعة",url:"https://server6.mp3quran.net/qtm/075.mp3"},
- {name:"محمد أيوب - تراويح قديمة",url:"https://server8.mp3quran.net/ayub/001.mp3"}
+ {name:"محمد أيوب - تراويح قديمة",url:"https://cdn.mp3quran.net/audio/muhammad-ayyub/r1/001.mp3"}
 ];
 const RADIOS=[
  {name:"إذاعة القرآن من القاهرة",urls:["https://stream.radiojar.com/8s5u5tpdtwzuv"]},
@@ -3238,10 +3593,10 @@ buildSettings=function(body){
   <button type="button" class="primary" id="ntfOpenSalawat">🌹 فتح عدّاد الصلاة على النبي ﷺ</button>
   <p class="note" style="margin-bottom:0">يصل كل إشعار بصورة كبيرة مناسبة لمحتواه: مئذنة لمواقيت الصلاة، وشروق الشمس لأذكار الصباح، وغروبها لأذكار المساء، وسبحة لأذكار ما بعد الصلاة، وورد للصلاة على النبي ﷺ، ومصحف مفتوح لآية اليوم، والمسجد النبوي لحكمة اليوم. جرّبها من زر «إرسال إشعار تجريبي» بالأعلى وانظر شاشة جهازك. تصلك الإشعارات أثناء بقاء التطبيق مفتوحًا أو مثبّتًا ويُفتح من وقت لآخر؛ فإن أُغلق التطبيق تمامًا فقد يتأخر الإشعار حتى فتحه التالي، فالإشعارات المضمونة في الخلفية تحتاج خادمًا غير متوفر في هذه النسخة. وآية اليوم وحكمة اليوم تتجددان تلقائيًا كل يوم.</p>`;
   const permTxt=()=>{const el=nc.querySelector("#ntfPermTxt");if(!el)return;
-    if(!("Notification" in window))el.textContent="هذا المتصفح لا يدعم إشعارات الجهاز — ستعمل التنبيهات داخل التطبيق فقط.";
-    else if(Notification.permission==="granted")el.textContent="الإذن ممنوح ✓ — ستصلك الإشعارات على شاشة الجهاز.";
-    else if(Notification.permission==="denied")el.textContent="الإذن مرفوض من إعدادات المتصفح أو الجهاز — فعّله من هناك لتصلك إشعارات الجهاز، وستعمل التنبيهات داخل التطبيق في كل الأحوال.";
-    else el.textContent="لم يُطلب الإذن بعد — اضغط الزر واسمح بالإشعارات لتصلك على شاشة الجهاز."};
+    if(!("Notification" in window))el.textContent=uiT("هذا المتصفح لا يدعم إشعارات الجهاز — ستعمل التنبيهات داخل التطبيق فقط.");
+    else if(Notification.permission==="granted")el.textContent=uiT("الإذن ممنوح ✓ — ستصلك الإشعارات على شاشة الجهاز.");
+    else if(Notification.permission==="denied")el.textContent=uiT("الإذن مرفوض من إعدادات المتصفح أو الجهاز — فعّله من هناك لتصلك إشعارات الجهاز، وستعمل التنبيهات داخل التطبيق في كل الأحوال.");
+    else el.textContent=uiT("لم يُطلب الإذن بعد — اضغط الزر واسمح بالإشعارات لتصلك على شاشة الجهاز.")};
   permTxt();
   const askPerm=async()=>{try{if("Notification" in window&&Notification.permission==="default")await Notification.requestPermission()}catch(_){} permTxt()};
   nc.querySelector("#ntfPermBtn").addEventListener("click",async()=>{
@@ -3302,7 +3657,7 @@ buildSettings=function(body){
   stack.appendChild(reset);
   const about=newCard();
   about.innerHTML=`<b style="font-size:15.5px">عن التطبيق</b>
-  <p class="note" style="margin-bottom:0">إصدار التطبيق: ${APP_VERSION}<br>كل محتوى التطبيق — الأذكار والموسوعة والمصحف والأدوات — مضمّن داخله ويعمل بدون إنترنت عند أي زائر، وعداداتك وعلامتك وإعداداتك محفوظة على جهازك فقط.<br>البحث في التطبيق ذكي: يفهم النص بلا تشكيل، ويعامل الهمزات والألفات والتاء المربوطة والياء كحروف واحدة.</p>`;
+  <p class="note" style="margin-bottom:0">${uiT("إصدار التطبيق:")} ${APP_VERSION}<br>كل محتوى التطبيق — الأذكار والموسوعة والمصحف والأدوات — مضمّن داخله ويعمل بدون إنترنت عند أي زائر، وعداداتك وعلامتك وإعداداتك محفوظة على جهازك فقط.<br>البحث في التطبيق ذكي: يفهم النص بلا تشكيل، ويعامل الهمزات والألفات والتاء المربوطة والياء كحروف واحدة.</p>`;
   const owner=document.createElement("button");owner.className="reset-btn";owner.style.cssText="margin-top:16px;width:100%";owner.textContent="🔐 دخول المالك — لوحة التحكم";
   owner.addEventListener("click",()=>openDetail("لوحة التحكم",buildAdminGate,null,{k:"admin"}));
   body.appendChild(owner);
@@ -3400,8 +3755,8 @@ function smartSuggestion(){
   const period=morning?"am":"pm";
   if(period===smartPeriod)return;
   smartPeriod=period;
-  $("#smartTitle").textContent="أذكار "+sec.name;
-  $("#smartSub").textContent=morning?"هذا وقتها — ابدأ يومك بذكر الله":"هذا وقتها — اختم يومك بذكر الله";
+  $("#smartTitle").textContent=uiT("أذكار "+sec.name);
+  $("#smartSub").textContent=uiT(morning?"هذا وقتها — ابدأ يومك بذكر الله":"هذا وقتها — اختم يومك بذكر الله");
 }
 $("#nafhaClose").addEventListener("click",()=>$("#nafhaModal").classList.remove("on"));
 let sqTaps=0,sqTimer=null;
@@ -3410,7 +3765,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=33;
+const APP_VERSION=34;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
