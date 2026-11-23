@@ -1681,22 +1681,22 @@ function renderHomeGrids(){
   TOOLS.forEach(t=>tg.appendChild(tile(t.ic,t.col,t.name,t.sub,()=>openDetail(t.name,t.build,null,{k:"tool",name:t.name}))));
 }
 const TOOLS=[
- {ic:"📿",col:"#0a6b32",name:"السبحة الإلكترونية",sub:"عداد تسبيح",build:buildTasbeeh},
- {ic:"✨",col:"#b8860b",name:"أسماء الله الحسنى",sub:"٩٩ اسمًا ومعانيها",build:buildNames},
  {ic:"🕐",col:"#00695c",name:"مواقيت الصلاة",sub:"حساب محلي دقيق",build:buildPrayerPage},
  {ic:"✅",col:"#2e7d32",name:"متابعة الصلاة",sub:"سجلّ صلوات اليوم",build:buildTracker},
  {ic:"🧭",col:"#8a6d1a",name:"القبلة",sub:"اتجاه الكعبة",build:buildQibla},
+ {ic:"🕌",col:"#2e7d32",name:"المساجد والمصليات",sub:"حولك — خرائط",build:buildMosques},
+ {ic:"📿",col:"#0a6b32",name:"السبحة الإلكترونية",sub:"عداد تسبيح",build:buildTasbeeh},
+ {ic:"✨",col:"#b8860b",name:"أسماء الله الحسنى",sub:"٩٩ اسمًا ومعانيها",build:buildNames},
  {ic:"📗",col:"#00695c",name:"الختمة",sub:"متابعة وخطط ختم القرآن والتحديات",build:buildKhatma},
- {ic:"🌙",col:"#33691e",name:"رمضان",sub:"العد التنازلي",build:buildRamadan},
+ {ic:"💎",col:"#00695c",name:"نوادر القراءات",sub:"٨ تلاوات نادرة",build:buildNawader},
+ {ic:"📻",col:"#0a6b32",name:"الإذاعة",sub:"٦ محطات مباشرة",build:buildRadio},
+ {ic:"⬇️",col:"#33691e",name:"تحميلات الصوت",sub:"استمع بدون نت",build:buildDownloads},
  {ic:"📅",col:"#a67c00",name:"التقويم والتحويل",sub:"هجري ⇄ ميلادي",build:buildCalendar},
- {ic:"🌙",col:"#064420",name:"المناسبات الإسلامية",sub:"عدّاد للمواسم والأعياد والأيام البيض",build:buildOccasions},
+ {ic:"🌟",col:"#064420",name:"المناسبات الإسلامية",sub:"عدّاد للمواسم والأعياد والأيام البيض",build:buildOccasions},
+ {ic:"🌙",col:"#33691e",name:"رمضان",sub:"العد التنازلي",build:buildRamadan},
  {ic:"💰",col:"#b8860b",name:"حاسبة الزكاة",sub:"نقد وذهب وفضة وتجارة",build:buildZakat},
  {ic:"⭐",col:"#c9a227",name:"المفضلة",sub:"أذكارك وموادك",build:buildFavorites},
  {ic:"🔍",col:"#33691e",name:"بحث",sub:"في كل المحتوى",build:buildSearch},
- {ic:"🎧",col:"#00695c",name:"نوادر القراءات",sub:"٨ تلاوات نادرة",build:buildNawader},
- {ic:"📻",col:"#0a6b32",name:"الإذاعة",sub:"٦ محطات مباشرة",build:buildRadio},
- {ic:"🕌",col:"#2e7d32",name:"المساجد والمصليات",sub:"حولك — خرائط",build:buildMosques},
- {ic:"⬇️",col:"#33691e",name:"تحميلات الصوت",sub:"استمع بدون نت",build:buildDownloads},
  {ic:"⚙️",col:"#33691e",name:"الإعدادات",sub:"الموقع والمظهر والصوت واللغة",build:buildSettings},
  {ic:"🔐",col:"#33691e",name:"لوحة التحكم",sub:"إدارة المحتوى",build:buildAdminGate},
 ];
@@ -3263,7 +3263,7 @@ $("#todayCount").textContent=state.todayCount;
 renderHomeGrids();smartSuggestion();tick();
 
 /* ============ share the app: full promo copy + auto-update check ============ */
-const APP_VERSION=30;
+const APP_VERSION=31;
 const APP_LINK="https://is.gd/J4yZdK";
 const APK_LINK="https://is.gd/ttQnQy";
 window.ZAD_PROMO=
@@ -3977,11 +3977,11 @@ openSurah=function(idx,scrollAyah){
 /* ----- تسجيل الأدوات الجديدة + ربط الصفحات القائمة ----- */
 (function(){
   const NEW_TOOLS=[
-    {ic:"🎤",col:"#8a6d1a",name:"البحث الصوتي",sub:"أوامر صوتية بالعربية",build:buildVoice},
-    {ic:"📗",col:"#0a6b32",name:"الختمة الذكية",sub:"خطة حسب وقتك اليومي",build:buildSmartKhatma},
-    {ic:"📊",col:"#00695c",name:"إحصائيات عبادتي",sub:"رسوم بيانية لآخر ١٤ يومًا",build:buildStats},
+    {ic:"🎯",col:"#0a6b32",name:"الختمة الذكية",sub:"خطة حسب وقتك اليومي",build:buildSmartKhatma},
     {ic:"🌐",col:"#33691e",name:"ترجمات المعاني",sub:"معاني القرآن بـ٨ لغات",build:body=>buildTransHub(body)},
     {ic:"🎧",col:"#8a6d1a",name:"المكتبة الصوتية",sub:"٨ قرّاء وأذكار تُسمَع",build:buildAudioHub},
+    {ic:"📊",col:"#00695c",name:"إحصائيات عبادتي",sub:"رسوم بيانية لآخر ١٤ يومًا",build:buildStats},
+    {ic:"🎤",col:"#8a6d1a",name:"البحث الصوتي",sub:"أوامر صوتية بالعربية",build:buildVoice},
     {ic:"🖼️",col:"#a67c00",name:"بطاقات المشاركة",sub:"٣ قوالب جاهزة للنشر",build:buildShareStudio}
   ];
   let at=TOOLS.findIndex(t=>t.name==="الإعدادات");if(at<0)at=TOOLS.length;
@@ -5324,9 +5324,9 @@ function buildKidsAudioStories(body){
   body.appendChild(list);
 }
 
-TOOLS.push({ic:"📗",col:"#00695c",name:"خطة الحفظ للكبار",sub:"جزء عمّ وتبارك والكهف — ورد ومراجعة",build:buildHifzPlan});
+TOOLS.push({ic:"🧠",col:"#00695c",name:"خطة الحفظ للكبار",sub:"جزء عمّ وتبارك والكهف — ورد ومراجعة",build:buildHifzPlan});
 TOOLS.push({ic:"🏆",col:"#b8860b",name:"المسابقة الأسبوعية",sub:"٧ أسئلة كل أسبوع وجوائز نجوم",build:buildWeeklyQuiz});
-TOOLS.push({ic:"🌙",col:"#004d40",name:"وضع قبل النوم",sub:"أذكار النوم وسورة الملك بمؤقّت",build:buildSleepMode});
+TOOLS.push({ic:"😴",col:"#004d40",name:"وضع قبل النوم",sub:"أذكار النوم وسورة الملك بمؤقّت",build:buildSleepMode});
 
 /* ============ مسارات قابلة لإعادة الفتح بعد التحديث (ريفريش) ============
    يستدعيها resolveRoute في السكربت الرئيسي عبر window.zadResolveRoute حتى
@@ -5368,10 +5368,20 @@ window.zadResolveRoute=function(r){
 };
 
 /* ================= تسجيل الأدوات الجديدة ================= */
-TOOLS.push({ic:"🌙",col:"#33691e",name:"المواسم والعبادات الموسمية",sub:"محتوى يظهر تلقائيًا في وقته",build:buildSeasonPage});
+TOOLS.push({ic:"🌿",col:"#33691e",name:"المواسم والعبادات الموسمية",sub:"محتوى يظهر تلقائيًا في وقته",build:buildSeasonPage});
 TOOLS.push({ic:"👨‍👩‍👧",col:"#0a6b32",name:"الختمة الجماعية والتحديات",sub:"ختمة مع العائلة والأصدقاء",build:buildGroups});
 TOOLS.push({ic:"🎈",col:"#b8860b",name:"ألعاب الأطفال التعليمية",sub:"عالم الأطفال: ألعاب وفيديو وحفظ وتلوين ونجوم",build:buildKidsHub});
 TOOLS.push({ic:"👤",col:"#00695c",name:"حسابي وبياناتي",sub:"نسخ احتياطي ومزامنة بين أجهزتك",build:buildAccount});
+
+/* ============ الترتيب النهائي لأيقونات «أدوات وخدمات» ============
+   الأدوات تُسجَّل من أكثر من سكربت توسعة وبترتيب إضافتها عبر التحديثات،
+   فهذا هو الترتيب المعتمد للعرض في الرئيسية وفي صفحة الأدوات معًا —
+   مجموعات منطقية: الصلاة والعبادة اليومية أولًا، ثم القرآن والختمات
+   والحفظ، ثم الصوتيات، ثم التقويم والمناسبات، ثم بقية الخدمات،
+   والحساب والإعدادات ولوحة التحكم أخيرًا دائمًا.
+   أي أداة جديدة غير مذكورة هنا تبقى بعد المذكورات بترتيب تسجيلها. */
+const TOOL_ORDER=["مواقيت الصلاة","متابعة الصلاة","القبلة","المساجد والمصليات","السبحة الإلكترونية","الصلاة على النبي ﷺ","أسماء الله الحسنى","وضع قبل النوم","الختمة","الختمة الذكية","الختمة الجماعية والتحديات","خطة الحفظ للكبار","ترجمات المعاني","المكتبة الصوتية","نوادر القراءات","الإذاعة","تحميلات الصوت","التقويم والتحويل","المناسبات الإسلامية","المواسم والعبادات الموسمية","رمضان","حاسبة الزكاة","إحصائيات عبادتي","المفضلة","بحث","البحث الصوتي","بطاقات المشاركة","المسابقة الأسبوعية","ألعاب الأطفال التعليمية","حسابي وبياناتي","الإعدادات","لوحة التحكم"];
+TOOLS.sort((a,b)=>{const ia=TOOL_ORDER.indexOf(a.name),ib=TOOL_ORDER.indexOf(b.name);return (ia<0?999:ia)-(ib<0?999:ib)});
 try{renderHomeGrids()}catch(e){}
 })();
 </script>
