@@ -734,7 +734,7 @@ const state={
   khatma:{page:1, goal:10},
   city:0, method:"uq", adhanOn:false, adhanFired:"", geo:null, useGeo:false,
   prayerKey:"", nafhaKey:"",
-  lang:"ar", reciter:"afs", speed:1, uthmani:false, bigMode:false,
+  lang:"ar", reciter:"yasser", speed:1, uthmani:false, bigMode:false,
   remindOn:true, remindKey:"", streak:{count:0,last:"",total:0}, khatmaPlan:30,
   salawat:{cur:0,session:0,total:0,day:0,dayKey:"",goal:100},
   ntf:{prayerAt:true,prayerBefore:0,afterPrayer:true,salawatEvery:60,salawatLast:0,ayahOn:false,ayahTime:"08:00",ayahKey:"",hikmaOn:false,hikmaTime:"20:00",hikmaKey:"",fired:{}},
@@ -943,15 +943,162 @@ const I18N={
 };
 function tr(k){const d=I18N[state.lang]||I18N.ar;return d[k]||I18N.ar[k]||k}
 const RECITERS=[
- {id:"afs",name:"مشاري راشد العفاسي",base:"https://server8.mp3quran.net/afs/"},
- {id:"hussary",name:"محمود خليل الحصري",base:"https://server13.mp3quran.net/hussary/"},
- {id:"minsh",name:"محمد صديق المنشاوي",base:"https://server10.mp3quran.net/minsh/"},
- {id:"maher",name:"ماهر المعيقلي",base:"https://server12.mp3quran.net/maher/"}
+ {id:"yasser",name:"ياسر الدوسري",base:"https://cdn.mp3quran.net/audio/yasser-dosari/r1/"},
+ {id:"afs",name:"مشاري راشد العفاسي",base:"https://cdn.mp3quran.net/audio/mishary-alafasy/r1/"},
+ {id:"hussary",name:"محمود خليل الحصري",base:"https://cdn.mp3quran.net/audio/mahmoud-husary/r1/"},
+ {id:"minsh",name:"محمد صديق المنشاوي",base:"https://cdn.mp3quran.net/audio/muhammad-minshawi/r1/"},
+ {id:"maher",name:"ماهر المعيقلي",base:"https://cdn.mp3quran.net/audio/maher-muaiqly/r1/"},
+ {id:"basit",name:"عبد الباسط عبد الصمد",base:"https://cdn.mp3quran.net/audio/abdulbasit-abdulsamad/r3/"},
+ {id:"shatri",name:"أبو بكر الشاطري",base:"https://cdn.mp3quran.net/audio/abubakr-shatri/r1/"},
+ {id:"qatami",name:"ناصر القطامي",base:"https://cdn.mp3quran.net/audio/nasser-qatami/r1/"},
+ {id:"ahmad-hawashi",name:"أحمد الحواشي",base:"https://cdn.mp3quran.net/audio/ahmad-hawashi/r1/"},
+ {id:"ahmad-suwailem",name:"أحمد السويلم",base:"https://cdn.mp3quran.net/audio/ahmad-suwailem/r1/"},
+ {id:"ahmad-tarabulsi",name:"أحمد الطرابلسي",base:"https://cdn.mp3quran.net/audio/ahmad-tarabulsi/r2/"},
+ {id:"ahmad-nufais",name:"أحمد النفيس",base:"https://cdn.mp3quran.net/audio/ahmad-nufais/r1/"},
+ {id:"ahmad-ajmi",name:"أحمد بن علي العجمي",base:"https://cdn.mp3quran.net/audio/ahmad-ajmi/r1/"},
+ {id:"ahmad-shaheen",name:"أحمد خليل شاهين",base:"https://cdn.mp3quran.net/audio/ahmad-shaheen/r1/"},
+ {id:"ahmad-deeban",name:"أحمد ديبان",base:"https://cdn.mp3quran.net/audio/ahmad-deeban/r1/"},
+ {id:"ahmad-saber",name:"أحمد صابر",base:"https://cdn.mp3quran.net/audio/ahmad-saber/r1/"},
+ {id:"ahmad-amer",name:"أحمد عامر",base:"https://cdn.mp3quran.net/audio/ahmad-amer/r1/"},
+ {id:"ahmad-masarawi",name:"أحمد عيسى المعصراوي",base:"https://cdn.mp3quran.net/audio/ahmad-masarawi/r1/"},
+ {id:"ahmad-naina",name:"أحمد نعينع",base:"https://cdn.mp3quran.net/audio/ahmad-naina/r1/"},
+ {id:"akram-alaqmi",name:"أكرم العلاقمي",base:"https://cdn.mp3quran.net/audio/akram-alaqmi/r1/"},
+ {id:"anas-emadi",name:"أنس العمادي",base:"https://cdn.mp3quran.net/audio/anas-emadi/r1/"},
+ {id:"ibrahim-akhdar",name:"إبراهيم الأخضر",base:"https://cdn.mp3quran.net/audio/ibrahim-akhdar/r1/"},
+ {id:"ibrahim-jormy",name:"إبراهيم الجرمي",base:"https://cdn.mp3quran.net/audio/ibrahim-jormy/r1/"},
+ {id:"ibrahim-dosari",name:"إبراهيم الدوسري",base:"https://cdn.mp3quran.net/audio/ibrahim-dosari/r2/"},
+ {id:"ibrahim-asiri",name:"إبراهيم العسيري",base:"https://cdn.mp3quran.net/audio/ibrahim-asiri/r1/"},
+ {id:"idrees-abkar",name:"إدريس أبكر",base:"https://cdn.mp3quran.net/audio/idrees-abkar/r1/"},
+ {id:"zain-ahmad",name:"الزين محمد أحمد",base:"https://cdn.mp3quran.net/audio/zain-ahmad/r1/"},
+ {id:"badr-turki",name:"بدر التركي",base:"https://cdn.mp3quran.net/audio/badr-turki/r1/"},
+ {id:"bandar-baleela",name:"بندر بليله",base:"https://cdn.mp3quran.net/audio/bandar-baleela/r1/"},
+ {id:"peshawa-kurdi",name:"بيشه وا قادر الكردي",base:"https://cdn.mp3quran.net/audio/peshawa-kurdi/r1/"},
+ {id:"tawfeeq-sayegh",name:"توفيق الصايغ",base:"https://cdn.mp3quran.net/audio/tawfeeq-sayegh/r1/"},
+ {id:"jamal-abdullah",name:"جمال شاكر عبدالله",base:"https://cdn.mp3quran.net/audio/jamal-abdullah/r1/"},
+ {id:"jamaan-osaimi",name:"جمعان العصيمي",base:"https://cdn.mp3quran.net/audio/jamaan-osaimi/r1/"},
+ {id:"junaid-abdullah",name:"جنيد آدم عبدالله",base:"https://cdn.mp3quran.net/audio/junaid-abdullah/r1/"},
+ {id:"hatem-waer",name:"حاتم فريد الواعر",base:"https://cdn.mp3quran.net/audio/hatem-waer/r1/"},
+ {id:"hassan-daghriri",name:"حسن الدغريري",base:"https://cdn.mp3quran.net/audio/hassan-daghriri/r1/"},
+ {id:"hassan-saleh",name:"حسن صالح",base:"https://cdn.mp3quran.net/audio/hassan-saleh/r1/"},
+ {id:"khalid-jalil",name:"خالد الجليل",base:"https://cdn.mp3quran.net/audio/khalid-jalil/r1/"},
+ {id:"khalid-ziyadi",name:"خالد الزيادي",base:"https://cdn.mp3quran.net/audio/khalid-ziyadi/r1/"},
+ {id:"khalid-qahtani",name:"خالد القحطاني",base:"https://cdn.mp3quran.net/audio/khalid-qahtani/r1/"},
+ {id:"khalid-mohanna",name:"خالد المهنا",base:"https://cdn.mp3quran.net/audio/khalid-mohanna/r1/"},
+ {id:"khalid-abdulkafi",name:"خالد عبدالكافي",base:"https://cdn.mp3quran.net/audio/khalid-abdulkafi/r1/"},
+ {id:"khalid-mohammadi",name:"خالد كريم محمدي",base:"https://cdn.mp3quran.net/audio/khalid-mohammadi/r1/"},
+ {id:"khalifa-tunaiji",name:"خليفة الطنيجي",base:"https://cdn.mp3quran.net/audio/khalifa-tunaiji/r1/"},
+ {id:"dawood-hamza",name:"داود حمزة",base:"https://cdn.mp3quran.net/audio/dawood-hamza/r1/"},
+ {id:"rami-duais",name:"رامي الدعيس",base:"https://cdn.mp3quran.net/audio/rami-duais/r1/"},
+ {id:"raad-kurdi",name:"رعد محمد الكردي",base:"https://cdn.mp3quran.net/audio/raad-kurdi/r1/"},
+ {id:"zaki-daghistani",name:"زكي داغستاني",base:"https://cdn.mp3quran.net/audio/zaki-daghistani/r1/"},
+ {id:"saad-ghamdi",name:"سعد الغامدي",base:"https://cdn.mp3quran.net/audio/saad-ghamdi/r1/"},
+ {id:"saad-muqrin",name:"سعد المقرن",base:"https://cdn.mp3quran.net/audio/saad-muqrin/r1/"},
+ {id:"saud-shuraim",name:"سعود الشريم",base:"https://cdn.mp3quran.net/audio/saud-shuraim/r1/"},
+ {id:"salman-siddiq",name:"سلمان الصديق",base:"https://cdn.mp3quran.net/audio/salman-siddiq/r1/"},
+ {id:"sahl-yassin",name:"سهل ياسين",base:"https://cdn.mp3quran.net/audio/sahl-yassin/r1/"},
+ {id:"sayed-hashemi",name:"سيد أحمد هاشمي",base:"https://cdn.mp3quran.net/audio/sayed-hashemi/r1/"},
+ {id:"sayed-ramadan",name:"سيد رمضان",base:"https://cdn.mp3quran.net/audio/sayed-ramadan/r1/"},
+ {id:"shirzad-taher",name:"شيرزاد عبدالرحمن طاهر",base:"https://cdn.mp3quran.net/audio/shirzad-taher/r1/"},
+ {id:"saber-abdulhakam",name:"صابر عبدالحكم",base:"https://cdn.mp3quran.net/audio/saber-abdulhakam/r2/"},
+ {id:"saleh-shamrani",name:"صالح الشمراني",base:"https://cdn.mp3quran.net/audio/saleh-shamrani/r1/"},
+ {id:"saleh-sahood",name:"صالح الصاهود",base:"https://cdn.mp3quran.net/audio/saleh-sahood/r1/"},
+ {id:"saleh-quraishi",name:"صالح القريشي",base:"https://cdn.mp3quran.net/audio/saleh-quraishi/r1/"},
+ {id:"saleh-habdan",name:"صالح الهبدان",base:"https://cdn.mp3quran.net/audio/saleh-habdan/r1/"},
+ {id:"salah-budair",name:"صلاح البدير",base:"https://cdn.mp3quran.net/audio/salah-budair/r1/"},
+ {id:"salah-hashim",name:"صلاح الهاشم",base:"https://cdn.mp3quran.net/audio/salah-hashim/r1/"},
+ {id:"salah-bukhatir",name:"صلاح بو خاطر",base:"https://cdn.mp3quran.net/audio/salah-bukhatir/r1/"},
+ {id:"adel-kalbani",name:"عادل الكلباني",base:"https://cdn.mp3quran.net/audio/adel-kalbani/r1/"},
+ {id:"adel-rayyan",name:"عادل ريان",base:"https://cdn.mp3quran.net/audio/adel-rayyan/r1/"},
+ {id:"asim-luhaidan",name:"عاصم اللحیدان",base:"https://cdn.mp3quran.net/audio/asim-luhaidan/r1/"},
+ {id:"abdulelah-aoun",name:"عبدالإله بن عون",base:"https://cdn.mp3quran.net/audio/abdulelah-aoun/r1/"},
+ {id:"abdulbari-thubaiti",name:"عبدالبارئ الثبيتي",base:"https://cdn.mp3quran.net/audio/abdulbari-thubaiti/r1/"},
+ {id:"abdulbari-muhammad",name:"عبدالبارئ محمد",base:"https://cdn.mp3quran.net/audio/abdulbari-muhammad/r1/"},
+ {id:"abdulbadi-ghailan",name:"عبدالبديع غيلان",base:"https://cdn.mp3quran.net/audio/abdulbadi-ghailan/r1/"},
+ {id:"abdulrahman-sudais",name:"عبدالرحمن السديس",base:"https://cdn.mp3quran.net/audio/abdulrahman-sudais/r1/"},
+ {id:"abdulrahman-shahat",name:"عبدالرحمن الشحات",base:"https://cdn.mp3quran.net/audio/abdulrahman-shahat/r1/"},
+ {id:"abdulrahman-oosi",name:"عبدالرحمن العوسي",base:"https://cdn.mp3quran.net/audio/abdulrahman-oosi/r1/"},
+ {id:"abdulrahman-majed",name:"عبدالرحمن الماجد",base:"https://cdn.mp3quran.net/audio/abdulrahman-majed/r1/"},
+ {id:"abdulrahman-badr",name:"عبدالرحمن بن عبدالرزاق البدر",base:"https://cdn.mp3quran.net/audio/abdulrahman-badr/r1/"},
+ {id:"abdulrasheed-sufi",name:"عبدالرشيد صوفي",base:"https://cdn.mp3quran.net/audio/abdulrasheed-sufi/r3/"},
+ {id:"abdulaziz-ahmad",name:"عبدالعزيز الأحمد",base:"https://cdn.mp3quran.net/audio/abdulaziz-ahmad/r1/"},
+ {id:"abdulaziz-turki",name:"عبدالعزيز التركي",base:"https://cdn.mp3quran.net/audio/abdulaziz-turki/r1/"},
+ {id:"abdulaziz-zahrani",name:"عبدالعزيز الزهراني",base:"https://cdn.mp3quran.net/audio/abdulaziz-zahrani/r1/"},
+ {id:"abdulkareem-hazmi",name:"عبدالكريم الحازمي",base:"https://cdn.mp3quran.net/audio/abdulkareem-hazmi/r1/"},
+ {id:"abdullah-buaijan",name:"عبدالله البعيجان",base:"https://cdn.mp3quran.net/audio/abdullah-buaijan/r1/"},
+ {id:"abdullah-khalaf",name:"عبدالله الخلف",base:"https://cdn.mp3quran.net/audio/abdullah-khalaf/r1/"},
+ {id:"abdullah-qarafi",name:"عبدالله القرافي",base:"https://cdn.mp3quran.net/audio/abdullah-qarafi/r1/"},
+ {id:"abdullah-kandari",name:"عبدالله الكندري",base:"https://cdn.mp3quran.net/audio/abdullah-kandari/r1/"},
+ {id:"abdullah-matrood",name:"عبدالله المطرود",base:"https://cdn.mp3quran.net/audio/abdullah-matrood/r1/"},
+ {id:"abdullah-mousa",name:"عبدالله الموسى",base:"https://cdn.mp3quran.net/audio/abdullah-mousa/r1/"},
+ {id:"abdullah-basfar",name:"عبدالله بصفر",base:"https://cdn.mp3quran.net/audio/abdullah-basfar/r1/"},
+ {id:"abdullah-khayyat",name:"عبدالله خياط",base:"https://cdn.mp3quran.net/audio/abdullah-khayyat/r1/"},
+ {id:"abdullah-abdal",name:"عبدالله عبدل",base:"https://cdn.mp3quran.net/audio/abdullah-abdal/r1/"},
+ {id:"abdullah-juhani",name:"عبدالله عواد الجهني",base:"https://cdn.mp3quran.net/audio/abdullah-juhani/r1/"},
+ {id:"abdullah-ghailan",name:"عبدالله غيلان",base:"https://cdn.mp3quran.net/audio/abdullah-ghailan/r1/"},
+ {id:"abdullah-kamel",name:"عبدالله كامل",base:"https://cdn.mp3quran.net/audio/abdullah-kamel/r1/"},
+ {id:"abdulmohsen-harthi",name:"عبدالمحسن الحارثي",base:"https://cdn.mp3quran.net/audio/abdulmohsen-harthi/r1/"},
+ {id:"abdulmohsen-obaikan",name:"عبدالمحسن العبيكان",base:"https://cdn.mp3quran.net/audio/abdulmohsen-obaikan/r1/"},
+ {id:"abdulmohsen-qasim",name:"عبدالمحسن القاسم",base:"https://cdn.mp3quran.net/audio/abdulmohsen-qasim/r1/"},
+ {id:"abdulhadi-kanakeri",name:"عبدالهادي أحمد كناكري",base:"https://cdn.mp3quran.net/audio/abdulhadi-kanakeri/r1/"},
+ {id:"abdulwadood-haneef",name:"عبدالودود حنيف",base:"https://cdn.mp3quran.net/audio/abdulwadood-haneef/r1/"},
+ {id:"abdulwali-arkani",name:"عبدالولي الأركاني",base:"https://cdn.mp3quran.net/audio/abdulwali-arkani/r1/"},
+ {id:"ali-hudhaifi",name:"علي بن عبدالرحمن الحذيفي",base:"https://cdn.mp3quran.net/audio/ali-hudhaifi/r1/"},
+ {id:"ali-jaber",name:"علي جابر",base:"https://cdn.mp3quran.net/audio/ali-jaber/r1/"},
+ {id:"ali-souissi",name:"علي حجاج السويسي",base:"https://cdn.mp3quran.net/audio/ali-souissi/r1/"},
+ {id:"alijon-hamdan",name:"عليجان قوري حمدان",base:"https://cdn.mp3quran.net/audio/alijon-hamdan/r1/"},
+ {id:"imad-hafez",name:"عماد زهير حافظ",base:"https://cdn.mp3quran.net/audio/imad-hafez/r1/"},
+ {id:"omar-duraiwiz",name:"عمر الدريويز",base:"https://cdn.mp3quran.net/audio/omar-duraiwiz/r1/"},
+ {id:"issa-sanankoua",name:"عيسى عمر سناكو",base:"https://cdn.mp3quran.net/audio/issa-sanankoua/r1/"},
+ {id:"fouad-khamiri",name:"فؤاد الخامري",base:"https://cdn.mp3quran.net/audio/fouad-khamiri/r1/"},
+ {id:"fares-abbad",name:"فارس عباد",base:"https://cdn.mp3quran.net/audio/fares-abbad/r1/"},
+ {id:"faisal-hajri",name:"فيصل الهاجري",base:"https://cdn.mp3quran.net/audio/faisal-hajri/r1/"},
+ {id:"majed-zamil",name:"ماجد الزامل",base:"https://cdn.mp3quran.net/audio/majed-zamil/r1/"},
+ {id:"malallah-jaber",name:"مال الله عبدالرحمن الجابر",base:"https://cdn.mp3quran.net/audio/malallah-jaber/r1/"},
+ {id:"maher-shakhashiro",name:"ماهر شخاشيرو",base:"https://cdn.mp3quran.net/audio/maher-shakhashiro/r1/"},
+ {id:"muhammad-ayyub",name:"محمد أيوب",base:"https://cdn.mp3quran.net/audio/muhammad-ayyub/r1/"},
+ {id:"muhammad-bukhait",name:"محمد البخيت",base:"https://cdn.mp3quran.net/audio/muhammad-bukhait/r1/"},
+ {id:"muhammad-zubaidi",name:"محمد الزبيدي",base:"https://cdn.mp3quran.net/audio/muhammad-zubaidi/r1/"},
+ {id:"muhammad-tablawi",name:"محمد الطبلاوي",base:"https://cdn.mp3quran.net/audio/muhammad-tablawi/r1/"},
+ {id:"muhammad-faqih",name:"محمد الفقيه",base:"https://cdn.mp3quran.net/audio/muhammad-faqih/r1/"},
+ {id:"muhammad-luhaidan",name:"محمد اللحيدان",base:"https://cdn.mp3quran.net/audio/muhammad-luhaidan/r1/"},
+ {id:"muhammad-muhaisni",name:"محمد المحيسني",base:"https://cdn.mp3quran.net/audio/muhammad-muhaisni/r1/"},
+ {id:"muhammad-burhaji",name:"محمد برهجي",base:"https://cdn.mp3quran.net/audio/muhammad-burhaji/r1/"},
+ {id:"muhammad-jibreel",name:"محمد جبريل",base:"https://cdn.mp3quran.net/audio/muhammad-jibreel/r1/"},
+ {id:"muhammad-khalil",name:"محمد خليل القارئ",base:"https://cdn.mp3quran.net/audio/muhammad-khalil/r1/"},
+ {id:"muhammad-shareef",name:"محمد رشاد الشريف",base:"https://cdn.mp3quran.net/audio/muhammad-shareef/r1/"},
+ {id:"muhammad-shah",name:"محمد صالح عالم شاه",base:"https://cdn.mp3quran.net/audio/muhammad-shah/r1/"},
+ {id:"muhammad-abdulkareem",name:"محمد عبدالكريم",base:"https://cdn.mp3quran.net/audio/muhammad-abdulkareem/r1/"},
+ {id:"muhammad-khan",name:"محمد عثمان خان",base:"https://cdn.mp3quran.net/audio/muhammad-khan/r1/"},
+ {id:"mahmoud-rifai",name:"محمود الرفاعي",base:"https://cdn.mp3quran.net/audio/mahmoud-rifai/r1/"},
+ {id:"mahmoud-harfoush",name:"محمود حرفوش",base:"https://cdn.mp3quran.net/audio/mahmoud-harfoush/r1/"},
+ {id:"mahmoud-abdulhakam",name:"محمود عبدالحكم",base:"https://cdn.mp3quran.net/audio/mahmoud-abdulhakam/r1/"},
+ {id:"mahmoud-banna",name:"محمود علي البنا",base:"https://cdn.mp3quran.net/audio/mahmoud-banna/r1/"},
+ {id:"mukhtar-haj",name:"مختار الحاج",base:"https://cdn.mp3quran.net/audio/mukhtar-haj/r1/"},
+ {id:"mustafa-ismail",name:"مصطفى إسماعيل",base:"https://cdn.mp3quran.net/audio/mustafa-ismail/r1/"},
+ {id:"mustafa-lahouni",name:"مصطفى اللاهوني",base:"https://cdn.mp3quran.net/audio/mustafa-lahouni/r1/"},
+ {id:"mustafa-azzawi",name:"مصطفى رعد العزاوي",base:"https://cdn.mp3quran.net/audio/mustafa-azzawi/r1/"},
+ {id:"moeedh-harthi",name:"معيض الحارثي",base:"https://cdn.mp3quran.net/audio/moeedh-harthi/r1/"},
+ {id:"muftah-saltani",name:"مفتاح السلطني",base:"https://cdn.mp3quran.net/audio/muftah-saltani/r3/"},
+ {id:"mansour-salimi",name:"منصور السالمي",base:"https://cdn.mp3quran.net/audio/mansour-salimi/r1/"},
+ {id:"musa-bilal",name:"موسى بلال",base:"https://cdn.mp3quran.net/audio/musa-bilal/r1/"},
+ {id:"nasser-asfour",name:"ناصر العصفور",base:"https://cdn.mp3quran.net/audio/nasser-asfour/r1/"},
+ {id:"nasser-majed",name:"ناصر الماجد",base:"https://cdn.mp3quran.net/audio/nasser-majed/r1/"},
+ {id:"nabil-rifai",name:"نبيل الرفاعي",base:"https://cdn.mp3quran.net/audio/nabil-rifai/r1/"},
+ {id:"nadhir-maliki",name:"نذير المالكي",base:"https://cdn.mp3quran.net/audio/nadhir-maliki/r1/"},
+ {id:"neama-hassan",name:"نعمة الحسان",base:"https://cdn.mp3quran.net/audio/neama-hassan/r1/"},
+ {id:"hashim-abudalal",name:"هاشم أبو دلال",base:"https://cdn.mp3quran.net/audio/hashim-abudalal/r1/"},
+ {id:"hani-rifai",name:"هاني الرفاعي",base:"https://cdn.mp3quran.net/audio/hani-rifai/r1/"},
+ {id:"wadee-yamani",name:"وديع اليمني",base:"https://cdn.mp3quran.net/audio/wadee-yamani/r1/"},
+ {id:"yasser-qurashi",name:"ياسر القرشي",base:"https://cdn.mp3quran.net/audio/yasser-qurashi/r1/"},
+ {id:"yasser-salama",name:"ياسر سلامة",base:"https://cdn.mp3quran.net/audio/yasser-salama/r1/"},
+ {id:"yahya-hawwa",name:"يحيى حوا",base:"https://cdn.mp3quran.net/audio/yahya-hawwa/r1/"},
+ {id:"yousef-shoaey",name:"يوسف الشويعي",base:"https://cdn.mp3quran.net/audio/yousef-shoaey/r1/"},
+ {id:"yousef-ahmad",name:"يوسف بن نوح أحمد",base:"https://cdn.mp3quran.net/audio/yousef-ahmad/r1/"}
 ];
 function reciterObj(){return RECITERS.find(r=>r.id===state.reciter)||RECITERS[0]}
 function surahUrlFor(n,rid){const r=RECITERS.find(x=>x.id===rid)||RECITERS[0];return r.base+String(n).padStart(3,"0")+".mp3"}
 function surahKey(n,rid){return rid==="afs"?"surah:"+n:"surah:"+n+":"+rid}
-const AYAH_EDITIONS={afs:"ar.alafasy",hussary:"ar.husary",minsh:"ar.minshawi",maher:"ar.alafasy"};
+const AYAH_EDITIONS={afs:"ar.alafasy",hussary:"ar.husary",minsh:"ar.minshawi",maher:"ar.mahermuaiqly",basit:"ar.abdulbasitmurattal",shatri:"ar.shaatree","ahmad-ajmi":"ar.ahmedajamy","ali-hudhaifi":"ar.hudhaify","ibrahim-akhdar":"ar.ibrahimakhbar","muhammad-ayyub":"ar.muhammadayyoub","muhammad-jibreel":"ar.muhammadjibreel","saud-shuraim":"ar.saoodshuraym","abdullah-basfar":"ar.abdullahbasfar","hani-rifai":"ar.hanirifai","abdullah-juhani":"ar.abdullahawadaljuhani"};
 function globalAyahNumber(si,ai){let g=ai+1;for(let i=0;i<si;i++)g+=DB.surahs[i].ayahs;return g}
 function ayahAudioUrl(si,ai){return "https://cdn.islamic.network/quran/audio/128/"+(AYAH_EDITIONS[state.reciter]||"ar.alafasy")+"/"+globalAyahNumber(si,ai)+".mp3"}
 const ayahSeq={active:false,surah:-1,ayah:0};
@@ -3602,12 +3749,7 @@ function syncHist(){
 function syncPrayers(){try{const k=dayKey();const e=pro.hist[k]||(pro.hist[k]={d:0,s:0,p:0,pg:0});e.p=Object.keys(state.prayerStatus||{}).filter(x=>state.prayerStatus[x]==="done").length;proSave()}catch(e){}}
 setInterval(()=>{syncHist();syncPrayers()},20000);
 document.addEventListener("click",e=>{const t=e.target;if(t&&t.closest&&t.closest(".tap-btn,.tasbeeh-btn,.st-btn,#salawatTap,.salawat-btn"))setTimeout(()=>{syncHist();syncPrayers()},90)},true);
-/* ----- قرّاء إضافيون للمصحف المرتل (نفس مصدر mp3quran المستخدم في التطبيق) ----- */
-[["basit","عبد الباسط عبد الصمد","https://server7.mp3quran.net/basit/","ar.abdulbasitmurattal"],
- ["shatri","أبو بكر الشاطري","https://server11.mp3quran.net/shatri/",null],
- ["yasser","ياسر الدوسري","https://server11.mp3quran.net/yasser/",null],
- ["qatami","ناصر القطامي","https://server6.mp3quran.net/qtm/",null]
-].forEach(rw=>{if(!RECITERS.some(r=>r.id===rw[0])){RECITERS.push({id:rw[0],name:rw[1],base:rw[2]});if(rw[3])AYAH_EDITIONS[rw[0]]=rw[3]}});
+/* جميع القرّاء موجودون في قائمة RECITERS الأساسية أعلى الملف (مصدرها الرسمي mp3quran) وعلى رأسهم الشيخ ياسر الدوسري */
 
 /* ============ ١) البحث الصوتي والأوامر الصوتية ============ */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -3867,10 +4009,10 @@ function stopSpeak(){try{if("speechSynthesis" in window)speechSynthesis.cancel()
 function buildAudioHub(body){
   const intro=document.createElement("div");intro.className="card";intro.style.marginTop="4px";
   intro.innerHTML=`<b style="font-size:17px">🎧 المكتبة الصوتية</b>
-  <p class="note" style="margin-bottom:0">المصحف المرتل كاملًا بثمانية قرّاء، والآيات القرآنية داخل الأذكار تُتلى عليك بصوت القارئ الذي اخترته — تسجيلات حقيقية — وروابط سريعة للإذاعات والتلاوات النادرة. التشغيل والتحميل للاستماع بدون إنترنت متاحان من كل صف.</p>`;
+  <p class="note" style="margin-bottom:0">المصحف المرتل كاملًا بأصوات جميع القرّاء (${RECITERS.length} قارئًا) وعلى رأسهم الشيخ ياسر الدوسري، والآيات القرآنية داخل الأذكار تُتلى عليك بصوت القارئ الذي اخترته — تسجيلات حقيقية — وروابط سريعة للإذاعات والتلاوات النادرة. التشغيل والتحميل للاستماع بدون إنترنت متاحان من كل صف.</p>`;
   body.appendChild(intro);
   const h1=document.createElement("div");h1.className="sec-title";h1.textContent="المصحف المرتل — سورة الفاتحة بكل قارئ";body.appendChild(h1);
-  const note1=document.createElement("p");note1.className="note";note1.textContent="لأي سورة أخرى: افتح المصحف واختر القارئ من صفحة السورة — القرّاء الثمانية متاحون لكل السور الـ١١٤.";body.appendChild(note1);
+  const note1=document.createElement("p");note1.className="note";note1.textContent="لأي سورة أخرى: افتح المصحف واختر القارئ من صفحة السورة — كل القرّاء متاحون لكل السور الـ١١٤.";body.appendChild(note1);
   RECITERS.forEach(r=>body.appendChild(audRow(surahKey(1,r.id),"سورة الفاتحة — "+r.name,"المصحف المرتل كاملًا بهذا الصوت في قسم المصحف",surahUrlFor(1,r.id),false)));
   const h2=document.createElement("div");h2.className="sec-title";h2.textContent="أذكار تُسمَع بصوت القارئ";body.appendChild(h2);
   const tcard=document.createElement("div");tcard.className="card";tcard.style.marginTop="8px";
@@ -3979,7 +4121,7 @@ openSurah=function(idx,scrollAyah){
   const NEW_TOOLS=[
     {ic:"🎯",col:"#0a6b32",name:"الختمة الذكية",sub:"خطة حسب وقتك اليومي",build:buildSmartKhatma},
     {ic:"🌐",col:"#33691e",name:"ترجمات المعاني",sub:"معاني القرآن بـ٨ لغات",build:body=>buildTransHub(body)},
-    {ic:"🎧",col:"#8a6d1a",name:"المكتبة الصوتية",sub:"٨ قرّاء وأذكار تُسمَع",build:buildAudioHub},
+    {ic:"🎧",col:"#8a6d1a",name:"المكتبة الصوتية",sub:"جميع القرّاء وأذكار تُسمَع",build:buildAudioHub},
     {ic:"📊",col:"#00695c",name:"إحصائيات عبادتي",sub:"رسوم بيانية لآخر ١٤ يومًا",build:buildStats},
     {ic:"🎤",col:"#8a6d1a",name:"البحث الصوتي",sub:"أوامر صوتية بالعربية",build:buildVoice},
     {ic:"🖼️",col:"#a67c00",name:"بطاقات المشاركة",sub:"٣ قوالب جاهزة للنشر",build:buildShareStudio}
@@ -4574,10 +4716,7 @@ function kidLevel(stars){
 /* --- تحفيظ جزء عمّ بصوت حقيقي: تلاوة مرتلة مسجّلة لقارئ حقيقي من نفس مصادر التلاوة المستخدمة في المصحف داخل التطبيق — ليست نطقًا آليًا ولا صوت جهاز --- */
 function memoReciterName(){
   try{
-    const ed=AYAH_EDITIONS[state.reciter]||"ar.alafasy";
-    if(ed==="ar.husary")return "محمود خليل الحصري";
-    if(ed==="ar.minshawi")return "محمد صديق المنشاوي";
-    if(ed==="ar.abdulbasitmurattal")return "عبد الباسط عبد الصمد";
+    if(AYAH_EDITIONS[state.reciter])return reciterObj().name;
   }catch(e){}
   return "مشاري راشد العفاسي";
 }
